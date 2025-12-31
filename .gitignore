@@ -1,0 +1,8 @@
+# IDE files
+.vscode/
+
+# Environment files
+.env
+
+# Generated files
+.temp/

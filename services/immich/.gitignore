@@ -1,0 +1,6 @@
+# symlink
+library
+
+# data dirs
+library/*
+postgres/*
