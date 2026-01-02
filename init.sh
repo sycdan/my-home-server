@@ -118,31 +118,21 @@ setup_service() {
 }
 
 main() {
-	print_status "Home Server Controller - Initialization"
+	print_status "Initializing My Home Server"
 	echo ""
 	
 	check_root
 	check_os
 	
-	# Bootstrap Docker
-	print_status "Bootstrapping Docker..."
 	install_docker
-	print_success "Docker bootstrap complete"
 	echo ""
 	
-	# List available services
-	list_available_services
-	echo ""
-	
-	# Setup services
 	if [[ $# -eq 0 ]]; then
-		print_warning "No services specified. Available services:"
+		print_warning "No services specified"
 		list_available_services
 		echo ""
 		echo "Usage: $0 <service1> [service2] [service3] ..."
-		echo "Example: $0 immich"
 		echo ""
-		print_status "You can run service setup later with: bash services/<service>/setup.sh"
 		exit 0
 	fi
 	
