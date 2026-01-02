@@ -4,27 +4,61 @@
 
 set -e
 
+# Source common utilities
 ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "$ROOT_DIR/lib/common.sh"
+
+# Service commands with descriptions
+declare -a SERVICE_COMMANDS=(
+	"up [options]|Start the service (docker compose up -d)"
+	"down [options]|Stop the service (docker compose down)"
+	"restart [options]|Restart the service"
+	"logs [options]|View service logs (follow mode)"
+	"ps|Show service containers status"
+	"shell|Open shell in service directory"
+)
+
+# Global commands with descriptions
+declare -a GLOBAL_COMMANDS=(
+	"list|List all available services"
+	"status|Show status of all services"
+)
+
+print_commands() {
+	local prefix=$1
+	local width=$2
+	shift 2
+	local -n cmd_array=$1
+	
+	for cmd in "${cmd_array[@]}"; do
+		local name="${cmd%%|*}"
+		local desc="${cmd#*|}"
+		printf "  %s %-${width}s %s\n" "$prefix" "$name" "$desc"
+	done
+}
+
+print_service_commands() {
+	local service=$1
+	local width=${2:-17}
+	echo "Service Commands:"
+	print_commands "$service" "$width" "SERVICE_COMMANDS"
+}
+
+print_global_commands() {
+	local width=${1:-23}
+	echo "Global Commands:"
+	print_commands "$prefix" "$width" "GLOBAL_COMMANDS"
+}
 
 show_usage() {
 	local service=$1
 	
 	if [[ -z "$service" ]]; then
-		# Full usage
 		echo "Usage: $0 <service|all> <command> [options]"
 		echo ""
-		echo "Service Commands:"
-		echo "  <service> up [options]      Start a service (docker compose up -d)"
-		echo "  <service> down [options]    Stop a service (docker compose down)"
-		echo "  <service> restart [options] Restart a service"
-		echo "  <service> logs [options]    View service logs (follow mode)"
-		echo "  <service> ps                Show service containers status"
-		echo "  <service> shell             Open shell in service directory"
+		print_service_commands "<service>"
 		echo ""
-		echo "Global Commands (service 'all'):"
-		echo "  all list                    List all available services"
-		echo "  all status                  Show status of all services"
+		print_global_commands
 		echo ""
 		echo "Example:"
 		echo "  $0 immich up"
@@ -32,27 +66,16 @@ show_usage() {
 		echo "  $0 immich down"
 		echo "  $0 all status"
 	elif [[ "$service" == "all" ]]; then
-		# Global usage
 		echo "Usage: $0 all <command>"
 		echo ""
-		echo "Global Commands:"
-		echo "  all list                    List all available services"
-		echo "  all status                  Show status of all services"
+		print_global_commands
 	else
-		# Service-specific usage
 		echo "Usage: $0 $service <command> [options]"
 		echo ""
-		echo "Service Commands:"
-		echo "  $service up [options]       Start the service (docker compose up -d)"
-		echo "  $service down [options]     Stop the service (docker compose down)"
-		echo "  $service restart [options]  Restart the service"
-		echo "  $service logs [options]     View service logs (follow mode)"
-		echo "  $service ps                 Show service containers status"
-		echo "  $service shell              Open shell in service directory"
+		print_service_commands "$service"
 	fi
 }
 
-# Helper to run docker compose commands in service directory
 run_compose() {
 	local service=$1
 	local action=$2

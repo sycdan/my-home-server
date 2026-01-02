@@ -5,29 +5,10 @@ set -e
 
 # Find the directory where this script is located
 SERVICE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT_DIR="$( cd "$SERVICE_DIR/../../" && pwd )"
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-print_status() {
-	echo -e "${BLUE}[INFO]${NC} $1"
-}
-
-print_success() {
-	echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
-
-print_warning() {
-	echo -e "${YELLOW}[WARNING]${NC} $1" >&2
-}
-
-print_error() {
-	echo -e "${RED}[ERROR]${NC} $1" >&2
-}
+# Source common utilities
+source "$ROOT_DIR/lib/common.sh"
 
 check_docker() {
 	if ! command -v docker &> /dev/null; then
@@ -131,13 +112,13 @@ main() {
 	echo ""
 	print_success "Immich service is ready!"
 	print_status "To start Immich, run:"
-	echo "  bash ctl.sh up immich"
+	echo "  ./ctl immich up"
 	echo ""
 	print_status "To stop Immich, run:"
-	echo "  bash ctl.sh down immich"
+	echo "  ./ctl immich down"
 	echo ""
 	print_status "View logs with:"
-	echo "  bash ctl.sh logs immich"
+	echo "  ./ctl immich logs"
 }
 
 main "$@"
