@@ -1,2 +1,5 @@
+#annexed-files
 library/*
 postgres/*
+.env
+#/annexed-files
