@@ -78,12 +78,13 @@ show_usage() {
 
 run_compose() {
 	local service=$1
-	local action=$2
+	local command=$2
 	shift 2
+	echo "$@"
 	
 	validate_service "$service" || return 1
 	
-	case "$action" in
+	case "$command" in
 		up)
 			print_status "Starting $service..."
 			cd "$ROOT_DIR/services/$service"
@@ -105,7 +106,7 @@ run_compose() {
 		logs)
 			print_status "Showing logs for $service..."
 			cd "$ROOT_DIR/services/$service"
-			docker compose logs -f "$@"
+			docker compose logs "$@"
 			;;
 		ps)
 			cd "$ROOT_DIR/services/$service"
@@ -145,26 +146,6 @@ validate_service() {
 	fi
 	
 	return 0
-}
-
-service_up() {
-	run_compose "$1" up "$@"
-}
-
-service_down() {
-	run_compose "$1" down "$@"
-}
-
-service_restart() {
-	run_compose "$1" restart "$@"
-}
-
-service_logs() {
-	run_compose "$1" logs "$@"
-}
-
-service_ps() {
-	run_compose "$1" ps
 }
 
 service_status() {
@@ -216,7 +197,6 @@ main() {
 	local command=$2
 	shift 2
 	
-	# Handle global commands
 	if [[ "$service" == "all" ]]; then
 		case "$command" in
 			status)
@@ -235,7 +215,6 @@ main() {
 				;;
 		esac
 	else
-		# Handle service-specific commands
 		if [[ ! -d "$ROOT_DIR/services/$service" ]]; then
 			print_error "Unknown service: $service"
 			list_services
@@ -244,7 +223,7 @@ main() {
 		
 		case "$command" in
 			up|down|restart|logs|ps)
-				service_$command "$service" "$@"
+				run_compose "$service" "$command" "$@"
 				;;
 			shell)
 				cd "$ROOT_DIR/services/$service"
