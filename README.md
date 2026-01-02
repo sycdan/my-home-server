@@ -6,19 +6,19 @@ A unified controller for managing multiple Docker-based services on my home serv
 
 ```
 my-home-server/
-├── setup.sh              # Main bootstrap script
-├── ctl.sh                # Service control utility
+├── init                  # Main initialization script
+├── ctl                   # Service control utility
 ├── README.md
 ├── services/
 │   ├── immich/           # Immich photo management service
 │   │   ├── docker-compose.yml
 │   │   ├── example.env
-│   │   ├── setup.sh      # Service-specific setup
+│   │   ├── bootstrap.sh  # Service-specific setup
 │   │   └── ...           # Additional service files
 │   ├── nextcloud/        # Future service example
 │   │   ├── docker-compose.yml
 │   │   ├── example.env
-│   │   ├── setup.sh
+│   │   ├── bootstrap.sh
 │   │   └── ...
 │   └── [other-services]/
 ```
@@ -30,18 +30,18 @@ my-home-server/
 Run this once on a server machine to install Docker and initialize services:
 
 ```bash
-# Setup Docker and initialize Immich
-bash setup.sh immich
+# Initialize and setup Immich
+bash init immich
 
 # Or setup multiple services at once
-bash setup.sh immich nextcloud
+bash init immich nextcloud
 ```
 
-The main setup script will:
+The init script will:
 
 - Check your OS (Ubuntu recommended)
 - Install Docker and Docker Compose if needed
-- Call each service's setup script (idempotent)
+- Call each service's bootstrap script (idempotent)
 
 **Note:** You may need to log out and back in for Docker group permissions to take effect.
 
@@ -125,7 +125,7 @@ Create `docker-compose.yml` with your service definition.
 
 ### 3. Create Setup Script
 
-Create `setup.sh` that's idempotent (safe to run multiple times):
+Create `bootstrap.sh` that's idempotent (safe to run multiple times):
 
 ```bash
 #!/bin/bash
@@ -150,8 +150,8 @@ Create `example.env` with all required variables and documentation.
 
 ### 5. Register Service
 
-Just having a `services/myservice/setup.sh` and `docker-compose.yml` is enough. It will automatically appear in:
-- `bash setup.sh` (bootstrap)
+Just having a `services/myservice/bootstrap.sh` and `docker-compose.yml` is enough. It will automatically appear in:
+- `bash init` (bootstrap)
 - `bash ctl.sh list` (service listing)
 
 ## Idempotency
@@ -166,9 +166,9 @@ All setup scripts are designed to be **idempotent** - they can safely be run mul
 This means you can:
 ```bash
 # Safe to run multiple times
-bash setup.sh immich
-bash setup.sh immich
-bash setup.sh immich
+bash init immich
+bash init immich
+bash init immich
 ```
 
 ## Configuration Management
@@ -258,7 +258,7 @@ To add a new service:
 1. Create the service directory
 2. Add `docker-compose.yml`
 3. Add `example.env` with all configuration options
-4. Add `setup.sh` (must be idempotent)
+4. Add `bootstrap.sh` (must be idempotent)
 5. Test thoroughly
 
 ## License

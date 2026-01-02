@@ -49,6 +49,65 @@ check_os() {
 	fi
 }
 
+update_system() {
+	print_status "Updating system packages..."
+	sudo apt-get update
+	sudo apt-get upgrade -y
+	sudo apt-get autoremove -y
+	print_success "System updated"
+}
+
+install_utilities() {
+	print_status "Installing utilities..."
+	sudo apt-get install -y \
+		curl \
+		wget \
+		git \
+		nano \
+		htop \
+		ufw \
+		fail2ban \
+		unzip \
+		tree
+	print_success "Utilities installed"
+}
+
+configure_firewall() {
+	if grep -qi microsoft /proc/version; then
+		print_warning "Running in WSL - skipping UFW firewall (use Windows Firewall instead)"
+		return
+	fi
+	
+	print_status "Configuring UFW firewall..."
+	
+	# Enable UFW
+	sudo ufw --force enable
+	
+	# Allow SSH (important!)
+	sudo ufw allow ssh
+	
+	# Allow HTTP and HTTPS (for reverse proxy)
+	sudo ufw allow 80/tcp
+	sudo ufw allow 443/tcp
+	
+	print_success "Firewall configured"
+	sudo ufw status
+}
+
+configure_fail2ban() {
+	if grep -qi microsoft /proc/version; then
+		print_warning "Running in WSL - skipping fail2ban (systemd may not be available)"
+		return
+	fi
+	
+	print_status "Configuring fail2ban..."
+	
+	sudo systemctl enable fail2ban
+	sudo systemctl start fail2ban
+	
+	print_success "fail2ban configured and started"
+}
+
 install_docker() {
 	if command -v docker &> /dev/null; then
 		print_success "Docker is already installed"
@@ -89,7 +148,7 @@ list_available_services() {
 	echo "Available services:"
 	for service_dir in services/*/; do
 		service_name=$(basename "$service_dir")
-		if [[ -f "$service_dir/setup.sh" ]]; then
+		if [[ -f "$service_dir/bootstrap.sh" ]]; then
 			echo "  - $service_name"
 		fi
 	done
@@ -104,28 +163,29 @@ setup_service() {
 		return 1
 	fi
 	
-	if [[ ! -f "$service_dir/setup.sh" ]]; then
-		print_error "Setup script not found: $service_dir/setup.sh"
+	if [[ ! -f "$service_dir/bootstrap.sh" ]]; then
+		print_error "Setup script not found: $service_dir/bootstrap.sh"
 		return 1
 	fi
 	
 	print_status "Setting up service: $service"
 	
 	# Run the service setup script (idempotent)
-	bash "$service_dir/setup.sh"
+	bash "$service_dir/bootstrap.sh"
 	
 	print_success "$service setup completed"
 }
 
 main() {
 	print_status "Initializing My Home Server"
-	echo ""
 	
 	check_root
 	check_os
-	
+	update_system
+	install_utilities
 	install_docker
-	echo ""
+	configure_firewall
+	configure_fail2ban
 	
 	if [[ $# -eq 0 ]]; then
 		print_warning "No services specified"
@@ -142,8 +202,7 @@ main() {
 	done
 	
 	print_success "All requested services have been initialized!"
-	print_status "Start services with: bash ctl.sh up <service>"
-	echo "Example: ./ctl up immich"
+	print_status "Start services with: ./ctl up <service>"
 }
 
 main "$@"
