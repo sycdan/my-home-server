@@ -148,12 +148,13 @@ main() {
 	echo ""
 	print_success "Immich service is ready!"
 	print_status "To start Immich, run:"
-	echo "  cd $SERVICE_DIR"
-	echo "  docker compose up -d"
+	echo "  bash ctl.sh up immich"
 	echo ""
 	print_status "To stop Immich, run:"
-	echo "  cd $SERVICE_DIR"
-	echo "  docker compose down"
+	echo "  bash ctl.sh down immich"
+	echo ""
+	print_status "View logs with:"
+	echo "  bash ctl.sh logs immich"
 }
 
 main "$@"

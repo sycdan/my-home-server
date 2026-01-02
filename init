@@ -142,7 +142,8 @@ main() {
 	done
 	
 	print_success "All requested services have been initialized!"
-	print_status "Start services with: docker-compose -f services/<service>/docker-compose.yml up -d"
+	print_status "Start services with: bash ctl.sh up <service>"
+	echo "Example: ./ctl up immich"
 }
 
 main "$@"
