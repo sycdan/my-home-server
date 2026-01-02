@@ -152,6 +152,7 @@ $ ./init
 -bash: ./init: Permission denied
 
 chmod +x ./init
+chmod +x ./ctl
 ```
 
 ### Service won't start
