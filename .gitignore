@@ -1,0 +1,43 @@
+# Environment files - DO NOT COMMIT (contains secrets)
+.env
+.env.local
+.env.*.local
+services/*/.env
+services/*/.env.local
+
+# Service data directories
+services/*/.data/
+services/*/.db/
+
+# Common OS files
+.DS_Store
+Thumbs.db
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.vim/
+
+# Common build/runtime directories
+node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/
+dist/
+build/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.bak
+.tmp/
