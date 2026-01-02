@@ -49,12 +49,6 @@ check_ubuntu() {
 	fi
 }
 
-update_system() {
-	print_status "Updating system packages..."
-	sudo apt update && sudo apt upgrade -y
-	print_success "System packages updated"
-}
-
 install_docker() {
 	if command -v docker &> /dev/null; then
 		print_success "Docker is already installed"
@@ -106,23 +100,6 @@ install_docker_compose() {
 	sudo chmod +x /usr/local/bin/docker-compose
 	
 	print_success "Docker Compose installed successfully"
-}
-
-install_utilities() {
-	print_status "Installing additional utilities..."
-	
-	sudo apt install -y \
-		curl \
-		wget \
-		git \
-		nano \
-		htop \
-		ufw \
-		fail2ban \
-		unzip \
-		tree
-	
-	print_success "Additional utilities installed"
 }
 
 configure_firewall() {
@@ -218,7 +195,6 @@ EOF
 	print_success "Systemd service created and enabled"
 }
 
-# Function to start Immich
 start_immich() {
 	print_status "Starting Immich..."
 	
@@ -228,11 +204,52 @@ start_immich() {
 	print_success "Immich started successfully"
 }
 
-# Function to display final information
+do_checks() {
+	print_status "Performing system checks..."
+	check_root
+	check_ubuntu
+	print_success "System checks passed"
+}
+
+do_updates() {
+	print_status "Updating system..."
+	sudo apt update
+	sudo apt upgrade -y
+	sudo apt full-upgrade -y
+	sudo apt autoremove -y
+	print_success "System updated"
+}
+
+install_utilities() {
+	print_status "Installing utilities..."
+	sudo apt install -y \
+		curl \
+		wget \
+		git \
+		nano \
+		htop \
+		ufw \
+		fail2ban \
+		unzip \
+		tree
+	print_success "Utilities installed"
+}
+
+do_immich() {
+	print_status "Settings up Immich..."
+	
+	setup_immich_directories
+	configure_immich
+	create_systemd_service
+	start_immich
+	
+	display_final_info
+}
+
 display_final_info() {
 	echo
 	echo "=========================================="
-	echo "  🎉 Immich Home Server Setup Complete!"
+	echo "  🎉 Immich Setup Complete!"
 	echo "=========================================="
 	echo
 	print_success "Immich is running on: http://$(hostname -I | awk '{print $1}'):2283"
@@ -260,30 +277,19 @@ display_final_info() {
 	print_warning "Remember to backup your ~/immich-server directory regularly!"
 }
 
-# Main execution
 main() {
 	echo "=========================================="
-	echo "  🏠 Immich Home Server Setup Script"
+	echo "🏠 Home Server Setup Script"
 	echo "=========================================="
 	echo
-	
-	check_root
-	check_ubuntu
-	
-	print_status "Starting Immich home server setup..."
-	
-	update_system
+	do_checks
+	do_updates
 	install_utilities
 	install_docker
 	install_docker_compose
 	configure_firewall
 	configure_fail2ban
-	setup_immich_directories
-	configure_immich
-	create_systemd_service
-	start_immich
-	
-	display_final_info
+	do_immich
 }
 
 main "$@"
