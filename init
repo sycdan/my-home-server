@@ -158,6 +158,8 @@ setup_service() {
 	local service=$1
 	local service_dir="services/$service"
 	
+	print_status "Setting up service: $service"
+
 	if [[ ! -d "$service_dir" ]]; then
 		print_error "Service directory not found: $service_dir"
 		return 1
@@ -168,9 +170,6 @@ setup_service() {
 		return 1
 	fi
 	
-	print_status "Setting up service: $service"
-	
-	# Run the service setup script (idempotent)
 	bash "$service_dir/bootstrap.sh"
 	
 	print_success "$service setup completed"
@@ -201,7 +200,6 @@ main() {
 		echo ""
 	done
 	
-	print_success "All requested services have been initialized!"
 	print_status "Start services with: ./ctl up <service>"
 }
 
