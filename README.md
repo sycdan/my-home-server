@@ -4,23 +4,20 @@ A unified controller for managing multiple Docker-based services on my home serv
 
 ## Architecture
 
-```
+```bash
 my-home-server/
-├── init                  # Main initialization script
+├── README.md             # You are here!
+├── init                  # Main initialization script - run this first
 ├── ctl                   # Service control utility
-├── README.md
-├── services/
-│   ├── immich/           # Immich photo management service
-│   │   ├── docker-compose.yml
-│   │   ├── example.env
-│   │   ├── bootstrap.sh  # Service-specific setup
-│   │   └── ...           # Additional service files
-│   ├── nextcloud/        # Future service example
-│   │   ├── docker-compose.yml
-│   │   ├── example.env
-│   │   ├── bootstrap.sh
-│   │   └── ...
-│   └── [other-services]/
+├── lib/
+│   └── common.sh         # Common constants and utilities used by multiple scripts
+└── services/
+    └── immich/           # Photo management/sharing service
+        ├── docker-compose.yml
+        ├── example.env
+        ├── bootstrap.sh  # Service-specific setup
+        ├── library/      # Media library (annexed)
+        └── postgres/     # Database files (annexed)
 ```
 
 ## Quick Start
@@ -31,10 +28,7 @@ Run this once on a server machine to install Docker and initialize services:
 
 ```bash
 # Initialize and setup Immich
-bash init immich
-
-# Or setup multiple services at once
-bash init immich nextcloud
+./init immich
 ```
 
 The init script will:
@@ -65,49 +59,8 @@ Update required variables like:
 Use the control script to manage services:
 
 ```bash
-# Start a service
-bash ctl.sh up immich
-
-# View logs
-bash ctl.sh logs immich
-
-# Stop a service
-bash ctl.sh down immich
-
-# View service status
-bash ctl.sh status
-
-# Restart a service
-bash ctl.sh restart immich
-```
-
-## Service Control (ctl.sh)
-
-Quick reference for managing services:
-
-```bash
-# Available commands:
-bash ctl.sh up <service>        # Start service (docker compose up -d)
-bash ctl.sh down <service>      # Stop service (docker compose down)
-bash ctl.sh restart <service>   # Restart service
-bash ctl.sh logs <service>      # Follow service logs
-bash ctl.sh ps <service>        # Show containers
-bash ctl.sh status              # Show all service status
-bash ctl.sh list                # List available services
-bash ctl.sh shell <service>     # Open shell in service directory
-```
-
-### Examples:
-
-```bash
-# View last 100 lines of logs for Immich
-bash ctl.sh logs immich -n 100
-
-# Stop all containers in Immich without removing volumes
-bash ctl.sh down immich
-
-# Open shell in Immich directory
-bash ctl.sh shell immich
+# Start Immich
+./ctl immich up
 ```
 
 ## Adding a New Service
@@ -139,24 +92,17 @@ set -e
 ```
 
 **Key requirements:**
+
 - Must be idempotent (safe to run multiple times)
-- Should not run as root
-- Should check for Docker availability
 - Should create/validate `.env` from `example.env`
 
 ### 4. Create Example Configuration
 
 Create `example.env` with all required variables and documentation.
 
-### 5. Register Service
-
-Just having a `services/myservice/bootstrap.sh` and `docker-compose.yml` is enough. It will automatically appear in:
-- `bash init` (bootstrap)
-- `bash ctl.sh list` (service listing)
-
 ## Idempotency
 
-All setup scripts are designed to be **idempotent** - they can safely be run multiple times without side effects:
+All bootstrapping scripts are designed to be **idempotent** - they can safely be run multiple times without side effects:
 
 - Creating files: Only create if they don't exist
 - Installing packages: Check if already installed
@@ -164,16 +110,18 @@ All setup scripts are designed to be **idempotent** - they can safely be run mul
 - Modifying configs: Only modify if needed
 
 This means you can:
+
 ```bash
 # Safe to run multiple times
-bash init immich
-bash init immich
-bash init immich
+./init immich
+./init immich
+./init immich
 ```
 
 ## Configuration Management
 
 Each service has:
+
 - **example.env**: Template with all available options and documentation
 - **.env**: Actual configuration (created from example.env, not in git)
 
@@ -184,83 +132,28 @@ To update service configuration:
 nano services/immich/.env
 
 # Restart the service to apply changes
-bash ctl.sh restart immich
+./ctl immich restart
 ```
 
-## Storage Locations
+## Storage & Backup with Git Annex
 
-Services use relative paths for data storage by default:
-- **Immich photos**: `./immich-data`
-- **Immich database**: `./immich-db`
+Service data files are managed with git annex, and _not_ checked in:
 
-These are relative to the service directory (`services/immich/`). To use absolute paths, edit the `.env` file.
+- **Immich library**: `services/immich/library/`
+- **Immich database**: `services/immich/postgres/`
+- **Immich config**: `services/immich/.env`
 
 ## Troubleshooting
 
 ### Service won't start
-```bash
-# Check service logs
-bash ctl.sh logs immich
 
-# Check Docker status
-docker ps -a
+```bash
+# Check status of all services
+./ctl all status
+
+# Check service logs
+./ctl immich logs
 
 # Verify configuration
 cat services/immich/.env
 ```
-
-### Permission denied errors
-```bash
-# Docker requires group permissions
-# Log out and back in, or run:
-newgrp docker
-```
-
-### Port conflicts
-If ports are already in use, edit `docker-compose.yml` to use different ports:
-```yaml
-ports:
-  - '2283:2283'  # Change first number to new port
-```
-
-## Monitoring
-
-Monitor all services:
-
-```bash
-# See all running containers
-bash ctl.sh status
-
-# Watch logs in real-time
-bash ctl.sh logs immich
-
-# Check specific container
-docker ps | grep immich
-docker logs immich_server
-```
-
-## Backup & Recovery
-
-Each service manages its own data:
-
-```bash
-# Backup Immich data
-tar czf immich-backup.tar.gz services/immich/immich-data services/immich/immich-db
-
-# Restore
-tar xzf immich-backup.tar.gz
-```
-
-## Contributing New Services
-
-To add a new service:
-
-1. Create the service directory
-2. Add `docker-compose.yml`
-3. Add `example.env` with all configuration options
-4. Add `bootstrap.sh` (must be idempotent)
-5. Test thoroughly
-
-## License
-
-MIT

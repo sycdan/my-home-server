@@ -1,5 +1,3 @@
-# Common constants and utilities used by multiple scripts
-
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'

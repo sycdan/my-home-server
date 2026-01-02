@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Home Server Controller - Main Setup Script
-# This script bootstraps Docker and sets up selected services
-
 set -e
 
 # Source common utilities

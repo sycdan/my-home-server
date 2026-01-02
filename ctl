@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Utility script to manage individual services
-
 set -e
 
 # Source common utilities
