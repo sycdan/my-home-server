@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# This script sets up all prerequisites and configurations for running the following software on Ubuntu
-# - Immich
+# Home Server Controller - Main Setup Script
+# This script bootstraps Docker and sets up selected services
 
-set -e  # Exit on any error
+set -e
 
 # Colors for output
 RED='\033[0;31m'
@@ -35,7 +35,7 @@ check_root() {
 	fi
 }
 
-check_ubuntu() {
+check_os() {
 	if [[ ! -f /etc/os-release ]]; then
 		print_error "Cannot determine OS version"
 		exit 1
@@ -49,13 +49,6 @@ check_ubuntu() {
 	fi
 }
 
-is_wsl() {
-	if grep -qi microsoft /proc/version; then
-		return 0
-	fi
-	return 1
-}
-
 install_docker() {
 	if command -v docker &> /dev/null; then
 		print_success "Docker is already installed"
@@ -65,7 +58,8 @@ install_docker() {
 	print_status "Installing Docker..."
 	
 	# Install prerequisites
-	sudo apt install -y \
+	sudo apt-get update
+	sudo apt-get install -y \
 		apt-transport-https \
 		ca-certificates \
 		curl \
@@ -80,9 +74,9 @@ install_docker() {
 		"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
 		$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 	
-	# Install Docker Engine
-	sudo apt update
-	sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+	# Install Docker Engine and Compose
+	sudo apt-get update
+	sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 	
 	# Add current user to docker group
 	sudo usermod -aG docker $USER
@@ -91,229 +85,74 @@ install_docker() {
 	print_warning "You may need to log out and back in for Docker group permissions to take effect"
 }
 
-install_docker_compose() {
-	if command -v docker-compose &> /dev/null; then
-		print_success "Docker Compose is already installed"
-		return
+list_available_services() {
+	echo "Available services:"
+	for service_dir in services/*/; do
+		service_name=$(basename "$service_dir")
+		if [[ -f "$service_dir/setup.sh" ]]; then
+			echo "  - $service_name"
+		fi
+	done
+}
+
+setup_service() {
+	local service=$1
+	local service_dir="services/$service"
+	
+	if [[ ! -d "$service_dir" ]]; then
+		print_error "Service directory not found: $service_dir"
+		return 1
 	fi
 	
-	print_status "Installing Docker Compose..."
-	
-	# Get latest version
-	DOCKER_COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep 'tag_name' | cut -d\" -f4)
-	
-	# Download and install
-	sudo curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-	sudo chmod +x /usr/local/bin/docker-compose
-	
-	print_success "Docker Compose installed successfully"
-}
-
-configure_firewall() {
-	if is_wsl; then
-		print_warning "Running in WSL - skipping UFW firewall (use Windows Firewall instead)"
-		return
+	if [[ ! -f "$service_dir/setup.sh" ]]; then
+		print_error "Setup script not found: $service_dir/setup.sh"
+		return 1
 	fi
 	
-	print_status "Configuring UFW firewall..."
+	print_status "Setting up service: $service"
 	
-	# Enable UFW
-	sudo ufw --force enable
+	# Run the service setup script (idempotent)
+	bash "$service_dir/setup.sh"
 	
-	# Allow SSH (important!)
-	sudo ufw allow ssh
-	
-	# Allow Immich port
-	sudo ufw allow 2283/tcp
-	
-	# Allow HTTP and HTTPS (for reverse proxy)
-	sudo ufw allow 80/tcp
-	sudo ufw allow 443/tcp
-	
-	print_success "Firewall configured"
-	sudo ufw status
-}
-
-configure_fail2ban() {
-	if is_wsl; then
-		print_warning "Running in WSL - skipping fail2ban (systemd may not be available)"
-		return
-	fi
-	
-	print_status "Configuring fail2ban..."
-	
-	sudo systemctl enable fail2ban
-	sudo systemctl start fail2ban
-	
-	print_success "fail2ban configured and started"
-}
-
-setup_immich_directories() {
-	print_status "Setting up Immich directories..."
-	
-	# Create main directory
-	mkdir -p ~/immich-server
-	cd ~/immich-server
-	
-	# Create upload directory
-	mkdir -p ./library
-	
-	# Set proper permissions
-	chmod 755 ./library
-	
-	print_success "Immich directories created"
-}
-
-configure_immich() {
-	print_status "Configuring Immich environment..."
-	
-	cd ~/immich-server
-	
-	# Generate random password for database
-	DB_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-32)
-	
-	# Update .env file with generated password
-	sed -i "s/DB_PASSWORD=postgres/DB_PASSWORD=${DB_PASSWORD}/" .env
-	
-	# Set upload location
-	sed -i "s|UPLOAD_LOCATION=./library|UPLOAD_LOCATION=$(pwd)/library|" .env
-	
-	print_success "Immich environment configured"
-	print_status "Database password generated and configured"
-}
-
-create_systemd_service() {
-	print_status "Creating systemd service for Immich..."
-	
-	sudo tee /etc/systemd/system/immich.service > /dev/null <<EOF
-[Unit]
-Description=Immich Media Server
-Requires=docker.service
-After=docker.service
-
-[Service]
-Type=oneshot
-RemainAfterExit=true
-WorkingDirectory=$HOME/immich-server
-ExecStart=/usr/local/bin/docker-compose up -d
-ExecStop=/usr/local/bin/docker-compose down
-User=$USER
-Group=$USER
-
-[Install]
-WantedBy=multi-user.target
-EOF
-	
-	sudo systemctl daemon-reload
-	sudo systemctl enable immich
-	
-	print_success "Systemd service created and enabled"
-}
-
-start_immich() {
-	print_status "Starting Immich..."
-	
-	cd ~/immich-server
-	docker-compose up -d
-	
-	print_success "Immich started successfully"
-}
-
-do_checks() {
-	print_status "Performing system checks..."
-	check_root
-	check_ubuntu
-	print_success "System checks passed"
-}
-
-do_updates() {
-	print_status "Updating system..."
-	sudo apt update
-	sudo apt upgrade -y
-	sudo apt full-upgrade -y
-	sudo apt autoremove -y
-	print_success "System updated"
-}
-
-install_utilities() {
-	print_status "Installing utilities..."
-	sudo apt install -y \
-		curl \
-		wget \
-		git \
-		nano \
-		htop \
-		ufw \
-		fail2ban \
-		unzip \
-		tree
-	print_success "Utilities installed"
-}
-
-do_immich() {
-	print_status "Settings up Immich..."
-	
-	setup_immich_directories
-	configure_immich
-	# create_systemd_service
-	start_immich
-	
-	display_final_info
-}
-
-display_final_info() {
-	local wsl_ip
-	if is_wsl; then
-		wsl_ip=$(hostname -I 2>/dev/null | awk '{print $1}' || echo "localhost")
-	else
-		wsl_ip=$(hostname -I | awk '{print $1}')
-	fi
-	
-	echo
-	echo "=========================================="
-	echo "  🎉 Immich Setup Complete!"
-	echo "=========================================="
-	echo
-	print_success "Immich is running on: http://${wsl_ip}:2283"
-	echo
-	echo "📁 Immich directory: ~/immich-server"
-	echo "📸 Upload directory: ~/immich-server/library"
-	echo
-	echo "🔧 Management commands:"
-	echo "  • Start: docker-compose up -d"
-	echo "  • Stop: docker-compose down"
-	echo "  • Logs: docker-compose logs -f"
-	echo "  • Update: docker-compose pull && docker-compose up -d"
-	echo
-	if ! is_wsl; then
-		echo "🔥 Firewall ports opened:"
-		echo "  • SSH (22)"
-		echo "  • Immich (2283)"
-		echo "  • HTTP (80) and HTTPS (443) for reverse proxy"
-		echo
-	fi
-	echo "📖 Next steps:"
-	echo "  1. Open http://${wsl_ip}:2283 in your browser"
-	echo "  2. Create your admin account"
-	echo "  3. Configure mobile apps with server URL"
-	echo "  4. Consider setting up a reverse proxy with SSL (Nginx/Caddy)"
-	echo
-	print_warning "Remember to backup your ~/immich-server directory regularly!"
+	print_success "$service setup completed"
 }
 
 main() {
-	echo "=========================================="
-	echo "🏠 Home Server Setup Script"
-	echo "=========================================="
-	echo
-	do_checks
-	do_updates
-	install_utilities
+	print_status "Home Server Controller - Initialization"
+	echo ""
+	
+	check_root
+	check_os
+	
+	# Bootstrap Docker
+	print_status "Bootstrapping Docker..."
 	install_docker
-	install_docker_compose
-	configure_firewall
-	configure_fail2ban
-	do_immich
+	print_success "Docker bootstrap complete"
+	echo ""
+	
+	# List available services
+	list_available_services
+	echo ""
+	
+	# Setup services
+	if [[ $# -eq 0 ]]; then
+		print_warning "No services specified. Available services:"
+		list_available_services
+		echo ""
+		echo "Usage: $0 <service1> [service2] [service3] ..."
+		echo "Example: $0 immich"
+		echo ""
+		print_status "You can run service setup later with: bash services/<service>/setup.sh"
+		exit 0
+	fi
+	
+	for service in "$@"; do
+		setup_service "$service" || print_warning "Failed to setup $service"
+		echo ""
+	done
+	
+	print_success "All requested services have been initialized!"
+	print_status "Start services with: docker-compose -f services/<service>/docker-compose.yml up -d"
 }
 
 main "$@"
