@@ -145,6 +145,15 @@ Service data files are managed with git annex, and _not_ checked in:
 
 ## Troubleshooting
 
+### Can't run scripts
+
+```bash
+$ ./init
+-bash: ./init: Permission denied
+
+chmod +x ./init
+```
+
 ### Service won't start
 
 ```bash
