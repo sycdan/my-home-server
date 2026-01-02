@@ -49,6 +49,13 @@ check_ubuntu() {
 	fi
 }
 
+is_wsl() {
+	if grep -qi microsoft /proc/version; then
+		return 0
+	fi
+	return 1
+}
+
 install_docker() {
 	if command -v docker &> /dev/null; then
 		print_success "Docker is already installed"
@@ -103,6 +110,11 @@ install_docker_compose() {
 }
 
 configure_firewall() {
+	if is_wsl; then
+		print_warning "Running in WSL - skipping UFW firewall (use Windows Firewall instead)"
+		return
+	fi
+	
 	print_status "Configuring UFW firewall..."
 	
 	# Enable UFW
@@ -123,6 +135,11 @@ configure_firewall() {
 }
 
 configure_fail2ban() {
+	if is_wsl; then
+		print_warning "Running in WSL - skipping fail2ban (systemd may not be available)"
+		return
+	fi
+	
 	print_status "Configuring fail2ban..."
 	
 	sudo systemctl enable fail2ban
@@ -147,7 +164,6 @@ setup_immich_directories() {
 	print_success "Immich directories created"
 }
 
-# Function to configure Immich environment
 configure_immich() {
 	print_status "Configuring Immich environment..."
 	
@@ -166,7 +182,6 @@ configure_immich() {
 	print_status "Database password generated and configured"
 }
 
-# Function to create systemd service (optional)
 create_systemd_service() {
 	print_status "Creating systemd service for Immich..."
 	
@@ -240,19 +255,26 @@ do_immich() {
 	
 	setup_immich_directories
 	configure_immich
-	create_systemd_service
+	# create_systemd_service
 	start_immich
 	
 	display_final_info
 }
 
 display_final_info() {
+	local wsl_ip
+	if is_wsl; then
+		wsl_ip=$(hostname -I 2>/dev/null | awk '{print $1}' || echo "localhost")
+	else
+		wsl_ip=$(hostname -I | awk '{print $1}')
+	fi
+	
 	echo
 	echo "=========================================="
 	echo "  🎉 Immich Setup Complete!"
 	echo "=========================================="
 	echo
-	print_success "Immich is running on: http://$(hostname -I | awk '{print $1}'):2283"
+	print_success "Immich is running on: http://${wsl_ip}:2283"
 	echo
 	echo "📁 Immich directory: ~/immich-server"
 	echo "📸 Upload directory: ~/immich-server/library"
@@ -263,13 +285,15 @@ display_final_info() {
 	echo "  • Logs: docker-compose logs -f"
 	echo "  • Update: docker-compose pull && docker-compose up -d"
 	echo
-	echo "🔥 Firewall ports opened:"
-	echo "  • SSH (22)"
-	echo "  • Immich (2283)"
-	echo "  • HTTP (80) and HTTPS (443) for reverse proxy"
-	echo
+	if ! is_wsl; then
+		echo "🔥 Firewall ports opened:"
+		echo "  • SSH (22)"
+		echo "  • Immich (2283)"
+		echo "  • HTTP (80) and HTTPS (443) for reverse proxy"
+		echo
+	fi
 	echo "📖 Next steps:"
-	echo "  1. Open http://$(hostname -I | awk '{print $1}'):2283 in your browser"
+	echo "  1. Open http://${wsl_ip}:2283 in your browser"
 	echo "  2. Create your admin account"
 	echo "  3. Configure mobile apps with server URL"
 	echo "  4. Consider setting up a reverse proxy with SSL (Nginx/Caddy)"
