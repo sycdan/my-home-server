@@ -145,13 +145,7 @@ install_docker() {
 }
 
 list_available_services() {
-	echo "Available services:"
-	for service_dir in services/*/; do
-		service_name=$(basename "$service_dir")
-		if [[ -f "$service_dir/bootstrap.sh" ]]; then
-			echo "  - $service_name"
-		fi
-	done
+	./ctl list
 }
 
 setup_service() {

@@ -29,20 +29,23 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 show_usage() {
 	echo "Usage: $0 <command> [service] [options]"
 	echo ""
-	echo "Commands:"
-	echo "  up <service>      Start a service (docker compose up -d)"
-	echo "  down <service>    Stop a service (docker compose down)"
-	echo "  restart <service> Restart a service"
-	echo "  logs <service>    View service logs (follow mode)"
-	echo "  ps <service>      Show service containers status"
-	echo "  shell <service>   Open shell in service directory"
-	echo "  status            Show status of all services"
-	echo "  list              List all available services"
+	echo "Global Commands:"
+	echo "  status                      Show status of all services"
+	echo "  list                        List all available services"
+	echo ""
+	echo "Service Commands:"
+	echo "  up <service> [options]      Start a service (docker compose up -d)"
+	echo "  down <service> [options]    Stop a service (docker compose down)"
+	echo "  restart <service> [options] Restart a service"
+	echo "  logs <service> [options]    View service logs (follow mode)"
+	echo "  ps <service>                Show service containers status"
+	echo "  shell <service>             Open shell in service directory"
 	echo ""
 	echo "Example:"
 	echo "  $0 up immich"
 	echo "  $0 logs immich -n 100"
 	echo "  $0 down immich"
+	echo "  $0 status"
 }
 
 list_services() {
@@ -71,7 +74,7 @@ validate_service() {
 	
 	if [[ ! -f "$service_dir/.env" ]]; then
 		print_error ".env file not found in $service_dir"
-		print_status "Run 'bash services/$service/setup.sh' to initialize the service"
+		print_status "Run 'bash init $service' to initialize the service"
 		return 1
 	fi
 	
@@ -81,52 +84,48 @@ validate_service() {
 service_up() {
 	local service=$1
 	shift
-	local opts="$@"
 	
 	validate_service "$service" || return 1
 	
 	print_status "Starting $service..."
 	cd "$SCRIPT_DIR/services/$service"
-	docker compose up -d $opts
+	docker compose up -d "$@"
 	print_success "$service is running"
 }
 
 service_down() {
 	local service=$1
 	shift
-	local opts="$@"
 	
 	validate_service "$service" || return 1
 	
 	print_status "Stopping $service..."
 	cd "$SCRIPT_DIR/services/$service"
-	docker compose down $opts
+	docker compose down "$@"
 	print_success "$service stopped"
 }
 
 service_restart() {
 	local service=$1
 	shift
-	local opts="$@"
 	
 	validate_service "$service" || return 1
 	
 	print_status "Restarting $service..."
 	cd "$SCRIPT_DIR/services/$service"
-	docker compose restart $opts
+	docker compose restart "$@"
 	print_success "$service restarted"
 }
 
 service_logs() {
 	local service=$1
 	shift
-	local opts="$@"
 	
 	validate_service "$service" || return 1
 	
 	print_status "Showing logs for $service..."
 	cd "$SCRIPT_DIR/services/$service"
-	docker compose logs -f $opts
+	docker compose logs -f "$@"
 }
 
 service_ps() {
@@ -135,18 +134,17 @@ service_ps() {
 	validate_service "$service" || return 1
 	
 	cd "$SCRIPT_DIR/services/$service"
-	docker compose ps "$@"
+	docker compose ps
 }
 
 service_status() {
-	print_status "Service Status:"
 	for service_dir in "$SCRIPT_DIR/services"/*/; do
 		service_name=$(basename "$service_dir")
 		if [[ -f "$service_dir/docker-compose.yml" && -f "$service_dir/.env" ]]; then
-			echo ""
-			echo "Service: $service_name"
+			print_status "Service status for $service_name:"
 			cd "$service_dir"
 			docker compose ps
+			echo ""
 		fi
 	done
 }
@@ -175,29 +173,30 @@ main() {
 	shift
 	
 	case "$command" in
-		up)
-			service_up "$@"
-			;;
-		down)
-			service_down "$@"
-			;;
-		restart)
-			service_restart "$@"
-			;;
-		logs)
-			service_logs "$@"
-			;;
-		ps)
-			service_ps "$@"
+		up|down|restart|logs|ps|shell)
+			# Service-specific commands require a service argument
+			if [[ $# -lt 1 ]]; then
+				print_error "Service required for command '$command'"
+				show_usage
+				exit 1
+			fi
+			
+			local service=$1
+			shift
+			
+			if [[ ! -d "$SCRIPT_DIR/services/$service" ]]; then
+				print_error "Unknown service: $service"
+				list_services
+				exit 1
+			fi
+			
+			service_$command "$service" "$@"
 			;;
 		status)
 			service_status
 			;;
 		list)
 			list_services
-			;;
-		shell)
-			service_shell "$@"
 			;;
 		help|--help|-h)
 			show_usage
