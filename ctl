@@ -15,7 +15,6 @@ declare -a SERVICE_COMMANDS=(
 	"restart [options]|Restart the service"
 	"logs [options]|View service logs (follow mode)"
 	"ps|Show service containers status"
-	"shell|Open shell in service directory"
 )
 
 # Global commands with descriptions
@@ -160,20 +159,6 @@ service_status() {
 	done
 }
 
-service_shell() {
-	local service=$1
-	local service_dir="$ROOT_DIR/services/$service"
-	
-	if [[ ! -d "$service_dir" ]]; then
-		print_error "Service directory not found: $service_dir"
-		return 1
-	fi
-	
-	print_status "Opening shell in $service_dir..."
-	cd "$service_dir"
-	bash
-}
-
 main() {
 	if [[ $# -lt 1 ]]; then
 		show_usage
@@ -224,10 +209,6 @@ main() {
 		case "$command" in
 			up|down|restart|logs|ps)
 				run_compose "$service" "$command" "$@"
-				;;
-			shell)
-				cd "$ROOT_DIR/services/$service"
-				bash
 				;;
 			*)
 				print_error "Unknown command: $command"
