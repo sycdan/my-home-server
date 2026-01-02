@@ -10,22 +10,6 @@ ROOT_DIR="$( cd "$SERVICE_DIR/../../" && pwd )"
 # Source common utilities
 source "$ROOT_DIR/lib/common.sh"
 
-check_docker() {
-	if ! command -v docker &> /dev/null; then
-		print_error "Docker is not installed. Please run the main init script first."
-		exit 1
-	fi
-	print_success "Docker is installed"
-}
-
-check_docker_compose() {
-	if ! docker compose version &> /dev/null; then
-		print_error "Docker Compose is not installed. Please run the main init script first."
-		exit 1
-	fi
-	print_success "Docker Compose is available"
-}
-
 create_env_file() {
 	if [[ -f "$SERVICE_DIR/.env" ]]; then
 		print_status ".env file already exists, skipping creation"
@@ -101,9 +85,6 @@ validate_env() {
 main() {
 	print_status "Immich Service Bootstrap"
 	echo ""
-	
-	check_docker
-	check_docker_compose
 	
 	create_directories
 	create_env_file
