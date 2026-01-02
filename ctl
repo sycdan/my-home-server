@@ -15,6 +15,7 @@ declare -a SERVICE_COMMANDS=(
 	"restart [options]|Restart the service"
 	"logs [options]|View service logs (follow mode)"
 	"ps|Show service containers status"
+	"shell|Open shell in service directory"
 )
 
 # Global commands with descriptions
@@ -209,6 +210,10 @@ main() {
 		case "$command" in
 			up|down|restart|logs|ps)
 				run_compose "$service" "$command" "$@"
+				;;
+			shell)
+				cd "$ROOT_DIR/services/$service"
+				bash
 				;;
 			*)
 				print_error "Unknown command: $command"
