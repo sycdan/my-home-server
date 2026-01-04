@@ -85,51 +85,31 @@ The script will:
 2. Create server blocks for each external domain  
 3. Reload nginx
 
-## Step 4: Customizing External Domains
-
-If you want to add more external domains that should resolve to the reverse proxy on the internal network, edit the discovery script to add them to the split DNS section:
-
-Edit [discovery.rsc](devices/mikrotek-hex/scripts/discovery.rsc) and update the `externalDomains` list:
-
-```routeros
-:local externalDomains {
-  "photos.sycdan.com"
-  "stream.sycdan.com"
-  "newdomain.example.com"
-}
-```
-
-Then redeploy the script:
-
-```bash
-devices/mikrotek-hex/deploy-script \
-  devices/mikrotek-hex/scripts/discovery.rsc \
-  --ssh-host router \
-  --run
-```
-
-### Verification
+## Verification
 
 **Test RouterOS DNS:**
 
-```bash
-# From any machine on the LAN
-nslookup immich.lan 192.168.1.1
-nslookup ingress.lan 192.168.1.1
+From any machine on the LAN:
 
-# If nslookup not available:
-getent hosts ingress.lan
+```bash
+nslookup ingress.lan || getent hosts ingress.lan 
 ```
+
+This should display the reverse-proxy IP.
 
 **Test nginx resolution:**
 
-```bash
-# SSH to reverse proxy
-ssh pi@ingress.lan
+From your local machine, verify the reverse proxy can resolve `.lan` hostnames:
 
-# Test DNS resolution
-nslookup immich.lan
-nslookup jellyfin.lan
+```bash
+# On Windows
+nslookup immich.lan 192.168.1.1
+nslookup jellyfin.lan 192.168.1.1
+
+# Or from the Pi itself
+ssh pi@ingress.lan
+ping immich.lan
+ping jellyfin.lan
 ```
 
 **Test reverse proxy routing:**
@@ -138,8 +118,8 @@ nslookup jellyfin.lan
 # From LAN client
 curl -H "Host: photos.sycdan.com" http://ingress.lan
 
-# From WAN (if configured with real domain)
-curl https://photos.sycdan.com
+# From WAN (if you can connect to a VPN)
+curl http://photos.sycdan.com
 ```
 
 **Verify NAT rules are configured:**
@@ -152,6 +132,7 @@ ssh router -x '/ip firewall nat print where comment~"[MHS]"'
 ### Troubleshooting
 
 **DNS lookup fails:**
+
 ```bash
 # Check if DNS is enabled
 ssh router -x ':put [/ip dns get allow-remote-requests]'
@@ -161,6 +142,7 @@ ssh router -x '/ip dns cache print'
 ```
 
 **Reverse proxy IP not updating or NAT rules outdated:**
+
 ```bash
 # Check if discovery script ran recently
 ssh router -x '/system script job print'
@@ -176,6 +158,7 @@ ssh router -x '/ip firewall nat print where comment~"[MHS]"'
 ```
 
 **nginx can't resolve .lan hostnames:**
+
 ```bash
 # Check nginx resolver config (should use router as upstream)
 # On Raspberry Pi, check /etc/nginx/sites-available/reverse-proxy
@@ -187,4 +170,3 @@ ping jellyfin.lan
 # Test nginx config
 sudo nginx -t
 ```
-
