@@ -62,6 +62,48 @@ def run_ssh_command(host, command):
     return "", -1
 
 
+def setup_schedule(host, script_name, schedule_spec):
+  """Set up a scheduler entry to run the script on a schedule"""
+  # Validate format: hh:mm:ss
+  parts = schedule_spec.split(":")
+  if len(parts) != 3:
+    print_error(
+      f"Invalid schedule format: '{schedule_spec}'. Expected hh:mm:ss (e.g., '00:01:00')"
+    )
+    return False
+
+  try:
+    hours = int(parts[0])
+    minutes = int(parts[1])
+    seconds = int(parts[2])
+    if not (0 <= hours <= 23 and 0 <= minutes <= 59 and 0 <= seconds <= 59):
+      raise ValueError()
+  except (ValueError, IndexError):
+    print_error(
+      f"Invalid schedule format: '{schedule_spec}'. Hours must be 0-23, minutes 0-59, seconds 0-59"
+    )
+    return False
+
+  schedule_name = f"{script_name}_schedule"
+
+  # Check if schedule already exists
+  output, _ = run_ssh_command(
+    host, f'/system scheduler print where name="{schedule_name}"'
+  )
+
+  # Remove existing schedule if it exists
+  if output and "name=" in output:
+    run_ssh_command(host, f'/system scheduler remove [find name="{schedule_name}"]')
+
+  # Add new schedule
+  run_ssh_command(
+    host,
+    f'/system scheduler add name="{schedule_name}" on-event="/system script run \\"{script_name}\\"" interval="{schedule_spec}"',
+  )
+
+  return True
+
+
 def show_diff(remote, local):
   """Show diff between remote and local content"""
   try:
@@ -74,7 +116,7 @@ def show_diff(remote, local):
     pass
 
 
-def main():
+def main(argv=None):
   parser = argparse.ArgumentParser(
     description="Deploy RouterOS scripts via SSH",
     formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -102,33 +144,32 @@ def main():
     action="store_true",
     help="Enable debug output",
   )
+  parser.add_argument(
+    "--schedule",
+    metavar="INTERVAL",
+    help="Set up a schedule to run the script (format: hh:mm:ss, e.g.: '00:01:00' for 1 minute)",
+  )
 
-  args = parser.parse_args()
+  args = parser.parse_args(argv)
 
   # Support both --debug flag and DEBUG environment variable
   debug = args.debug or os.environ.get("DEBUG", "0") == "1"
 
-  local_script_path = args.local_script_path
+  local_script = Path(args.local_script_path)
   script_name = args.remote_script_name
   ssh_host = args.ssh_host
   run_script = args.run
+  schedule = args.schedule
 
-  # Check if local script exists
-  if not Path(local_script_path).is_file():
-    print_error(f"Local script not found: {local_script_path}")
+  if not local_script.is_file():
+    print_error(f"Local script not found: {local_script.name}")
     sys.exit(1)
 
-  # Read local script
-  print_status(f"Reading local script from {local_script_path}")
-  with open(local_script_path, "r") as f:
-    script_content = f.read()
-
-  # Escape for RouterOS
+  print_status(f"Reading local script from {local_script.name}")
+  script_content = local_script.read_text()
   escaped_content = escape_routeros_string(script_content)
 
-  # Check if script exists on router
   print_status(f"Checking if script '{script_name}' exists on router...")
-
   remote_output, returncode = run_ssh_command(
     ssh_host, f'/system script print where name="{script_name}"'
   )
@@ -187,6 +228,17 @@ def main():
 
   if local_normalized == remote_normalized:
     print_success(f"Script '{script_name}' is already up to date")
+
+    # Set up schedule if requested
+    if schedule:
+      print_status(
+        f"Setting up schedule for script '{script_name}' with interval '{schedule}'..."
+      )
+      if setup_schedule(ssh_host, script_name, schedule):
+        print_success(f"Schedule '{script_name}_schedule' created successfully")
+      else:
+        sys.exit(1)
+
     # If --run flag is set, run the script even if already up to date
     if run_script:
       print_status(f"Running script '{script_name}' on {ssh_host}...")
@@ -228,6 +280,16 @@ def main():
     ssh_host, f'/system script add name="{script_name}" source="{escaped_content}"'
   )
   print_success(f"Script '{script_name}' updated successfully")
+
+  # Set up schedule if requested
+  if schedule:
+    print_status(
+      f"Setting up schedule for script '{script_name}' with interval '{schedule}'..."
+    )
+    if setup_schedule(ssh_host, script_name, schedule):
+      print_success(f"Schedule '{script_name}_schedule' created successfully")
+    else:
+      sys.exit(1)
 
   # Run the script if --run flag was provided
   if run_script:
