@@ -1,0 +1,242 @@
+#!/usr/bin/env python
+
+import argparse
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+# Colors for output
+RED = "\033[0;31m"
+GREEN = "\033[0;32m"
+YELLOW = "\033[1;33m"
+BLUE = "\033[0;34m"
+NC = "\033[0m"  # No Color
+
+
+def print_status(msg):
+  """Print status message in blue"""
+  print(f"{BLUE}► {NC} {msg}")
+
+
+def print_success(msg):
+  """Print success message in green"""
+  print(f"{GREEN}✓ {NC} {msg}")
+
+
+def print_warning(msg):
+  """Print warning message in yellow to stderr"""
+  print(f"{YELLOW}⚠ {NC} {msg}", file=sys.stderr)
+
+
+def print_error(msg):
+  """Print error message in red to stderr"""
+  print(f"{RED}✗ {NC} {msg}", file=sys.stderr)
+
+
+def escape_routeros_string(content):
+  r"""
+    Escape content for RouterOS script.
+    RouterOS needs:
+    1. Backslashes -> \\
+    2. Quotes -> \"
+    3. Dollar signs -> \$
+    4. Newlines -> literal \n sequence
+    """
+  # Order matters: backslashes first, then other escapes
+  content = content.replace("\\", "\\\\")
+  content = content.replace('"', '\\"')
+  content = content.replace("$", "\\$")
+  content = content.replace("\n", "\\n")
+  return content
+
+
+def run_ssh_command(host, command):
+  """Run SSH command and return output"""
+  try:
+    result = subprocess.run(
+      ["ssh", host, "-x", command], capture_output=True, text=True, check=False
+    )
+    return result.stdout, result.returncode
+  except Exception as e:
+    return "", -1
+
+
+def show_diff(remote, local):
+  """Show diff between remote and local content"""
+  try:
+    result = subprocess.run(
+      ["diff", "-u", "-"], input=remote, capture_output=True, text=True
+    )
+    # diff returns non-zero when files differ, which is expected
+    # We just want the output
+  except Exception:
+    pass
+
+
+def main():
+  parser = argparse.ArgumentParser(
+    description="Deploy RouterOS scripts via SSH",
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+  )
+  parser.add_argument(
+    "local_script_path",
+    help="Path to the script file to deploy",
+  )
+  parser.add_argument(
+    "remote_script_name",
+    help="Name of the script on the router",
+  )
+  parser.add_argument(
+    "--ssh-host",
+    default="router",
+    help="SSH host to connect to (default: router)",
+  )
+  parser.add_argument(
+    "--run",
+    action="store_true",
+    help="Run the script immediately after deployment (even if it didn't change)",
+  )
+  parser.add_argument(
+    "--debug",
+    action="store_true",
+    help="Enable debug output",
+  )
+
+  args = parser.parse_args()
+
+  # Support both --debug flag and DEBUG environment variable
+  debug = args.debug or os.environ.get("DEBUG", "0") == "1"
+
+  local_script_path = args.local_script_path
+  script_name = args.remote_script_name
+  ssh_host = args.ssh_host
+  run_script = args.run
+
+  # Check if local script exists
+  if not Path(local_script_path).is_file():
+    print_error(f"Local script not found: {local_script_path}")
+    sys.exit(1)
+
+  # Read local script
+  print_status(f"Reading local script from {local_script_path}")
+  with open(local_script_path, "r") as f:
+    script_content = f.read()
+
+  # Escape for RouterOS
+  escaped_content = escape_routeros_string(script_content)
+
+  # Check if script exists on router
+  print_status(f"Checking if script '{script_name}' exists on router...")
+
+  remote_output, returncode = run_ssh_command(
+    ssh_host, f'/system script print where name="{script_name}"'
+  )
+
+  if debug:
+    print_status("Remote script output:")
+    print(remote_output)
+
+  # Bail if remote output is empty (command failed)
+  if not remote_output:
+    print_error(f"Failed to connect to router or execute command on {ssh_host}")
+    sys.exit(1)
+
+  # Extract the source field from RouterOS output
+  # The source starts after "source=" and continues for all subsequent indented lines
+  lines = remote_output.split("\n")
+  remote_source = ""
+  found_source = False
+  source_lines = []
+
+  for i, line in enumerate(lines):
+    if "source=" in line and not found_source:
+      found_source = True
+      # Extract everything after "source=" on this line
+      idx = line.index("source=")
+      source_content = line[idx + len("source=") :].strip()
+      if source_content:  # If there's content on the same line
+        source_lines.append(source_content)
+      # Continue to next lines which are indented and part of the source
+      continue
+
+    if found_source:
+      # Lines that are part of the source are indented (start with spaces)
+      if line and line[0] in (" ", "\t"):
+        source_lines.append(line.strip())
+      elif line.strip() == "":
+        # Empty lines might be part of the source
+        source_lines.append("")
+      else:
+        # Non-indented line means we've reached the end of the source
+        break
+
+  remote_source = "\n".join(source_lines)
+
+  if debug:
+    print_status("Remote script source:")
+    print(repr(remote_source))
+
+  # Compare the escaped content (what we're sending) with what's on the router
+  # Normalize by removing all per-line indentation before comparison
+  local_lines = script_content.strip().split("\n")
+  remote_lines = remote_source.strip().split("\n")
+
+  local_normalized = "\n".join(line.lstrip() for line in local_lines)
+  remote_normalized = "\n".join(line.lstrip() for line in remote_lines)
+
+  if local_normalized == remote_normalized:
+    print_success(f"Script '{script_name}' is already up to date")
+    # If --run flag is set, run the script even if already up to date
+    if run_script:
+      print_status(f"Running script '{script_name}' on {ssh_host}...")
+      output, _ = run_ssh_command(ssh_host, f'/system script run "{script_name}"')
+      if output:
+        print(output)
+      print_success(f"Script '{script_name}' executed successfully")
+    sys.exit(0)
+
+  print_warning(f"Script '{script_name}' needs to be updated")
+  if debug:
+    print_status("Showing diff (- = remote, + = local):")
+    try:
+      import tempfile
+
+      with tempfile.NamedTemporaryFile(
+        mode="w", delete=False, suffix=".txt"
+      ) as remote_temp:
+        remote_temp.write(remote_source)
+        remote_temp_path = remote_temp.name
+
+      with tempfile.NamedTemporaryFile(
+        mode="w", delete=False, suffix=".txt"
+      ) as local_temp:
+        local_temp.write(script_content)
+        local_temp_path = local_temp.name
+
+      subprocess.run(["diff", "-u", remote_temp_path, local_temp_path], check=False)
+
+      os.unlink(remote_temp_path)
+      os.unlink(local_temp_path)
+    except Exception:
+      pass
+
+  # Update script on router
+  print_status(f"Updating script '{script_name}' on {ssh_host}...")
+  run_ssh_command(ssh_host, f'/system script remove [find name="{script_name}"]')
+  run_ssh_command(
+    ssh_host, f'/system script add name="{script_name}" source="{escaped_content}"'
+  )
+  print_success(f"Script '{script_name}' updated successfully")
+
+  # Run the script if --run flag was provided
+  if run_script:
+    print_status(f"Running script '{script_name}' on {ssh_host}...")
+    output, _ = run_ssh_command(ssh_host, f'/system script run "{script_name}"')
+    if output:
+      print(output)
+    print_success(f"Script '{script_name}' executed successfully")
+
+
+if __name__ == "__main__":
+  main()
