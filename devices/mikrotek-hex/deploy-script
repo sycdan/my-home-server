@@ -41,12 +41,17 @@ def escape_script(content: str) -> str:
     1. Backslashes -> \\
     2. Quotes -> \"
     3. Dollar signs -> \$
-    4. Newlines -> literal \n sequence
+    4. Literal \n in strings -> \\\\n (so RouterOS stores it as \\n)
+    5. Actual newlines in file -> \\n
     """
   # Order matters: backslashes first, then other escapes
+  # First escape literal \n sequences in the source to \\\\n
+  content = content.replace("\\n", "\\\\n")
+  # Now escape actual backslashes
   content = content.replace("\\", "\\\\")
   content = content.replace('"', '\\"')
   content = content.replace("$", "\\$")
+  # Finally escape actual file newlines to \n
   content = content.replace("\n", "\\n")
   return content
 
@@ -255,6 +260,7 @@ def main(argv: list[str] | None = None) -> None:
       print_success(f"Schedule '{script_name}_schedule' created successfully")
     else:
       print_warning(f"Failed to create schedule for '{script_name}'")
+
 
 if __name__ == "__main__":
   main()
