@@ -27,6 +27,16 @@ Then press the `MODE` button on the side of the router (it will restart automati
 
 Uses `192.168.1.*`.
 
+## Routing by hostname
+
+This will allow you to make requests to machines on your LAN by name instead of IP, e.g. `ssh my-home-server`.
+
+```bash
+/ip dns set allow-remote-requests=yes
+/ip dhcp-server set 0 use-dns=yes
+```
+
+
 ## Static IPs
 
 Addresses below *.*.*.10 are reserved for networking hardware, e.g. routers.

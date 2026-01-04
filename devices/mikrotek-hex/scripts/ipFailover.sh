@@ -1,4 +1,5 @@
-# Device configuration with known MAC addresses for each interface type
+# Ensure all static IPs are bound to reachable interfaces
+# First interface is preferred; second is fallback
 :local devices {
   {
     "name"="Raspberry Pi 3";
