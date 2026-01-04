@@ -31,6 +31,8 @@ This will:
 1. Create a script named `discovery` on the router
 2. Schedule it to run every 5 minutes
 3. Run it immediately to populate DNS entries for all services (including ingress)
+4. Automatically set up port forwarding NAT rules
+5. Automatically configure split DNS for external domains
 
 ### Customizing for Your Services
 
@@ -83,90 +85,27 @@ The script will:
 2. Create server blocks for each external domain  
 3. Reload nginx
 
-## Step 4: Configure Port Forwarding
+## Step 4: Customizing External Domains
 
-On RouterOS, set up NAT rules to forward external traffic to the reverse proxy:
+If you want to add more external domains that should resolve to the reverse proxy on the internal network, edit the discovery script to add them to the split DNS section:
 
-```bash
-# The reverse proxy's IP is automatically maintained in DNS
-# Run this script on the router:
-{
-  /ip firewall nat remove [find where comment~"[MHS]"]
-  
-  # Get the reverse proxy IP from DNS (updated by the discovery script)
-  :local rpIp [/ip dns static get [find name="ingress.lan"] address]
-  
-  :if ($rpIp = "") do={
-    :put "ERROR: ingress.lan not found in DNS"
-  } else={
-    :put "Setting up NAT rules for $rpIp"
-    
-    # HTTP
-    /ip firewall nat add \
-      comment="Ingress HTTP [MHS]" \
-      chain=dstnat \
-      in-interface=ether1 \
-      protocol=tcp \
-      dst-port=80 \
-      action=dst-nat \
-      to-addresses=$rpIp \
-      to-ports=80
-    
-    # HTTPS
-    /ip firewall nat add \
-      comment="Ingress HTTPS [MHS]" \
-      chain=dstnat \
-      in-interface=ether1 \
-      protocol=tcp \
-      dst-port=443 \
-      action=dst-nat \
-      to-addresses=$rpIp \
-      to-ports=443
-    
-    # Hairpin NAT (internal clients accessing via external domain)
-    /ip firewall nat add \
-      comment="Hairpin Ingress [MHS]" \
-      chain=srcnat \
-      src-address=192.168.1.0/24 \
-      protocol=tcp \
-      dst-port=80 \
-      action=src-nat \
-      to-addresses=192.168.1.1
-    /ip firewall nat add \
-      comment="Hairpin Ingress HTTPS [MHS]" \
-      chain=srcnat \
-      src-address=192.168.1.0/24 \
-      protocol=tcp \
-      dst-port=443 \
-      action=src-nat \
-      to-addresses=192.168.1.1
-  }
+Edit [discovery.rsc](devices/mikrotek-hex/scripts/discovery.rsc) and update the `externalDomains` list:
+
+```routeros
+:local externalDomains {
+  "photos.sycdan.com"
+  "stream.sycdan.com"
+  "newdomain.example.com"
 }
 ```
 
-## Step 5: Configure Split DNS
-
-Internal clients resolve external domains to the reverse proxy:
+Then redeploy the script:
 
 ```bash
-# On RouterOS
-{
-  :local services {
-    "photos.sycdan.com"
-    "stream.sycdan.com"
-  }
-  
-  :local rpIp [/ip dns static get [find name="ingress.lan"] address]
-  
-  :if ($rpIp != "") do={
-    /ip dns static remove [find comment~"Internal Ingress"]
-    
-    :foreach service in=$services do={
-      :put "Forwarding $service → $rpIp"
-      /ip dns static add name=$service address=$rpIp comment="Internal Ingress"
-    }
-  }
-}
+devices/mikrotek-hex/deploy-script \
+  devices/mikrotek-hex/scripts/discovery.rsc \
+  --ssh-host router \
+  --run
 ```
 
 ### Verification
@@ -203,6 +142,13 @@ curl -H "Host: photos.sycdan.com" http://ingress.lan
 curl https://photos.sycdan.com
 ```
 
+**Verify NAT rules are configured:**
+
+```bash
+# SSH to router and check NAT rules
+ssh router -x '/ip firewall nat print where comment~"[MHS]"'
+```
+
 ### Troubleshooting
 
 **DNS lookup fails:**
@@ -214,16 +160,19 @@ ssh router -x ':put [/ip dns get allow-remote-requests]'
 ssh router -x '/ip dns cache print'
 ```
 
-**Reverse proxy IP not updating:**
+**Reverse proxy IP not updating or NAT rules outdated:**
 ```bash
-# Check if discovery script ran
+# Check if discovery script ran recently
 ssh router -x '/system script job print'
 
-# Check script output
-ssh router -x '/system script run reverse-proxy-discovery'
+# Run discovery script manually to update DNS and NAT
+ssh router -x '/system script run discovery'
 
 # Verify DNS entry was created
 ssh router -x '/ip dns static print where name="ingress.lan"'
+
+# Check NAT rules were created
+ssh router -x '/ip firewall nat print where comment~"[MHS]"'
 ```
 
 **nginx can't resolve .lan hostnames:**

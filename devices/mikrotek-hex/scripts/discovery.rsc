@@ -101,5 +101,87 @@
   }
 }
 
+:put "\n==== Updating NAT Rules ===="
+
+# Update NAT rules for the reverse proxy if its IP changed
+:if ($rpResult != "") do={
+  :local rpIp ($rpResult->0)
+  
+  # Check if HTTP dstnat rule exists and update it in place (zero downtime)
+  :local httpRule [/ip firewall nat find where comment="Ingress HTTP [MHS]" chain=dstnat]
+  :if ([:len $httpRule] > 0) do={
+    # Rule exists, update it if IP changed
+    :local ruleId ($httpRule->0)
+    :local existingIp [/ip firewall nat get $ruleId to-addresses]
+    :if ($existingIp != $rpIp) do={
+      :put "Updating HTTP NAT rule: $existingIp -> $rpIp"
+      /ip firewall nat set $ruleId to-addresses=$rpIp
+    } else={
+      :put "HTTP NAT rule is correct"
+    }
+  } else={
+    # Rule doesn't exist, create it
+    :put "Creating HTTP NAT rule for $rpIp"
+    /ip firewall nat add comment="Ingress HTTP [MHS]" chain=dstnat in-interface=ether1 protocol=tcp dst-port=80 action=dst-nat to-addresses=$rpIp to-ports=80
+  }
+  
+  # Check if HTTPS dstnat rule exists and update it in place
+  :local httpsRule [/ip firewall nat find where comment="Ingress HTTPS [MHS]" chain=dstnat]
+  :if ([:len $httpsRule] > 0) do={
+    # Rule exists, update it if IP changed
+    :local ruleId ($httpsRule->0)
+    :local existingIp [/ip firewall nat get $ruleId to-addresses]
+    :if ($existingIp != $rpIp) do={
+      :put "Updating HTTPS NAT rule: $existingIp -> $rpIp"
+      /ip firewall nat set $ruleId to-addresses=$rpIp
+    } else={
+      :put "HTTPS NAT rule is correct"
+    }
+  } else={
+    # Rule doesn't exist, create it
+    :put "Creating HTTPS NAT rule for $rpIp"
+    /ip firewall nat add comment="Ingress HTTPS [MHS]" chain=dstnat in-interface=ether1 protocol=tcp dst-port=443 action=dst-nat to-addresses=$rpIp to-ports=443
+  }
+  
+  # Hairpin NAT rules (these don't depend on reverse proxy IP, just ensure they exist)
+  :local hairpinHttp [/ip firewall nat find where comment="Hairpin Ingress HTTP [MHS]"]
+  :if ([:len $hairpinHttp] = 0) do={
+    :put "Creating Hairpin HTTP NAT rule"
+    /ip firewall nat add comment="Hairpin Ingress HTTP [MHS]" chain=srcnat src-address=192.168.1.0/24 protocol=tcp dst-port=80 action=src-nat to-addresses=192.168.1.1
+  }
+  
+  :local hairpinHttps [/ip firewall nat find where comment="Hairpin Ingress HTTPS [MHS]"]
+  :if ([:len $hairpinHttps] = 0) do={
+    :put "Creating Hairpin HTTPS NAT rule"
+    /ip firewall nat add comment="Hairpin Ingress HTTPS [MHS]" chain=srcnat src-address=192.168.1.0/24 protocol=tcp dst-port=443 action=src-nat to-addresses=192.168.1.1
+  }
+  
+  :put "NAT rules are up to date"
+}
+
+:put "\n==== Updating Split DNS Entries ===="
+
+# Update split DNS entries for external domains to point to reverse proxy
+:if ($rpResult != "") do={
+  :local rpIp ($rpResult->0)
+  
+  # List of external domains that should resolve to the reverse proxy internally
+  :local externalDomains {
+    "photos.sycdan.com"
+    "stream.sycdan.com"
+  }
+  
+  # Remove old split DNS entries
+  /ip dns static remove [find comment~"Split DNS"]
+  
+  # Add new entries pointing to reverse proxy IP
+  :foreach domain in=$externalDomains do={
+    :put "Split DNS: $domain -> $rpIp"
+    /ip dns static add name=$domain address=$rpIp comment="Split DNS"
+  }
+} else={
+  :put "ERROR: Reverse proxy IP not found, skipping split DNS update"
+}
+
 :put "\n==== Current DNS Entries ===="
 /ip dns static print where comment~"[MHS]"
