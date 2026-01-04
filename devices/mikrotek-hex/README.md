@@ -33,13 +33,32 @@ ssh router -x "/ip arp print"
 
 Uses `192.168.1.*`.
 
-## Routing by hostname
+## DNS & Routing Architecture
 
-This will allow you to make requests to machines on your LAN by name instead of IP, e.g. `ssh my-home-server`.
+The network uses hostname-based routing via `.lan` domain for internal services. This decouples services from static IPs.
+
+### Enable DNS for DHCP hostnames
 
 ```bash
 /ip dns set allow-remote-requests=yes
-/ip dhcp-server set 0 use-dns=yes
+/ip dhcp-server set [find] use-dns=yes
+```
+
+This allows internal clients to resolve DHCP-assigned hostnames (e.g., `ssh immich.lan`).
+
+### Automatic Reverse Proxy Discovery
+
+A scheduled RouterOS script discovers the reverse proxy's current IP and updates split DNS. This ensures:
+- External port forwarding works (NAT rules point to reverse proxy IP)
+- Internal clients can reach `reverse-proxy.lan`
+- If the reverse proxy fails over to a different interface, DNS automatically updates
+
+**Script:** [reverse-proxy-discovery.rsc](scripts/reverse-proxy-discovery.rsc)
+
+Deploy with:
+```bash
+/system script add name="reverse-proxy-discovery" source="[paste script contents]"
+/system scheduler add name="reverse-proxy-discovery" interval="00:05:00" on-event="/system script run reverse-proxy-discovery"
 ```
 
 
@@ -326,109 +345,146 @@ TODO: script to run /ip dns adlist reload
 
 Traffic routing is handled by a reverse proxy on [[devices/raspberry-pi/README]].
 
-### Split DNS (Internal Access)
+### Architecture
 
-Internal LAN clients resolve ingress domains to the reverse proxy. Uses the most recently seen reverse proxy IP:
+```
+WAN Client
+  ↓
+Router NAT: external port → reverse-proxy.lan:80
+  ↓
+Reverse Proxy (nginx)
+  ↓
+Resolves service hostname (e.g., immich.lan) → service IP
+  ↓
+Actual Service
+```
+
+**Key insight:** Routing is split into two DNS layers:
+
+1. **Router DNS** (authoritative for `.lan`):
+   - `reverse-proxy.lan` → automatically discovered reverse proxy IP
+   - `immich.lan`, `jellyfin.lan`, etc. → static DHCP IPs (from `/ip dhcp-server lease`)
+
+2. **Reverse Proxy DNS** (using system resolver):
+   - Resolves `.lan` names via router to find actual services
+   - Routes external requests to correct service based on domain
+
+### Service Hostnames
+
+Each service must have:
+- A consistent hostname (e.g., `immich.lan`)
+- A DHCP lease with that hostname
+- An entry in nginx config pointing to that hostname
+
+Configure services to have consistent DHCP hostnames. For example:
 
 ```bash
 {
-  :local services {
-    {"photos.sycdan.com"}
-    {"stream.sycdan.com"}
+  :local leases {
+    {"192.168.1.11"; "00:23:5A:1A:A4:F6"; "immich.lan"}
+    {"192.168.1.10"; "A8:A1:59:F1:3E:B5"; "jellyfin.lan"}
   }
-  
-  # Define which lease names provide the reverse proxy IPs
-  :local rpNames {
-    "Raspberry Pi 3 (ethernet)"
-    "Raspberry Pi 3 (wireless)"
+  :foreach lease in=$leases do={
+    :local ip ($lease->0)
+    :local mac ($lease->1)
+    :local hostname ($lease->2)
+    :local shouldAdd 0
+    
+    :local existing [/ip dhcp-server lease find mac-address=$mac]
+    :if ([:len $existing] > 0) do={
+      :local existingComment [/ip dhcp-server lease get $existing comment]
+      :if ($existingComment != $hostname) do={
+        /ip dhcp-server lease set $existing comment=$hostname
+      }
+    } else={
+      /ip dhcp-server lease add address=$ip mac-address=$mac comment=$hostname
+    }
   }
-
-  :local selectedIp "192.168.1.4"
-
-  # TODO: Find the most recently seen RP
-  # :local selectedIp ""
-  # :local newestTime ""
-  # :foreach name in=$rpNames do={
-  #   :local lease [/ip dhcp-server lease find comment=$name]
-  #   :if ([:len $lease] > 0) do={
-  #     :local ip [/ip dhcp-server lease get $lease address]
-  #     :local lastSeen [/ip dhcp-server lease get $lease last-seen]
-  #     :put "Found $name at $ip (last seen: $lastSeen)"
-      
-  #     # Prefer any interface that has been seen over one that hasn't ("never")
-  #     # If both have been seen, pick the most recent
-  #     :if ($lastSeen != "never") do={
-  #       :if ($newestTime = "" || $newestTime = "never") do={
-  #         :set selectedIp $ip
-  #         :set newestTime $lastSeen
-  #         :put "  -> Using this IP (first active)"
-  #       }
-  #     } else if ($newestTime = "") do={
-  #       :set selectedIp $ip
-  #       :set newestTime $lastSeen
-  #       :put "  -> Using this IP (no active interface yet)"
-  #     }
-  #   } else={
-  #     :put "WARNING: Could not find lease for $name"
-  #   }
-  # }
-
-  # Cleanup
-  /ip dns static remove [find comment~"[MHS]"]
-
-  # Configure DNS entries using selected IP
-  :foreach service in=$services do={
-    :local domain ($service->0)
-    :put "Forwarding $domain -> $selectedIp"
-    /ip dns static add name=$domain address=$selectedIp comment="Internal Ingress Proxy [MHS]"
-  }
-
-  :put "Split DNS configuration complete"
-  /ip dns static print where comment~"[MHS]"
 }
 ```
 
-### Port Forwarding alt
+### Port Forwarding
 
 ```bash
 {
   # Cleanup
   /ip firewall nat remove [find where comment~"[MHS]"]
   
-  :local rpis {
-    {"192.168.1.3"; "ethernet"}
-    {"192.168.1.4"; "wireless"}
+  # Forward WAN port 80/443 to reverse proxy
+  # Reverse proxy discovers its own IP via DNS update
+  # so these rules use static DNS lookup at runtime
+  
+  /ip firewall nat add \
+    comment="Ingress HTTP [MHS]" \
+    chain=dstnat \
+    in-interface=ether1 \
+    protocol=tcp \
+    dst-port=80 \
+    action=dst-nat \
+    to-addresses=[/ip dns static get [find name="reverse-proxy.lan"] address] \
+    to-ports=80
+  
+  /ip firewall nat add \
+    comment="Ingress HTTPS [MHS]" \
+    chain=dstnat \
+    in-interface=ether1 \
+    protocol=tcp \
+    dst-port=443 \
+    action=dst-nat \
+    to-addresses=[/ip dns static get [find name="reverse-proxy.lan"] address] \
+    to-ports=443
+  
+  # Hairpin NAT for internal clients
+  /ip firewall nat add \
+    comment="Hairpin Ingress [MHS]" \
+    chain=srcnat \
+    src-address=192.168.1.0/24 \
+    protocol=tcp \
+    dst-port=80 \
+    action=src-nat \
+    to-addresses=192.168.1.1
+  /ip firewall nat add \
+    comment="Hairpin Ingress HTTPS [MHS]" \
+    chain=srcnat \
+    src-address=192.168.1.0/24 \
+    protocol=tcp \
+    dst-port=443 \
+    action=src-nat \
+    to-addresses=192.168.1.1
+}
+/ip firewall nat print where comment~"[MHS]"
+```
+
+### Internal DNS (Split DNS)
+
+Internal LAN clients resolve ingress domains to the reverse proxy:
+
+```bash
+{
+  :local services {
+    "photos.sycdan.com"
+    "stream.sycdan.com"
   }
   
-  :foreach rpi in=$rpis do={
-    :local addr ($rpi->0)
-    :local iface ($rpi->1)
+  # Reverse proxy IP is automatically discovered and updated by scheduled script
+  :local rpIp [/ip dns static get [find name="reverse-proxy.lan"] address]
+  
+  :if ($rpIp = "") do={
+    :put "ERROR: reverse-proxy.lan DNS entry not found!"
+  } else={
+    :put "Using reverse proxy IP: $rpIp"
     
-    # Forward WAN port 80 to Raspberry Pi
-    /ip firewall nat add \
-      comment="Ingress - Port 80 to Raspberry Pi ($iface) [MHS]" \
-      chain=dstnat \
-      in-interface=ether1 \
-      protocol=tcp \
-      dst-port=80 \
-      action=dst-nat \
-      to-addresses=$addr \
-      to-ports=80
+    # Cleanup old entries
+    /ip dns static remove [find comment~"Internal Ingress"]
     
-    # Hairpin NAT for internal LAN access
-    /ip firewall nat add \
-      comment="Hairpin - Ingress ($iface) [MHS]" \
-      chain=srcnat \
-      src-address=192.168.1.0/24 \
-      protocol=tcp \
-      dst-port=80 \
-      dst-address=$addr \
-      action=src-nat \
-      to-addresses=192.168.1.1
+    # Configure DNS entries
+    :foreach service in=$services do={
+      :put "Forwarding $service → $rpIp"
+      /ip dns static add name=$service address=$rpIp comment="Internal Ingress"
+    }
   }
   
-  :put "Port forwarding configured for both ethernet and wireless"
-  /ip firewall nat print where comment~"[MHS]"
+  /ip dns static print where comment~"Internal Ingress"
 }
 ```
 
