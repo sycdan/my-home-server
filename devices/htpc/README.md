@@ -3,4 +3,3 @@
 Living room machine.
 
 Serves [[Jellyfin]].
-
