@@ -40,7 +40,7 @@ This will:
 4. The script updates all `.lan` hostnames based on ping reachability
 
 The script handles:
-- `reverse-proxy.lan` → finds reachable IP of Raspberry Pi (tries ethernet, then wireless)
+- `ingress.lan` → finds reachable IP of Raspberry Pi (tries ethernet, then wireless)
 - `immich.lan` → finds reachable IP of Immich service
 - `jellyfin.lan` → finds reachable IP of Jellyfin service
 
@@ -106,10 +106,10 @@ On RouterOS, set up NAT rules to forward external traffic to the reverse proxy:
   /ip firewall nat remove [find where comment~"[MHS]"]
   
   # Get the reverse proxy IP from DNS (updated by the discovery script)
-  :local rpIp [/ip dns static get [find name="reverse-proxy.lan"] address]
+  :local rpIp [/ip dns static get [find name="ingress.lan"] address]
   
   :if ($rpIp = "") do={
-    :put "ERROR: reverse-proxy.lan not found in DNS"
+    :put "ERROR: ingress.lan not found in DNS"
   } else={
     :put "Setting up NAT rules for $rpIp"
     
@@ -168,7 +168,7 @@ Internal clients resolve external domains to the reverse proxy:
     "stream.sycdan.com"
   }
   
-  :local rpIp [/ip dns static get [find name="reverse-proxy.lan"] address]
+  :local rpIp [/ip dns static get [find name="ingress.lan"] address]
   
   :if ($rpIp != "") do={
     /ip dns static remove [find comment~"Internal Ingress"]
@@ -188,17 +188,17 @@ Internal clients resolve external domains to the reverse proxy:
 ```bash
 # From any machine on the LAN
 nslookup immich.lan 192.168.1.1
-nslookup reverse-proxy.lan 192.168.1.1
+nslookup ingress.lan 192.168.1.1
 
 # If nslookup not available:
-getent hosts reverse-proxy.lan
+getent hosts ingress.lan
 ```
 
 **Test nginx resolution:**
 
 ```bash
 # SSH to reverse proxy
-ssh pi@reverse-proxy.lan
+ssh pi@ingress.lan
 
 # Test DNS resolution
 nslookup immich.lan
@@ -209,7 +209,7 @@ nslookup jellyfin.lan
 
 ```bash
 # From LAN client
-curl -H "Host: photos.sycdan.com" http://reverse-proxy.lan
+curl -H "Host: photos.sycdan.com" http://ingress.lan
 
 # From WAN (if configured with real domain)
 curl https://photos.sycdan.com
@@ -235,7 +235,7 @@ ssh router -x '/system script job print'
 ssh router -x '/system script run reverse-proxy-discovery'
 
 # Verify DNS entry was created
-ssh router -x '/ip dns static print where name="reverse-proxy.lan"'
+ssh router -x '/ip dns static print where name="ingress.lan"'
 ```
 
 **nginx can't resolve .lan hostnames:**

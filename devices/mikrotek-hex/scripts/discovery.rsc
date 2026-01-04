@@ -1,7 +1,7 @@
 # Finds reachable IPs for reverse proxy and services and updates DNS entries
 
 :local reverseProxy {
-  "hostname"="reverse-proxy.lan";
+  "hostname"="ingress.lan";
   "interfaces"={
     {"B8:27:EB:AB:C0:DC"; "ethernet"};
     {"B8:27:EB:FE:95:89"; "wireless"};

@@ -50,7 +50,7 @@ This allows internal clients to resolve DHCP-assigned hostnames (e.g., `ssh immi
 
 A scheduled RouterOS script discovers the reverse proxy's current IP and updates split DNS. This ensures:
 - External port forwarding works (NAT rules point to reverse proxy IP)
-- Internal clients can reach `reverse-proxy.lan`
+- Internal clients can reach `ingress.lan`
 - If the reverse proxy fails over to a different interface, DNS automatically updates
 
 **Script:** [reverse-proxy-discovery.rsc](scripts/reverse-proxy-discovery.rsc)
@@ -350,7 +350,7 @@ Traffic routing is handled by a reverse proxy on [[devices/raspberry-pi/README]]
 ```
 WAN Client
   ↓
-Router NAT: external port → reverse-proxy.lan:80
+Router NAT: external port → ingress.lan:80
   ↓
 Reverse Proxy (nginx)
   ↓
@@ -362,7 +362,7 @@ Actual Service
 **Key insight:** Routing is split into two DNS layers:
 
 1. **Router DNS** (authoritative for `.lan`):
-   - `reverse-proxy.lan` → automatically discovered reverse proxy IP
+   - `ingress.lan` → automatically discovered reverse proxy IP
    - `immich.lan`, `jellyfin.lan`, etc. → static DHCP IPs (from `/ip dhcp-server lease`)
 
 2. **Reverse Proxy DNS** (using system resolver):
