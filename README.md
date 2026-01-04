@@ -1,169 +1,174 @@
 # My Home Server
 
-A unified controller for managing multiple Docker-based services on my home server.
+This guide walks through setting up hostname-based routing for home-hosted services.
 
-## Architecture
+## Step 1: Configure RouterOS DNS
+
+Enable DNS resolution from within the LAN:
 
 ```bash
-my-home-server/
-├── README.md             # You are here!
-├── init                  # Main initialization script - run this first
-├── ctl                   # Service control utility
-├── lib/
-│   └── common.sh         # Common constants and utilities used by multiple scripts
-└── services/
-    └── immich/           # Photo management/sharing service
-        ├── docker-compose.yml
-        ├── example.env
-        ├── bootstrap.sh  # Service-specific setup
-        ├── library/      # Media library (annexed)
-        └── postgres/     # Database files (annexed)
+ssh router -x '/ip dns set allow-remote-requests=yes'
 ```
 
-## Quick Start
+This allows the router to answer DNS queries for internal `.lan` hostnames from DHCP leases.
 
-### 1. Initial Setup (Bootstrap)
+## Step 2: Deploy DNS Discovery Script
 
-Run this once on a server machine to install Docker and initialize services:
+A single unified script handles discovering the reverse proxy and all services, pinging them to verify reachability, and updating DNS entries.
+
+On your host machine:
 
 ```bash
-# Initialize and setup Immich
-./init immich
+devices/mikrotek-hex/deploy-script \
+  devices/mikrotek-hex/scripts/discovery.rsc \
+  --ssh-host router \
+  --run \
+  --schedule "00:05:00"
 ```
 
-The init script will:
+This will:
 
-- Check your OS (Ubuntu recommended)
-- Install Docker and Docker Compose if needed
-- Call each service's bootstrap script (idempotent)
+1. Create a script named `discovery` on the router
+2. Schedule it to run every 5 minutes
+3. Run it immediately to populate DNS entries for all services (including ingress)
+4. Automatically set up port forwarding NAT rules
+5. Automatically configure split DNS for external domains
 
-**Note:** You may need to log out and back in for Docker group permissions to take effect.
+Hairpin NAT will be configured for edge cases where the client bypasses the split DNS offered by the LAN router.
 
-### 2. Configure Services
+### Customizing for Your Services
 
-After setup, configure each service:
+Edit [discovery.rsc](devices/mikrotek-hex/scripts/discovery.rsc) to add more services:
 
 ```bash
-# Edit Immich configuration
-nano services/immich/.env
+:local services {
+  {
+    "hostname"="service-name.lan";
+    "interfaces"={
+      {"AA:BB:CC:DD:EE:FF"; "ethernet"};
+      {"AA:BB:CC:DD:EE:GG"; "wireless"};
+    }
+  };
+}
 ```
 
-Update required variables like:
+## Step 3: Configure Reverse Proxy (nginx)
 
-- Database credentials
-- Storage locations
-- Service-specific settings
+The DNS discovery script automatically updates `.lan` hostnames, so nginx can use them directly.
 
-### 3. Start Services
-
-Use the control script to manage services:
+On the Raspberry Pi:
 
 ```bash
-# Start Immich
-./ctl immich up
+# Copy the configuration script
+cp devices/raspberry-pi/configure-reverse-proxy.sh ~/configure-reverse-proxy.sh
+
+# Edit it with your services
+nano ~/configure-reverse-proxy.sh
 ```
 
-## Adding a New Service
-
-### 1. Create Service Directory
+The `SERVICES` array format is:
 
 ```bash
-mkdir services/myservice
-cd services/myservice
+declare -a SERVICES=(
+  "external_domain|internal_hostname.lan|internal_port"
+  "example.sycdan.com|example.lan|7777"
+)
 ```
 
-### 2. Create Docker Compose File
-
-Create `docker-compose.yml` with your service definition.
-
-### 3. Create Setup Script
-
-Create `bootstrap.sh` that's idempotent (safe to run multiple times):
+Then run it:
 
 ```bash
-#!/bin/bash
-set -e
-
-# Your setup logic here
-# - Create .env from example.env if it doesn't exist
-# - Validate configuration
-# - Create needed directories
-# - etc.
+bash ~/configure-reverse-proxy.sh
 ```
 
-**Key requirements:**
+The script will:
 
-- Must be idempotent (safe to run multiple times)
-- Should create/validate `.env` from `example.env`
+1. Generate nginx upstream blocks for each `.lan` hostname
+2. Create server blocks for each external domain  
+3. Reload nginx
 
-### 4. Create Example Configuration
+## Verification
 
-Create `example.env` with all required variables and documentation.
+**Test RouterOS DNS:**
 
-## Idempotency
-
-All bootstrapping scripts are designed to be **idempotent** - they can safely be run multiple times without side effects:
-
-- Creating files: Only create if they don't exist
-- Installing packages: Check if already installed
-- Creating directories: Use `-p` flag or conditional checks
-- Modifying configs: Only modify if needed
-
-This means you can:
+From any machine on the LAN:
 
 ```bash
-# Safe to run multiple times
-./init immich
-./init immich
-./init immich
+nslookup ingress.lan || getent hosts ingress.lan 
 ```
 
-## Configuration Management
+This should display the reverse-proxy IP.
 
-Each service has:
+**Test nginx resolution:**
 
-- **example.env**: Template with all available options and documentation
-- **.env**: Actual configuration (created from example.env, not in git)
-
-To update service configuration:
+From your local machine, verify the reverse proxy can resolve `.lan` hostnames:
 
 ```bash
-# Edit the service's .env file
-nano services/immich/.env
+# On Windows
+nslookup immich.lan 192.168.1.1
+nslookup jellyfin.lan 192.168.1.1
 
-# Restart the service to apply changes
-./ctl immich restart
+# Or from the Pi itself
+ssh pi@ingress.lan
+ping immich.lan
+ping jellyfin.lan
 ```
 
-## Storage & Backup with Git Annex
-
-Service data files are managed with git annex, and _not_ checked in:
-
-- **Immich library**: `services/immich/library/`
-- **Immich database**: `services/immich/postgres/`
-- **Immich config**: `services/immich/.env`
-
-## Troubleshooting
-
-### Can't run scripts
+**Test reverse proxy routing:**
 
 ```bash
-$ ./init
--bash: ./init: Permission denied
+# From LAN client
+curl -H "Host: photos.sycdan.com" http://ingress.lan
 
-chmod +x ./init
-chmod +x ./ctl
+# From WAN (if you can connect to a VPN)
+curl http://photos.sycdan.com
 ```
 
-### Service won't start
+**Verify NAT rules are configured:**
 
 ```bash
-# Check status of all services
-./ctl all status
+# SSH to router and check NAT rules
+ssh router -x '/ip firewall nat print where comment~"[MHS]"'
+```
 
-# Check service logs
-./ctl immich logs
+### Troubleshooting
 
-# Verify configuration
-cat services/immich/.env
+**DNS lookup fails:**
+
+```bash
+# Check if DNS is enabled
+ssh router -x ':put [/ip dns get allow-remote-requests]'
+
+# Check DNS cache
+ssh router -x '/ip dns cache print'
+```
+
+**Reverse proxy IP not updating or NAT rules outdated:**
+
+```bash
+# Check if discovery script ran recently
+ssh router -x '/system script job print'
+
+# Run discovery script manually to update DNS and NAT
+ssh router -x '/system script run discovery'
+
+# Verify DNS entry was created
+ssh router -x '/ip dns static print where name="ingress.lan"'
+
+# Check NAT rules were created
+ssh router -x '/ip firewall nat print where comment~"[MHS]"'
+```
+
+**nginx can't resolve .lan hostnames:**
+
+```bash
+# Check nginx resolver config (should use router as upstream)
+# On Raspberry Pi, check /etc/nginx/sites-available/reverse-proxy
+
+# Test from Pi
+ping immich.lan
+ping jellyfin.lan
+
+# Test nginx config
+sudo nginx -t
 ```
