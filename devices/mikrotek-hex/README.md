@@ -23,6 +23,12 @@ Then press the `MODE` button on the side of the router (it will restart automati
 - Go to Files and upload your SSH public key.
 - Go to System -> Users -> SSH Keys and add your key.
 
+If you add a `router` host to your ssh config, you can then run commands on the router from you local machine:
+
+```bash
+ssh router -x "/ip arp print"
+```
+
 ## DHCP
 
 Uses `192.168.1.*`.
@@ -69,9 +75,10 @@ Addresses below *.*.*.10 are reserved for networking hardware, e.g. routers.
       :local existingIp [/ip dhcp-server lease get $existing address]
       :put "$mac currently leases $existingIp"
       :if ($existingIp != $ip) do={
-        :put "Remapping $mac to $ip"
+        :put "Remapping $mac to $ip";
+
         /ip dhcp-server lease remove $existing
-        :set shouldAdd 1
+        :set shouldAdd 1fff  
       }
     } else={
       :put "No lease for $mac"
