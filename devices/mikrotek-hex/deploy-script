@@ -14,27 +14,27 @@ BLUE = "\033[0;34m"
 NC = "\033[0m"  # No Color
 
 
-def print_status(msg):
+def print_info(msg: str) -> None:
   """Print status message in blue"""
   print(f"{BLUE}► {NC} {msg}")
 
 
-def print_success(msg):
+def print_success(msg: str) -> None:
   """Print success message in green"""
   print(f"{GREEN}✓ {NC} {msg}")
 
 
-def print_warning(msg):
+def print_warning(msg: str) -> None:
   """Print warning message in yellow to stderr"""
   print(f"{YELLOW}⚠ {NC} {msg}", file=sys.stderr)
 
 
-def print_error(msg):
+def print_error(msg: str) -> None:
   """Print error message in red to stderr"""
   print(f"{RED}✗ {NC} {msg}", file=sys.stderr)
 
 
-def escape_routeros_string(content):
+def escape_script(content: str) -> str:
   r"""
     Escape content for RouterOS script.
     RouterOS needs:
@@ -51,7 +51,17 @@ def escape_routeros_string(content):
   return content
 
 
-def run_ssh_command(host, command):
+def unescape_routeros_string(content: str) -> str:
+  r"""Reverse the escaping done for RouterOS scripts"""
+  # Reverse order from escape_routeros_string
+  content = content.replace("\\n", "\n")
+  content = content.replace('\\"', '"')
+  content = content.replace("\\$", "$")
+  content = content.replace("\\\\", "\\")
+  return content
+
+
+def run_ssh_command(host: str, command: str) -> tuple[str, int]:
   """Run SSH command and return output"""
   try:
     result = subprocess.run(
@@ -62,7 +72,29 @@ def run_ssh_command(host, command):
     return "", -1
 
 
-def setup_schedule(host, script_name, schedule_spec):
+def upload_script(
+  host: str,
+  script_name: str,
+  local_source: str,
+  script_comment: str,
+  debug: bool = False,
+) -> bool:
+  """Upload script to router and return True if updated"""
+  print_info(f"Updating script '{script_name}' on {host}...")
+  escaped_source = escape_script(local_source)
+  if debug:
+    print_info("Escaped script source for RouterOS:")
+    print(repr(escaped_source))
+  run_ssh_command(host, f'/system script remove [find name="{script_name}"]')
+  run_ssh_command(
+    host,
+    f'/system script add name="{script_name}" source="{escaped_source}" comment="{script_comment}"',
+  )
+  print_success(f"Script '{script_name}' updated successfully")
+  return True
+
+
+def create_schedule(host: str, script_name: str, schedule_spec: str) -> bool:
   """Set up a scheduler entry to run the script on a schedule"""
   # Validate format: hh:mm:ss
   parts = schedule_spec.split(":")
@@ -104,30 +136,39 @@ def setup_schedule(host, script_name, schedule_spec):
   return True
 
 
-def show_diff(remote, local):
+def show_diff(remote: str, local: str) -> None:
   """Show diff between remote and local content"""
   try:
-    result = subprocess.run(
-      ["diff", "-u", "-"], input=remote, capture_output=True, text=True
-    )
-    # diff returns non-zero when files differ, which is expected
-    # We just want the output
+    import tempfile
+
+    with tempfile.NamedTemporaryFile(
+      mode="w", delete=False, suffix=".txt"
+    ) as remote_temp:
+      remote_temp.write(remote)
+      remote_temp_path = remote_temp.name
+
+    with tempfile.NamedTemporaryFile(
+      mode="w", delete=False, suffix=".txt"
+    ) as local_temp:
+      local_temp.write(local)
+      local_temp_path = local_temp.name
+
+    subprocess.run(["diff", "-u", remote_temp_path, local_temp_path], check=False)
+
+    os.unlink(remote_temp_path)
+    os.unlink(local_temp_path)
   except Exception:
     pass
 
 
-def main(argv=None):
+def main(argv: list[str] | None = None) -> None:
   parser = argparse.ArgumentParser(
     description="Deploy RouterOS scripts via SSH",
     formatter_class=argparse.RawDescriptionHelpFormatter,
   )
   parser.add_argument(
     "local_script_path",
-    help="Path to the script file to deploy",
-  )
-  parser.add_argument(
-    "remote_script_name",
-    help="Name of the script on the router",
+    help="Path to the script file to deploy (the filename will be the script name on the remote)",
   )
   parser.add_argument(
     "--ssh-host",
@@ -140,14 +181,14 @@ def main(argv=None):
     help="Run the script immediately after deployment (even if it didn't change)",
   )
   parser.add_argument(
-    "--debug",
-    action="store_true",
-    help="Enable debug output",
-  )
-  parser.add_argument(
     "--schedule",
     metavar="INTERVAL",
     help="Set up a schedule to run the script (format: hh:mm:ss, e.g.: '00:01:00' for 1 minute)",
+  )
+  parser.add_argument(
+    "--debug",
+    action="store_true",
+    help="Enable debug output",
   )
 
   args = parser.parse_args(argv)
@@ -156,7 +197,7 @@ def main(argv=None):
   debug = args.debug or os.environ.get("DEBUG", "0") == "1"
 
   local_script = Path(args.local_script_path)
-  script_name = args.remote_script_name
+  script_name = local_script.stem
   ssh_host = args.ssh_host
   run_script = args.run
   schedule = args.schedule
@@ -165,140 +206,55 @@ def main(argv=None):
     print_error(f"Local script not found: {local_script.name}")
     sys.exit(1)
 
-  print_status(f"Reading local script from {local_script.name}")
-  script_content = local_script.read_text()
-  escaped_content = escape_routeros_string(script_content)
+  print_info(f"Reading local script from {local_script.name}")
+  local_source = local_script.read_text()
 
-  print_status(f"Checking if script '{script_name}' exists on router...")
-  remote_output, returncode = run_ssh_command(
-    ssh_host, f'/system script print where name="{script_name}"'
+  # If the first line of the script is a comment, strip it off and use it as the comment on the remote
+  if local_source.strip().startswith("#"):
+    first_line, _, rest_of_script = local_source.partition("\n")
+    script_comment = first_line.lstrip("#").strip()
+    local_source = rest_of_script.strip() + "\n"
+    if debug:
+      print_info(f"Using script comment: '{script_comment}'")
+  else:
+    script_comment = str(local_script)
+
+  print_info(f"Reading '{script_name}' script from router...")
+  remote_script, returncode = run_ssh_command(
+    ssh_host, f'{{:local s [/system script get "{script_name}" source]; :put $s}}'
   )
-
+  remote_source = remote_script.strip() + "\n"
   if debug:
-    print_status("Remote script output:")
-    print(remote_output)
-
-  # Bail if remote output is empty (command failed)
-  if not remote_output:
-    print_error(f"Failed to connect to router or execute command on {ssh_host}")
-    sys.exit(1)
-
-  # Extract the source field from RouterOS output
-  # The source starts after "source=" and continues for all subsequent indented lines
-  lines = remote_output.split("\n")
-  remote_source = ""
-  found_source = False
-  source_lines = []
-
-  for i, line in enumerate(lines):
-    if "source=" in line and not found_source:
-      found_source = True
-      # Extract everything after "source=" on this line
-      idx = line.index("source=")
-      source_content = line[idx + len("source=") :].strip()
-      if source_content:  # If there's content on the same line
-        source_lines.append(source_content)
-      # Continue to next lines which are indented and part of the source
-      continue
-
-    if found_source:
-      # Lines that are part of the source are indented (start with spaces)
-      if line and line[0] in (" ", "\t"):
-        source_lines.append(line.strip())
-      elif line.strip() == "":
-        # Empty lines might be part of the source
-        source_lines.append("")
-      else:
-        # Non-indented line means we've reached the end of the source
-        break
-
-  remote_source = "\n".join(source_lines)
-
-  if debug:
-    print_status("Remote script source:")
+    print_info("Remote source:")
     print(repr(remote_source))
 
-  # Compare the escaped content (what we're sending) with what's on the router
-  # Normalize by removing all per-line indentation before comparison
-  local_lines = script_content.strip().split("\n")
-  remote_lines = remote_source.strip().split("\n")
+  # Check if update is needed
+  if local_source != remote_source:
+    print_warning(f"Script '{script_name}' needs to be updated")
+    if debug:
+      print_info("Showing diff (- = remote, + = local):")
+      show_diff(remote_source, local_source)
+    upload_script(ssh_host, script_name, local_source, script_comment, debug)
+  else:
+    print_info(f"Script '{script_name}' is already up to date")
 
-  local_normalized = "\n".join(line.lstrip() for line in local_lines)
-  remote_normalized = "\n".join(line.lstrip() for line in remote_lines)
-
-  if local_normalized == remote_normalized:
-    print_success(f"Script '{script_name}' is already up to date")
-
-    # Set up schedule if requested
-    if schedule:
-      print_status(
-        f"Setting up schedule for script '{script_name}' with interval '{schedule}'..."
-      )
-      if setup_schedule(ssh_host, script_name, schedule):
-        print_success(f"Schedule '{script_name}_schedule' created successfully")
-      else:
-        sys.exit(1)
-
-    # If --run flag is set, run the script even if already up to date
-    if run_script:
-      print_status(f"Running script '{script_name}' on {ssh_host}...")
-      output, _ = run_ssh_command(ssh_host, f'/system script run "{script_name}"')
-      if output:
-        print(output)
-      print_success(f"Script '{script_name}' executed successfully")
-    sys.exit(0)
-
-  print_warning(f"Script '{script_name}' needs to be updated")
-  if debug:
-    print_status("Showing diff (- = remote, + = local):")
-    try:
-      import tempfile
-
-      with tempfile.NamedTemporaryFile(
-        mode="w", delete=False, suffix=".txt"
-      ) as remote_temp:
-        remote_temp.write(remote_source)
-        remote_temp_path = remote_temp.name
-
-      with tempfile.NamedTemporaryFile(
-        mode="w", delete=False, suffix=".txt"
-      ) as local_temp:
-        local_temp.write(script_content)
-        local_temp_path = local_temp.name
-
-      subprocess.run(["diff", "-u", remote_temp_path, local_temp_path], check=False)
-
-      os.unlink(remote_temp_path)
-      os.unlink(local_temp_path)
-    except Exception:
-      pass
-
-  # Update script on router
-  print_status(f"Updating script '{script_name}' on {ssh_host}...")
-  run_ssh_command(ssh_host, f'/system script remove [find name="{script_name}"]')
-  run_ssh_command(
-    ssh_host, f'/system script add name="{script_name}" source="{escaped_content}"'
-  )
-  print_success(f"Script '{script_name}' updated successfully")
-
-  # Set up schedule if requested
-  if schedule:
-    print_status(
-      f"Setting up schedule for script '{script_name}' with interval '{schedule}'..."
-    )
-    if setup_schedule(ssh_host, script_name, schedule):
-      print_success(f"Schedule '{script_name}_schedule' created successfully")
-    else:
-      sys.exit(1)
-
-  # Run the script if --run flag was provided
+  # Run the script if requested
   if run_script:
-    print_status(f"Running script '{script_name}' on {ssh_host}...")
+    print_info(f"Running script '{script_name}' on {ssh_host}...")
     output, _ = run_ssh_command(ssh_host, f'/system script run "{script_name}"')
     if output:
       print(output)
     print_success(f"Script '{script_name}' executed successfully")
 
+  # Set up schedule if requested
+  if schedule:
+    print_info(
+      f"Setting up schedule for script '{script_name}' with interval '{schedule}'..."
+    )
+    if create_schedule(ssh_host, script_name, schedule):
+      print_success(f"Schedule '{script_name}_schedule' created successfully")
+    else:
+      print_warning(f"Failed to create schedule for '{script_name}'")
 
 if __name__ == "__main__":
   main()

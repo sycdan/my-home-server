@@ -88,8 +88,8 @@
       :if ($lastSeen > $bestTime) do={
         :set bestTime $lastSeen
         :set bestInterface $interface
-      }    } else={
-      :put "  MAC $mac ($type) has no lease"    
+      } else={
+        :put "  MAC $mac ($type) has no lease"
     }
   }
   
