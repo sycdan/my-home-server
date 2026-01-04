@@ -114,11 +114,10 @@
   :local bestMac ($bestInterface->0)
   :local bestType ($bestInterface->1)
   
-  :put "  Using MAC: $bestMac ($bestType)"
+  :put "  Using MAC $bestMac ($bestType)"
   
   # Check if lease exists
   :local leaseEntry [/ip dhcp-server lease find where address=$targetIp]
-  
   :if (($leaseEntry != "") && ($leaseEntry != 0)) do={
     # Get current lease details
     :local currentLease [/ip dhcp-server lease get $leaseEntry]
@@ -126,13 +125,24 @@
     
     :if ($currentMac != $bestMac) do={
       :put "  Updating lease MAC: $currentMac -> $bestMac"
-      /ip dhcp-server lease set $leaseEntry mac-address=$bestMac
+      /ip dhcp-server lease set $leaseEntry mac-address="$bestMac"
     } else={
       :put "  Lease MAC already correct"
     }
   } else={
     :put "  Creating new DHCP lease for $bestMac"
-    /ip dhcp-server lease add address=$targetIp mac-address=$bestMac comment="$deviceName"
+    /ip dhcp-server lease add address="$targetIp" mac-address="$bestMac" comment="$deviceName"
+  }
+  
+  # Remove any other leases for this MAC (for different IPs)
+  :local allMacLeases [/ip dhcp-server lease find where mac-address=$bestMac]
+  :foreach macLease in=$allMacLeases do={
+    :local lease [/ip dhcp-server lease get $macLease]
+    :local leaseIp ($lease->"address")
+    :if ($leaseIp != $targetIp) do={
+      :put "  Removing stale lease: $bestMac -> $leaseIp"
+      /ip dhcp-server lease remove $macLease
+    }
   }
 }
 
