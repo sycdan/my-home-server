@@ -2,12 +2,6 @@
 
 This guide walks through setting up the new `.lan` hostname-based routing architecture.
 
-## Prerequisites
-
-- RouterOS device with script and scheduler capabilities
-- Reverse proxy server (Raspberry Pi) with nginx
-- Services on LAN with consistent MAC addresses
-
 ## Step 1: Configure RouterOS DNS
 
 Enable DNS resolution from within the LAN:
@@ -25,34 +19,28 @@ A single unified script handles discovering the reverse proxy and all services, 
 On your host machine:
 
 ```bash
-# Deploy the unified discovery script to RouterOS
-python devices/mikrotek-hex/deploy-service-script \
+devices/mikrotek-hex/deploy-script \
   devices/mikrotek-hex/scripts/discovery.rsc \
   --ssh-host router \
-  --schedule "00:05:00" \
-  --run
+  --run \
+  --schedule "00:05:00"
 ```
 
 This will:
+
 1. Create a script named `discovery` on the router
 2. Schedule it to run every 5 minutes
-3. Run it immediately to populate DNS entries
-4. The script updates all `.lan` hostnames based on ping reachability
-
-The script handles:
-- `ingress.lan` → finds reachable IP of Raspberry Pi (tries ethernet, then wireless)
-- `immich.lan` → finds reachable IP of Immich service
-- `jellyfin.lan` → finds reachable IP of Jellyfin service
+3. Run it immediately to populate DNS entries for all services (including ingress)
 
 ### Customizing for Your Services
 
 Edit [discovery.rsc](devices/mikrotek-hex/scripts/discovery.rsc) to add more services:
 
-```routeros
+```bash
 :local services {
   {
     "hostname"="service-name.lan";
-    "macs"={
+    "interfaces"={
       {"AA:BB:CC:DD:EE:FF"; "ethernet"};
       {"AA:BB:CC:DD:EE:GG"; "wireless"};
     }
@@ -62,7 +50,7 @@ Edit [discovery.rsc](devices/mikrotek-hex/scripts/discovery.rsc) to add more ser
 
 ## Step 3: Configure Reverse Proxy (nginx)
 
-The DNS discovery script now automatically updates `.lan` hostnames, so nginx can use them directly.
+The DNS discovery script automatically updates `.lan` hostnames, so nginx can use them directly.
 
 On the Raspberry Pi:
 
@@ -91,6 +79,7 @@ bash ~/configure-reverse-proxy.sh
 ```
 
 The script will:
+
 1. Generate nginx upstream blocks for each `.lan` hostname
 2. Create server blocks for each external domain  
 3. Reload nginx

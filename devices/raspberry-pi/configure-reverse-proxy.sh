@@ -6,9 +6,8 @@
 set -e
 
 declare -a SERVICES=(
-  # Example services - update these with your actual services
-  "stream.sycdan.com|jellyfin.lan|8096"
   "photos.sycdan.com|immich.lan|2283"
+  "stream.sycdan.com|jellyfin.lan|8096"
 )
 
 echo "Generating reverse proxy configuration..."
