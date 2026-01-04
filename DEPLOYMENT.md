@@ -67,8 +67,7 @@ The `SERVICES` array format is:
 ```bash
 declare -a SERVICES=(
   "external_domain|internal_hostname.lan|internal_port"
-  "stream.sycdan.com|jellyfin.lan|8096"
-  "photos.sycdan.com|immich.lan|2283"
+  "example.sycdan.com|example.lan|7777"
 )
 ```
 
