@@ -90,6 +90,7 @@
         :set bestInterface $interface
       } else={
         :put "  MAC $mac ($type) has no lease"
+      }
     }
   }
   
