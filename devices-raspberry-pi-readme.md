@@ -1,2 +1,0 @@
-# devices/raspberry-pi/README
-
