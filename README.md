@@ -2,7 +2,37 @@
 
 This guide walks through setting up hostname-based routing for home-hosted services.
 
-## Step 1: Configure RouterOS DNS
+## Ingress
+
+Traffic routing is handled by a reverse proxy on [[devices/raspberry-pi/README]].
+
+### Architecture
+
+```text
+WAN Client
+  ↓
+Router NAT: external port → ingress.lan:80
+  ↓
+Reverse Proxy (nginx)
+  ↓
+Resolves service hostname (e.g., immich.lan) → service IP
+  ↓
+Actual Service
+```
+
+**Key insight:** Routing is split into two DNS layers:
+
+1. **Router DNS** (authoritative for `.lan`):
+   - `ingress.lan` → automatically discovered reverse proxy IP
+   - `immich.lan`, `jellyfin.lan`, etc. → static DHCP IPs (from `/ip dhcp-server lease`)
+
+2. **Reverse Proxy DNS** (using system resolver):
+   - Resolves `.lan` names via router to find actual services
+   - Routes external requests to correct service based on domain
+
+## Deployment
+
+### Step 1: Configure RouterOS DNS
 
 Enable DNS resolution from within the LAN:
 
@@ -12,7 +42,7 @@ ssh router -x '/ip dns set allow-remote-requests=yes'
 
 This allows the router to answer DNS queries for internal `.lan` hostnames from DHCP leases.
 
-## Step 2: Deploy DNS Discovery Script
+### Step 2: Deploy DNS Discovery Script
 
 A single unified script handles discovering the reverse proxy and all services, pinging them to verify reachability, and updating DNS entries.
 
@@ -36,7 +66,7 @@ This will:
 
 Hairpin NAT will be configured for edge cases where the client bypasses the split DNS offered by the LAN router.
 
-### Customizing for Your Services
+#### Customizing for Your Services
 
 Edit [discovery.rsc](devices/mikrotek-hex/scripts/discovery.rsc) to add more services:
 
@@ -52,7 +82,7 @@ Edit [discovery.rsc](devices/mikrotek-hex/scripts/discovery.rsc) to add more ser
 }
 ```
 
-## Step 3: Configure Reverse Proxy (nginx)
+### Step 3: Configure Reverse Proxy (nginx)
 
 The DNS discovery script automatically updates `.lan` hostnames, so nginx can use them directly.
 
@@ -87,7 +117,7 @@ The script will:
 2. Create server blocks for each external domain  
 3. Reload nginx
 
-## Verification
+### Verification
 
 **Test RouterOS DNS:**
 
@@ -131,7 +161,7 @@ curl http://photos.sycdan.com
 ssh router -x '/ip firewall nat print where comment~"[MHS]"'
 ```
 
-### Troubleshooting
+#### Troubleshooting
 
 **DNS lookup fails:**
 

@@ -341,34 +341,6 @@ Block ads network-wide using the adlist feature. This method redirects ad domain
 
 TODO: script to run /ip dns adlist reload
 
-## Ingress
-
-Traffic routing is handled by a reverse proxy on [[devices/raspberry-pi/README]].
-
-### Architecture
-
-```
-WAN Client
-  ↓
-Router NAT: external port → ingress.lan:80
-  ↓
-Reverse Proxy (nginx)
-  ↓
-Resolves service hostname (e.g., immich.lan) → service IP
-  ↓
-Actual Service
-```
-
-**Key insight:** Routing is split into two DNS layers:
-
-1. **Router DNS** (authoritative for `.lan`):
-   - `ingress.lan` → automatically discovered reverse proxy IP
-   - `immich.lan`, `jellyfin.lan`, etc. → static DHCP IPs (from `/ip dhcp-server lease`)
-
-2. **Reverse Proxy DNS** (using system resolver):
-   - Resolves `.lan` names via router to find actual services
-   - Routes external requests to correct service based on domain
-
 ### Service Hostnames
 
 Each service must have:
