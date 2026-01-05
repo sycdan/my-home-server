@@ -192,3 +192,13 @@ ping jellyfin.lan
 # Test nginx config
 sudo nginx -t
 ```
+
+**Client can't reach services after moving hardware:**
+
+If you've moved a device (e.g., from WiFi to ethernet) and changed its IP, the router's DNS records will update via the discovery script. However, **client machines may have cached the old DNS entry**. Clear your DNS cache:
+
+- **Windows:** `ipconfig /flushdns` (in PowerShell/Command Prompt)
+- **macOS:** `sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder`
+- **Linux:** `sudo systemctl restart systemd-resolved` or flush your resolver cache
+
+After clearing the cache, DNS queries will hit the router again and resolve to the new IP. The TTL is set to 5 minutes, so stale entries expire quickly even without manual flushing.
