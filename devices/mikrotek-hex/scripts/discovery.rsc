@@ -61,7 +61,7 @@
   :local iftype $4
   
   /ip dns static remove [find name="$hostname"]
-  /ip dns static add name="$hostname" address="$ip" comment="$mac ($iftype) [MHS]"
+  /ip dns static add name="$hostname" address="$ip" comment="$mac ($iftype) [MHS]" ttl=5m
   :put "  DNS updated: $hostname -> $ip"
 }
 
@@ -177,7 +177,7 @@
   # Add new entries pointing to reverse proxy IP
   :foreach domain in=$externalDomains do={
     :put "Split DNS: $domain -> $rpIp"
-    /ip dns static add name=$domain address=$rpIp comment="Split DNS"
+    /ip dns static add name=$domain address=$rpIp comment="Split DNS" ttl=5m
   }
 } else={
   :put "ERROR: Reverse proxy IP not found, skipping split DNS update"
