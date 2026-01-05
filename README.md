@@ -4,7 +4,7 @@ This guide walks through setting up hostname-based routing for home-hosted servi
 
 ## Ingress
 
-Traffic routing is handled by a reverse proxy on [[devices/raspberry-pi/README]].
+Traffic routing is handled by a reverse proxy on [Raspberry Pi 3](devices/raspberry-pi/README.md).
 
 ### Architecture
 
@@ -17,18 +17,10 @@ Reverse Proxy (nginx)
   ↓
 Resolves service hostname (e.g., immich.lan) → service IP
   ↓
-Actual Service
+Actual services on different LAN machines
 ```
 
-**Key insight:** Routing is split into two DNS layers:
-
-1. **Router DNS** (authoritative for `.lan`):
-   - `ingress.lan` → automatically discovered reverse proxy IP
-   - `immich.lan`, `jellyfin.lan`, etc. → static DHCP IPs (from `/ip dhcp-server lease`)
-
-2. **Reverse Proxy DNS** (using system resolver):
-   - Resolves `.lan` names via router to find actual services
-   - Routes external requests to correct service based on domain
+For traffic from within the LAN, static DNS resolution of public hostnames (with hairpinning as a fallback) allows local clients to use the reverse proxy.
 
 ## Deployment
 
@@ -40,11 +32,11 @@ Enable DNS resolution from within the LAN:
 ssh router -x '/ip dns set allow-remote-requests=yes'
 ```
 
-This allows the router to answer DNS queries for internal `.lan` hostnames from DHCP leases.
+This allows the router to answer DNS queries for internal `.lan` hostnames.
 
 ### Step 2: Deploy DNS Discovery Script
 
-A single unified script handles discovering the reverse proxy and all services, pinging them to verify reachability, and updating DNS entries.
+A [single unified script](devices/mikrotek-hex/scripts/discovery.rsc) handles discovering the reverse proxy and all services, pinging them to verify reachability, and updating DNS entries.
 
 On your host machine:
 
@@ -61,10 +53,8 @@ This will:
 1. Create a script named `discovery` on the router
 2. Schedule it to run every 5 minutes
 3. Run it immediately to populate DNS entries for all services (including ingress)
-4. Automatically set up port forwarding NAT rules
-5. Automatically configure split DNS for external domains
-
-Hairpin NAT will be configured for edge cases where the client bypasses the split DNS offered by the LAN router.
+4. Set up port forwarding NAT rules and hairpinning
+5. Configure split DNS
 
 #### Customizing for Your Services
 
@@ -73,7 +63,7 @@ Edit [discovery.rsc](devices/mikrotek-hex/scripts/discovery.rsc) to add more ser
 ```bash
 :local services {
   {
-    "hostname"="service-name.lan";
+    "hostname"="example-service.lan";
     "interfaces"={
       {"AA:BB:CC:DD:EE:FF"; "ethernet"};
       {"AA:BB:CC:DD:EE:GG"; "wireless"};
