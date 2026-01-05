@@ -13,21 +13,25 @@ declare -a SERVICES=(
 echo "Generating reverse proxy configuration..."
 
 # Build nginx config from services array
-CONFIG=""
+# Note: We use resolver directive and variables for dynamic DNS resolution
+# This allows nginx to resolve .lan hostnames at request time rather than startup
+CONFIG="# Resolve .lan hostnames using the router's DNS
+resolver 192.168.1.1 valid=10s;
+resolver_timeout 5s;
+
+"
+
 for service in "${SERVICES[@]}"; do
   IFS='|' read -r DOMAIN HOSTNAME PORT <<< "$service"
   
-  CONFIG+="upstream ${HOSTNAME//./_}_backend {
-    server $HOSTNAME:$PORT;
-}
-
-server {
+  CONFIG+="server {
     listen 80;
     server_name $DOMAIN;
     client_max_body_size 4G;
 
     location / {
-        proxy_pass http://${HOSTNAME//./_}_backend;
+        set \$backend \"http://$HOSTNAME:$PORT\";
+        proxy_pass \$backend;
         proxy_http_version 1.1;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
