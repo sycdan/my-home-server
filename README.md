@@ -14,6 +14,8 @@ A unified home infrastructure system: Docker orchestration, DNS-based service di
 
 ## Domains
 
+Registered with [Porkbun](https://porkbun.com/account/domainsSpeedy)
+
 ## Add a new domain
 
 From reverse proxy machine:
