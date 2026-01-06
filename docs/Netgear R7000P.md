@@ -1,5 +1,3 @@
-# Netgear R7000p
-
 Wireless `access-point`.
 
 Connected to [[devices/mikrotek-hex/README]]  on `ether2`.

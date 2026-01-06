@@ -2,15 +2,19 @@
 
 A unified home infrastructure system: Docker orchestration, DNS-based service discovery, reverse proxy routing, and device-specific configuration scripts.
 
-**Key Principle:** Services are discovered by `.lan` hostnames (e.g., `immich.lan`, `jellyfin.lan`), not IPs. This allows devices to move/reboot without reconfiguring anything.
+**Key Principle:** Services are discovered by `example-service.lan` hostnames, not IPs. This allows devices to move/reboot with minimal reconfiguration.
 
-## Quick Start
+## Devices
 
-### Devices
+- **Router:** [MikroTik hEX](./docs/MikroTik%20hEX.md) running [RouterOS](https://help.mikrotik.com/docs/spaces/ROS/pages/328059/RouterOS)
+- **Access Point:** [Netgear R7000P](./docs/Netgear%20R7000P.md) running [DD-WRT](https://dd-wrt.com/)
+- **Service Hosts:**
+  - [Old Lenovo Laptop](./docs/Lenovo%204446%2038U.md) running [Ubuntu](https://ubuntu.com/download/desktop?version=24.04&architecture=amd64&lts=true)
+- **Reverse Proxy:** [Raspberry Pi 3](./docs/Raspberry%20Pi%203.md) running nginx
 
-- **Router:** Must run RouterOS (e.g. [MikroTik hEX](./docs/MikroTik%20hEX.md))
-- **Service Hosts:** One or more Linux machines capable of running Docker
-- **Reverse Proxy:** A lightweight machine to run nginx (e.g. [Raspberry Pi 3](./docs/Raspberry%20Pi%203.md))
+---
+
+# OLD
 
 ### 2. Deploy DNS Discovery
 
