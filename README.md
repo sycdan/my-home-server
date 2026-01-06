@@ -6,13 +6,13 @@ A unified home infrastructure system: Docker orchestration, DNS-based service di
 
 ## Devices
 
-| Name                                               | Role          | Operating System                                                                        |
-| -------------------------------------------------- | ------------- | --------------------------------------------------------------------------------------- |
-| [MikroTik hEX](./docs/MikroTik%20hEX.md)           | Router        | [RouterOS](https://help.mikrotik.com/docs/spaces/ROS/pages/328059/RouterOS)             |
-| [Netgear R7000P](./docs/Netgear%20R7000P.md)       | Access Point  | [DD-WRT](https://dd-wrt.com/)                                                           |
-| [Old Lenovo Laptop](./docs/Lenovo%204446%2038U.md) | Service Host  | [Ubuntu](https://ubuntu.com/download/desktop?version=24.04&architecture=amd64&lts=true) |
-| [Raspberry Pi 3](./docs/Raspberry%20Pi%203.md)     | Reverse Proxy | Linux                                                                                   |
-|                                                    |               |                                                                                         |
+| Name                                               | Role          | DNS Name    | Operating System                                                                        |
+| -------------------------------------------------- | ------------- | ----------- | --------------------------------------------------------------------------------------- |
+| [MikroTik hEX](./docs/MikroTik%20hEX.md)           | router        | router.lan  | [RouterOS](https://help.mikrotik.com/docs/spaces/ROS/pages/328059/RouterOS)             |
+| [Netgear R7000P](./docs/Netgear%20R7000P.md)       | access point  |             | [DD-WRT](https://dd-wrt.com/)                                                           |
+| [Old Lenovo Laptop](./docs/Lenovo%204446%2038U.md) | service host  | immich.lan  | [Ubuntu](https://ubuntu.com/download/desktop?version=24.04&architecture=amd64&lts=true) |
+| [Raspberry Pi 3](./docs/Raspberry%20Pi%203.md)     | reverse proxy | ingress.lan | Linux                                                                                   |
+|                                                    |               |             |                                                                                         |
 
 ## Domains
 
@@ -22,10 +22,9 @@ A unified home infrastructure system: Docker orchestration, DNS-based service di
 | wildharvesthomestead.com | Ingress domain | [Porkbun](https://porkbun.com/account)                                                        |
 |                          |                |                                                                                               |
 
+### Adding a new domain
 
-## Add a new domain
-
-From reverse proxy machine:
+From `ingress.lan` machine:
 
 ```bash
 ./services/ingress/init
