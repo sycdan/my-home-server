@@ -93,13 +93,6 @@ while read -r DOMAIN; do
     echo ""
 done < <(get_ingress_domains)
 
-echo ""
-echo "Summary:"
-echo "  ✅ Successful: $success_count"
-echo "  ⏭️  Skipped: $skip_count"
-echo "  ❌ Errors: $error_count"
-echo ""
-
 if [[ $error_count -gt 0 ]]; then
     print_warning "Some domains had errors. Check configuration and try again."
     exit 1
