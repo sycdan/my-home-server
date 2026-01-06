@@ -12,6 +12,16 @@ A unified home infrastructure system: Docker orchestration, DNS-based service di
   - [Old Lenovo Laptop](./docs/Lenovo%204446%2038U.md) running [Ubuntu](https://ubuntu.com/download/desktop?version=24.04&architecture=amd64&lts=true)
 - **Reverse Proxy**: [Raspberry Pi 3](./docs/Raspberry%20Pi%203.md) running nginx
 
+## Domains
+
+## Add a new domain
+
+From reverse proxy machine:
+
+```bash
+./services/init ingress
+```
+
 ---
 
 # OLD
