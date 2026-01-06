@@ -1,5 +1,3 @@
-# FreeDNS
-
 [sycdan.com](https://freedns.afraid.org/domain/viewhosts.php?domain_id=1419490)
 
 IP updates are linked together, so theoretically all subdomains will be updated at the same time if the WAN IP changes.

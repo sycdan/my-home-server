@@ -1,50 +1,40 @@
-# Mikrotek hEX
+## Setup
 
-Ethernet `router`. Cable modem connects to `ether1`.
+Connect cable modem to `ether1` port.
 
-Administer RouterOS using [WebFig](http://192.168.1.1) or SSH.
+### Configure SSH Access
 
-All scripts are idempotent (unless otherwise noted) and should be run from a terminal.
+- Log in to RouterOS using [WebFig](http://192.168.1.1)
+  - Ensure an A record for `router.lan` exists in IP -> DNS -> Static
+  - Initially uses 192.168.88.1; change it to 1.1 (need to change DHCP config also)
+- Go to Files -> Upload... and select your SSH public key
+- Go to System -> Users -> SSH Keys -> Import SSH Key and add your key to the `admin` user
+- Add a host to your local `~/.ssh/config`:
+```text
+Host router
+  HostName router.lan
+  User admin
+```
 
-## Prerequisites
-
-### Device Mode
-
-Device mode must be set to advanced from a terminal:
+### Enable advanced mode
 
 ```bash
-/system device-mode update mode=advanced
+ssh router '/system device-mode update mode=advanced'
 ```
 
 Then press the `MODE` button on the side of the router (it will restart automatically).
 
-### SSH Access
-
-- Go to Files and upload your SSH public key.
-- Go to System -> Users -> SSH Keys and add your key.
-
-If you add a `router` host to your ssh config, you can then run commands on the router from you local machine:
+### Enable DNS for LAN clients
 
 ```bash
-ssh router -x "/ip arp print"
+ssh router '/ip dns set allow-remote-requests=yes'
 ```
 
-## DHCP
+This allows internal clients to resolve `example-service.lan` hostnames.
 
-Uses `192.168.1.*`.
+---
 
-## DNS & Routing Architecture
-
-The network uses hostname-based routing via `.lan` domain for internal services. This decouples services from static IPs.
-
-### Enable DNS for DHCP hostnames
-
-```bash
-/ip dns set allow-remote-requests=yes
-/ip dhcp-server set [find] use-dns=yes
-```
-
-This allows internal clients to resolve DHCP-assigned hostnames (e.g., `ssh immich.lan`).
+# OLD
 
 ### Automatic Reverse Proxy Discovery
 

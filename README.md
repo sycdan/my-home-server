@@ -1,28 +1,16 @@
 # My Home Server
 
-A unified home infrastructure system: Docker orchestration, DNS-based service discovery, reverse proxy routing, and device-specific configs.
+A unified home infrastructure system: Docker orchestration, DNS-based service discovery, reverse proxy routing, and device-specific configuration scripts.
 
 **Key Principle:** Services are discovered by `.lan` hostnames (e.g., `immich.lan`, `jellyfin.lan`), not IPs. This allows devices to move/reboot without reconfiguring anything.
 
-## Quick Start: New Fleet Setup
+## Quick Start
 
-### Prerequisites
+### Devices
 
-- **Router:** MikroTik hEX running RouterOS
+- **Router:** Must run RouterOS (e.g. [MikroTik hEX](./docs/MikroTik%20hEX.md))
 - **Service Hosts:** One or more Linux machines capable of running Docker
-
-### 1. Configure RouterOS
-
-On your MikroTik router:
-
-```bash
-ssh router -x '/ip dns set allow-remote-requests=yes'
-```
-
-Enable advanced mode (press MODE button on device after setting in terminal):
-```bash
-ssh router -x '/system device-mode update mode=advanced'
-```
+- **Reverse Proxy:** A lightweight machine to run nginx (e.g. [Raspberry Pi 3](./docs/Raspberry%20Pi%203.md))
 
 ### 2. Deploy DNS Discovery
 

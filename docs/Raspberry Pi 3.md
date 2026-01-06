@@ -1,5 +1,3 @@
-# Raspberry Pi 3
-
 Acts as a reverse proxy to route traffic from the public internet to internal services.
 
 ## Access
