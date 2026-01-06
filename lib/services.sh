@@ -1,3 +1,6 @@
+# Primary domain for service ingress -- DDNS points to WAN IP, using freedns.afraid.org
+CNAME_TARGET="home.sycdan.com"
+
 # Format: "external_hostname|internal_hostname|internal_port"
 declare -a SERVICES=(
   "photos.wildharvesthomestead.com|immich.lan|2283"
@@ -189,4 +192,11 @@ require_command() {
 	fi
 	
 	print_success "$package installed"
+}
+
+get_ingress_domains() {
+	# Extract unique domains from SERVICES array
+	for service in "${SERVICES[@]}"; do
+		echo "${service%%|*}" | grep -oE '[^.]+\.[^.]+$' | sort -u
+	done | sort -u
 }

@@ -1,136 +1,108 @@
 #!/bin/bash
 
-set -e
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR="$( cd "$SCRIPT_DIR/../../" && pwd )"
 source "$ROOT_DIR/lib/common.sh"
 source "$ROOT_DIR/lib/services.sh"
 
-# Ensure dig is available
+print_status "Setting up ingress hostnames"
+echo ""
+
+require_command "curl"
 require_command "dig" "dnsutils"
 
-# Check for domain argument
-if [[ -z "$1" ]]; then
-    print_error "Missing domain argument"
-    echo "Usage: $0 <domain.com> [--subdomain=example-service]"
-    exit 1
-fi
+source "$SCRIPT_DIR/lib/validate-porkbun-credentials.sh"
+echo ""
 
-DOMAIN="$1"
-SUBDOMAIN=""
+success_count=0
+skip_count=0
+error_count=0
 
-# Parse optional subdomain argument
-if [[ -n "$2" ]]; then
-    if [[ "$2" =~ ^--subdomain= ]]; then
-        SUBDOMAIN="${2#--subdomain=}"
+# Show domains to be configured
+print_status "Configuring ingress domains:"
+get_ingress_domains | while read -r domain; do
+    echo "  - $domain"
+done
+echo ""
+
+# Process each unique domain
+while read -r DOMAIN; do
+    [[ -z "$DOMAIN" ]] && continue
+    
+    print_status "Checking domain: $DOMAIN"
+    
+    # Check if domain is registered (once per domain)
+    HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 "http://$DOMAIN" 2>/dev/null || echo "000")
+    
+    if ! [[ "$HTTP_STATUS" =~ ^[23] ]]; then
+        print_warning "Domain $DOMAIN not registered (HTTP $HTTP_STATUS), skipping all services"
+        ((skip_count++))
+        continue
     fi
-fi
-
-print_status "Setting up ingress for $DOMAIN"
-
-# Check for .env file and create from example if needed
-echo ""
-if [[ ! -f "$SCRIPT_DIR/.env" ]]; then
-    print_status "Creating .env file from example..."
-    cp "$SCRIPT_DIR/example.env" "$SCRIPT_DIR/.env"
-    print_warning ".env file created. Please edit it with your Porkbun API credentials:"
-    print_warning "  $SCRIPT_DIR/.env"
-    read -p "Press enter once you've added your API key and secret: "
-fi
-
-# Source .env and validate credentials
-source "$SCRIPT_DIR/.env"
-
-if [[ -z "$PORKBUN_API_KEY" || -z "$PORKBUN_SECRET_KEY" ]]; then
-    print_error "Missing Porkbun API credentials in .env file"
-    exit 1
-fi
-
-if [[ ! "$PORKBUN_API_KEY" =~ ^pk1_ ]]; then
-    print_error "PORKBUN_API_KEY must start with 'pk1_' (got: ${PORKBUN_API_KEY:0:10}...)"
-    exit 1
-fi
-
-if [[ ! "$PORKBUN_SECRET_KEY" =~ ^sk1_ ]]; then
-    print_error "PORKBUN_SECRET_KEY must start with 'sk1_' (got: ${PORKBUN_SECRET_KEY:0:10}...)"
-    exit 1
-fi
-
-print_success "Porkbun API credentials validated"
-
-# Check if domain is registered
-echo ""
-print_status "Checking if $DOMAIN is registered..."
-HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 "http://$DOMAIN" 2>/dev/null || echo "000")
-
-if [[ "$HTTP_STATUS" =~ ^[23] ]]; then
-    print_success "Domain $DOMAIN is registered! (HTTP $HTTP_STATUS)"
-else
-    print_warning "Domain $DOMAIN may not be registered yet (HTTP $HTTP_STATUS)"
-    echo "If you just registered it, DNS may still be propagating."
-    read -p "Continue anyway? (y/n): " -n 1 -r
+    
+    print_success "Domain $DOMAIN is registered"
     echo ""
     
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        print_error "Please ensure your domain is registered and try again."
-        exit 1
-    fi
-fi
+    # Process all services for this domain
+    for service in "${SERVICES[@]}"; do
+        FULL_HOSTNAME="${service%%|*}"
+        
+        # Skip if not for this domain
+        if [[ ! "$FULL_HOSTNAME" == *"$DOMAIN" ]]; then
+            continue
+        fi
+        
+        # Extract subdomain
+        SUBDOMAIN=$(echo "$FULL_HOSTNAME" | sed "s/\.$DOMAIN$//")
+        
+        print_status "Setting up: $FULL_HOSTNAME -> $CNAME_TARGET"
+        
+        # Check if CNAME already exists
+        EXISTING_CNAME=$(dig +short $FULL_HOSTNAME CNAME 2>/dev/null | head -1)
+        if [[ "$EXISTING_CNAME" == "$CNAME_TARGET." ]]; then
+            print_success "CNAME already configured: $FULL_HOSTNAME"
+            ((success_count++))
+            continue
+        fi
+        
+        # Create CNAME record via Porkbun API
+        API_RESPONSE=$(curl -s -X POST "https://api.porkbun.com/api/json/v3/dns/create/$DOMAIN" \
+            -H "Content-Type: application/json" \
+            -d "{
+                \"apikey\": \"$PORKBUN_API_KEY\",
+                \"secretapikey\": \"$PORKBUN_SECRET_KEY\",
+                \"name\": \"$SUBDOMAIN\",
+                \"type\": \"CNAME\",
+                \"content\": \"$CNAME_TARGET\",
+                \"ttl\": \"300\"
+            }")
+
+        if echo "$API_RESPONSE" | grep -q '"status":"SUCCESS"'; then
+            print_success "CNAME created: $FULL_HOSTNAME"
+            ((success_count++))
+        elif echo "$API_RESPONSE" | grep -q "Domain is not opted in to API access"; then
+            print_error "Domain $DOMAIN is not opted in to API access"
+            echo "  Enable at: https://porkbun.com/account/domainsSpeedy"
+            ((error_count++))
+        else
+            ERROR_MSG=$(echo "$API_RESPONSE" | grep -o '"message":"[^"]*' | cut -d'"' -f4)
+            print_error "API error for $FULL_HOSTNAME: $ERROR_MSG"
+            ((error_count++))
+        fi
+    done
+    echo ""
+done < <(get_ingress_domains)
 
 echo ""
-
-# Ask for subdomain if not provided via argument
-if [[ -z "$SUBDOMAIN" ]]; then
-	read -p "Enter subdomain name (e.g. example-service): " SUBDOMAIN
-	echo ""
-fi
-
-if [[ -z "$SUBDOMAIN" ]]; then
-	print_warning "No subdomain entered. Skipping host setup."
-	exit 0
-fi
-
-
-FULL_HOSTNAME="$SUBDOMAIN.$DOMAIN"
-print_status "Checking if CNAME already exists for $FULL_HOSTNAME..."
-
-EXISTING_CNAME=$(dig +short $FULL_HOSTNAME CNAME 2>/dev/null | head -1)
-if [[ "$EXISTING_CNAME" == "$CNAME_TARGET." ]]; then
-    print_success "CNAME already configured and pointing to $CNAME_TARGET"
-else
-    # Create CNAME record via Porkbun API
-    print_status "Creating CNAME record: $FULL_HOSTNAME -> $CNAME_TARGET"
-    API_RESPONSE=$(curl -s -X POST "https://api.porkbun.com/api/json/v3/dns/create/$DOMAIN" \
-        -H "Content-Type: application/json" \
-        -d "{
-            \"apikey\": \"$PORKBUN_API_KEY\",
-            \"secretapikey\": \"$PORKBUN_SECRET_KEY\",
-            \"name\": \"$SUBDOMAIN\",
-            \"type\": \"CNAME\",
-            \"content\": \"$CNAME_TARGET\",
-            \"ttl\": \"300\"
-        }")
-
-    if echo "$API_RESPONSE" | grep -q '"status":"SUCCESS"'; then
-        print_success "CNAME record created successfully!"
-				print_status "It may take a few minutes for DNS changes to propagate."
-    elif echo "$API_RESPONSE" | grep -q "Domain is not opted in to API access"; then
-        print_error "Domain is not opted in to API access"
-        echo ""
-        echo "To enable API access for your domain:"
-        echo "  1. Go to https://porkbun.com/account/domainsSpeedy"
-        echo "  2. Click 'Details' next to $DOMAIN"
-        echo "  3. Scroll to 'API Access' and enable it"
-        echo "  4. Run this script again"
-        echo ""
-        exit 1
-    else
-        ERROR_MSG=$(echo "$API_RESPONSE" | grep -o '"message":"[^"]*' | cut -d'"' -f4)
-        print_error "API error: $ERROR_MSG"
-        echo "Full response: $API_RESPONSE"
-        exit 1
-    fi
-fi
-
+echo "Summary:"
+echo "  ✅ Successful: $success_count"
+echo "  ⏭️  Skipped: $skip_count"
+echo "  ❌ Errors: $error_count"
 echo ""
-print_success "Subdomain setup complete!"
+
+if [[ $error_count -gt 0 ]]; then
+    print_warning "Some domains had errors. Check configuration and try again."
+    exit 1
+fi
+
+print_success "Ingress setup complete!"
