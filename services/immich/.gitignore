@@ -1,5 +1,8 @@
-#annexed-files
+# symlink
+library
+
+# data dirs
 library/*
 postgres/*
+
 .env
-#/annexed-files
