@@ -8,11 +8,20 @@ source "$ROOT_DIR/lib/common.sh"
 # Check for domain argument
 if [[ -z "$1" ]]; then
     print_error "Missing domain argument"
-    echo "Usage: $0 <domain.com>"
+    echo "Usage: $0 <domain.com> [--subdomain=example-service]"
     exit 1
 fi
 
 DOMAIN="$1"
+SUBDOMAIN=""
+
+# Parse optional subdomain argument
+if [[ -n "$2" ]]; then
+    if [[ "$2" =~ ^--subdomain= ]]; then
+        SUBDOMAIN="${2#--subdomain=}"
+    fi
+fi
+
 print_status "Setting up ingress for $DOMAIN"
 
 # Check for .env file and create from example if needed
@@ -45,66 +54,78 @@ fi
 
 print_success "Porkbun API credentials validated"
 
-# Get WAN IP
+# Check if domain is registered
 echo ""
-print_status "Fetching your WAN IP..."
-WAN_IP=$(curl -s https://api.ipify.org)
-if [[ -z "$WAN_IP" ]]; then
-    print_error "Failed to determine WAN IP. Please check your internet connection."
-    exit 1
-fi
-print_success "Your WAN IP: $WAN_IP"
+print_status "Checking if $DOMAIN is registered..."
+HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 "http://$DOMAIN" 2>/dev/null || echo "000")
 
-# Check if domain resolves correctly
-echo ""
-print_status "Checking if $DOMAIN points to your WAN IP..."
-DOMAIN_IP=$(getent hosts "$DOMAIN" 2>/dev/null | awk '{print $1}' | head -1)
-
-if [[ "$DOMAIN_IP" == "$WAN_IP" ]]; then
-    print_success "Domain $DOMAIN correctly points to $WAN_IP!"
-elif [[ -n "$DOMAIN_IP" ]]; then
-    print_warning "Domain $DOMAIN resolves to $DOMAIN_IP, but your WAN IP is $WAN_IP"
-    echo "Update your domain's A record to point to $WAN_IP"
+if [[ "$HTTP_STATUS" =~ ^[23] ]]; then
+    print_success "Domain $DOMAIN is registered! (HTTP $HTTP_STATUS)"
+else
+    print_warning "Domain $DOMAIN may not be registered yet (HTTP $HTTP_STATUS)"
+    echo "If you just registered it, DNS may still be propagating."
     read -p "Continue anyway? (y/n): " -n 1 -r
     echo ""
     
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        print_error "Please update your domain's DNS settings and try again."
+        print_error "Please ensure your domain is registered and try again."
         exit 1
-    fi
-else
-    print_warning "Domain $DOMAIN is not registered or DNS is not configured"
-    echo ""
-    echo "Before continuing, you need to:"
-    echo "  1. Register the domain (e.g., Porkbun, Namecheap, Google Domains)"
-    echo "  2. Create an A record pointing to: $WAN_IP"
-    echo ""
-    read -p "Have you registered and configured the domain? (y/n): " -n 1 -r
-    echo ""
-    
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        print_error "Please register the domain and configure DNS, then try again."
-        exit 1
-    fi
-    
-    print_status "Verifying domain now resolves..."
-    DOMAIN_IP=$(getent hosts "$DOMAIN" 2>/dev/null | awk '{print $1}' | head -1)
-    
-    if [[ "$DOMAIN_IP" == "$WAN_IP" ]]; then
-        print_success "Domain $DOMAIN now correctly points to $WAN_IP!"
-    else
-        print_warning "Domain still not resolving correctly. DNS may take time to propagate (up to 24-48 hours)."
-        echo "Expected: $WAN_IP"
-        echo "Got:      $DOMAIN_IP"
-        read -p "Continue anyway? (y/n): " -n 1 -r
-        echo ""
-        
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            print_error "Please wait for DNS to propagate and try again."
-            exit 1
-        fi
     fi
 fi
 
-print_success "Domain check complete. More steps coming soon..."
+echo ""
 
+# Ask for subdomain if not provided via argument
+if [[ -z "$SUBDOMAIN" ]]; then
+	read -p "Enter subdomain name (e.g. example-service): " SUBDOMAIN
+	echo ""
+fi
+
+if [[ -z "$SUBDOMAIN" ]]; then
+	print_warning "No subdomain entered. Skipping host setup."
+	exit 0
+fi
+
+
+FULL_HOSTNAME="$SUBDOMAIN.$DOMAIN"
+print_status "Checking if CNAME already exists for $FULL_HOSTNAME..."
+
+EXISTING_CNAME=$(dig +short $FULL_HOSTNAME CNAME 2>/dev/null | head -1)
+if [[ "$EXISTING_CNAME" == "$CNAME_TARGET." ]]; then
+    print_success "CNAME already configured and pointing to $CNAME_TARGET"
+else
+    # Create CNAME record via Porkbun API
+    print_status "Creating CNAME record: $FULL_HOSTNAME -> $CNAME_TARGET"
+    API_RESPONSE=$(curl -s -X POST "https://api.porkbun.com/api/json/v3/dns/create/$DOMAIN" \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"apikey\": \"$PORKBUN_API_KEY\",
+            \"secretapikey\": \"$PORKBUN_SECRET_KEY\",
+            \"name\": \"$SUBDOMAIN\",
+            \"type\": \"CNAME\",
+            \"content\": \"$CNAME_TARGET\",
+            \"ttl\": \"300\"
+        }")
+
+    if echo "$API_RESPONSE" | grep -q '"status":"SUCCESS"'; then
+        print_success "CNAME record created successfully!"
+    elif echo "$API_RESPONSE" | grep -q "Domain is not opted in to API access"; then
+        print_error "Domain is not opted in to API access"
+        echo ""
+        echo "To enable API access for your domain:"
+        echo "  1. Go to https://porkbun.com/account/"
+        echo "  2. Click 'Details' next to $DOMAIN"
+        echo "  3. Scroll to 'API Access' and enable it"
+        echo "  4. Run this script again"
+        echo ""
+        exit 1
+    else
+        ERROR_MSG=$(echo "$API_RESPONSE" | grep -o '"message":"[^"]*' | cut -d'"' -f4)
+        print_error "API error: $ERROR_MSG"
+        echo "Full response: $API_RESPONSE"
+        exit 1
+    fi
+fi
+
+echo ""
+print_success "Subdomain setup complete!"

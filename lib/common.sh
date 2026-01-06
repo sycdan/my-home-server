@@ -1,3 +1,6 @@
+# Primary domain for service ingress -- DDNS points to WAN IP, using freedns.afraid.org
+CNAME_TARGET="home.sycdan.com"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -10,7 +13,7 @@ print_status() {
 }
 
 print_success() {
-	echo -e "${GREEN}✅ ${NC} $1"
+	echo -e "${GREEN}✅${NC} $1"
 }
 
 print_warning() {
