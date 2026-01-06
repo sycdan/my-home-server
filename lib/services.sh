@@ -1,12 +1,3 @@
-#!/bin/bash
-
-set -e
-
-# Source common utilities
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-ROOT_DIR="$( cd "$SCRIPT_DIR/../" && pwd )"
-source "$ROOT_DIR/lib/common.sh"
-
 check_root() {
 	if [[ $EUID -eq 0 ]]; then
 		print_error "This script should not be run as root"
@@ -47,6 +38,7 @@ update_system() {
 	sudo apt-get autoremove -y
 	print_success "System updated"
 }
+
 
 install_utilities() {
 	print_status "Checking for required utilities..."
@@ -167,58 +159,3 @@ install_docker() {
 	print_success "Docker installed successfully"
 	print_warning "You may need to log out and back in for Docker group permissions to take effect"
 }
-
-list_available_services() {
-	"$ROOT_DIR/services/ctl" all list
-}
-
-setup_service() {
-	local service=$1
-	local service_dir="$ROOT_DIR/services/$service"
-	
-	print_status "Setting up service: $service"
-
-	if [[ ! -d "$service_dir" ]]; then
-		print_error "Service directory not found: $service_dir"
-		return 1
-	fi
-	
-	if [[ ! -f "$service_dir/bootstrap.sh" ]]; then
-		print_error "Setup script not found: $service_dir/bootstrap.sh"
-		return 1
-	fi
-	
-	bash "$service_dir/bootstrap.sh"
-	
-	print_success "$service setup completed"
-}
-
-main() {
-	print_status "Initializing My Home Server"
-	
-	check_root
-	check_os
-	update_system
-	install_utilities
-	install_docker
-	configure_firewall
-	configure_fail2ban
-	
-	if [[ $# -eq 0 ]]; then
-		print_warning "No services specified"
-		list_available_services
-		echo ""
-		echo "Usage: $0 <service1> [service2] [service3] ..."
-		echo ""
-		exit 0
-	fi
-	
-	for service in "$@"; do
-		setup_service "$service" || print_warning "Failed to setup $service"
-		echo ""
-	done
-	
-	print_status "Start services with: ./ctl up <service>"
-}
-
-main "$@"

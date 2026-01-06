@@ -19,7 +19,7 @@ A unified home infrastructure system: Docker orchestration, DNS-based service di
 From reverse proxy machine:
 
 ```bash
-./services/init ingress
+./services/ingress/init
 ```
 
 ---

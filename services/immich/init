@@ -2,13 +2,10 @@
 # Should be idempotent - safe to run multiple times
 
 set -e
-
-# Find the directory where this script is located
 SERVICE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR="$( cd "$SERVICE_DIR/../../" && pwd )"
-
-# Source common utilities
 source "$ROOT_DIR/lib/common.sh"
+source "$ROOT_DIR/lib/services.sh"
 
 create_env_file() {
 	if [[ -f "$SERVICE_DIR/.env" ]]; then
@@ -83,9 +80,19 @@ validate_env() {
 }
 
 main() {
-	print_status "Immich Service Bootstrap"
+	print_status "Initializing Immich"
 	echo ""
-	
+
+	# Boostrapping
+	check_root
+	check_os
+	update_system
+	install_utilities
+	install_docker
+	configure_firewall
+	configure_fail2ban
+
+	# Service setup
 	create_directories
 	create_env_file
 	validate_env
@@ -93,13 +100,13 @@ main() {
 	echo ""
 	print_success "Immich service is ready!"
 	print_status "To start Immich, run:"
-	echo "  ./ctl immich up"
+	echo "  ./services/immich/ctl up"
 	echo ""
 	print_status "To stop Immich, run:"
-	echo "  ./ctl immich down"
+	echo "  ./services/immich/ctl down"
 	echo ""
 	print_status "View logs with:"
-	echo "  ./ctl immich logs"
+	echo "  ./services/immich/ctl logs"
 }
 
 main "$@"

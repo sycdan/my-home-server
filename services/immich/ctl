@@ -4,7 +4,7 @@ set -e
 
 # Source common utilities
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-ROOT_DIR="$( cd "$SCRIPT_DIR/../" && pwd )"
+ROOT_DIR="$( cd "$SCRIPT_DIR/../../" && pwd )"
 source "$ROOT_DIR/lib/common.sh"
 
 # Service commands with descriptions
@@ -112,16 +112,6 @@ run_compose() {
 			docker compose ps
 			;;
 	esac
-}
-
-list_services() {
-	print_status "Available services:"
-	for service_dir in "$ROOT_DIR/services"/*/; do
-		service_name=$(basename "$service_dir")
-		if [[ -f "$service_dir/bootstrap.sh" ]]; then
-			echo "  - $service_name"
-		fi
-	done
 }
 
 validate_service() {
