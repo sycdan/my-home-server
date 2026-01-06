@@ -12,10 +12,16 @@ A unified home infrastructure system: Docker orchestration, DNS-based service di
 | [Netgear R7000P](./docs/Netgear%20R7000P.md)       | Access Point  | [DD-WRT](https://dd-wrt.com/)                                                           |
 | [Old Lenovo Laptop](./docs/Lenovo%204446%2038U.md) | Service Host  | [Ubuntu](https://ubuntu.com/download/desktop?version=24.04&architecture=amd64&lts=true) |
 | [Raspberry Pi 3](./docs/Raspberry%20Pi%203.md)     | Reverse Proxy | Linux                                                                                   |
+|                                                    |               |                                                                                         |
 
 ## Domains
 
-Registered with [Porkbun](https://porkbun.com/account/domainsSpeedy)
+| Domain                   | Role           | Registrar                                                                                     |
+| ------------------------ | -------------- | --------------------------------------------------------------------------------------------- |
+| sycdan.com               | DDNS domain    | [DreamHost](https://panel.dreamhost.com/index.cgi?tree=domain.dashboard#/site/sycdan.com/dns) |
+| wildharvesthomestead.com | Ingress domain | [Porkbun](https://porkbun.com/account)                                                        |
+|                          |                |                                                                                               |
+
 
 ## Add a new domain
 
