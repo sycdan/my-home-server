@@ -29,6 +29,18 @@ check_os() {
 }
 
 update_system() {
+	# Skip if apt cache was updated in the last 6 hours
+	local apt_cache_file="/var/lib/apt/periodic/update-success-stamp"
+	if [[ -f "$apt_cache_file" ]]; then
+		local last_update=$(stat -c %Y "$apt_cache_file" 2>/dev/null || echo 0)
+		local current_time=$(date +%s)
+		local hours_since=$((($current_time - $last_update) / 3600))
+		if [[ $hours_since -lt 6 ]]; then
+			print_status "System packages updated ${hours_since}h ago, skipping update"
+			return
+		fi
+	fi
+	
 	print_status "Updating system packages..."
 	sudo apt-get update
 	sudo apt-get upgrade -y
@@ -37,23 +49,50 @@ update_system() {
 }
 
 install_utilities() {
-	print_status "Installing utilities..."
-	sudo apt-get install -y \
-		curl \
-		wget \
-		git \
-		nano \
-		htop \
-		ufw \
-		fail2ban \
-		unzip \
-		tree
+	print_status "Checking for required utilities..."
+	
+	# List of utilities to install
+	local utilities=(
+		"curl"
+		"wget"
+		"git"
+		"nano"
+		"htop"
+		"ufw"
+		"fail2ban"
+		"unzip"
+		"tree"
+	)
+	
+	# Check which utilities are already installed
+	local missing=()
+	for util in "${utilities[@]}"; do
+		# Try command first (for tools with CLI), then fall back to dpkg (for services)
+		if ! command -v "$util" &> /dev/null && ! dpkg -l | grep -q "^ii  $util"; then
+			missing+=("$util")
+		fi
+	done
+	
+	# If all are installed, skip
+	if [[ ${#missing[@]} -eq 0 ]]; then
+		print_success "All required utilities are already installed"
+		return
+	fi
+	
+	print_status "Installing missing utilities: ${missing[*]}"
+	sudo apt-get install -y "${missing[@]}"
 	print_success "Utilities installed"
 }
 
 configure_firewall() {
 	if grep -qi microsoft /proc/version; then
 		print_warning "Running in WSL - skipping UFW firewall (use Windows Firewall instead)"
+		return
+	fi
+	
+	# Check if UFW is already enabled
+	if sudo ufw status | grep -q "Status: active"; then
+		print_status "Firewall is already configured and active"
 		return
 	fi
 	
@@ -76,6 +115,12 @@ configure_firewall() {
 configure_fail2ban() {
 	if grep -qi microsoft /proc/version; then
 		print_warning "Running in WSL - skipping fail2ban (systemd may not be available)"
+		return
+	fi
+	
+	# Check if fail2ban is already running
+	if sudo systemctl is-active --quiet fail2ban; then
+		print_status "fail2ban is already configured and running"
 		return
 	fi
 	

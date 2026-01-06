@@ -118,7 +118,7 @@ list_services() {
 	print_status "Available services:"
 	for service_dir in "$ROOT_DIR/services"/*/; do
 		service_name=$(basename "$service_dir")
-		if [[ -f "$service_dir/docker-compose.yml" ]]; then
+		if [[ -f "$service_dir/bootstrap.sh" ]]; then
 			echo "  - $service_name"
 		fi
 	done
