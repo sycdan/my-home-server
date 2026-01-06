@@ -7,6 +7,7 @@ set -e
 
 declare -a SERVICES=(
   "photos.sycdan.com|immich.lan|2283"
+  "photos.wildharvesthomestead.com|immich.lan|2283"
   "stream.sycdan.com|jellyfin.lan|8096"
 )
 

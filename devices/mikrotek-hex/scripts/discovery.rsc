@@ -168,6 +168,7 @@
   # List of external domains that should resolve to the reverse proxy internally
   :local externalDomains {
     "photos.sycdan.com"
+    "photos.wildharvesthomestead.com"
     "stream.sycdan.com"
   }
   
