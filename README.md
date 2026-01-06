@@ -22,6 +22,10 @@ From reverse proxy machine:
 ./services/ingress/init
 ```
 
+## Hosted Services
+
+- **[Immich](./services/immich/README.md)**
+
 ---
 
 # OLD
