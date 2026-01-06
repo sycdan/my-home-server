@@ -1,0 +1,1 @@
+echo "See ./devices/raspberry-pi/README.md for setup instructions."
