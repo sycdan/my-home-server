@@ -5,6 +5,76 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR="$( cd "$SCRIPT_DIR/../../" && pwd )"
 source "$ROOT_DIR/lib/common.sh"
 
-echo "Please visit https://freedns.afraid.org/ to set up your account and domains."
-echo "See ./devices/raspberry-pi/README.md for setup instructions."
+# Check for domain argument
+if [[ -z "$1" ]]; then
+    print_error "Missing domain argument"
+    echo "Usage: $0 <domain.com>"
+    exit 1
+fi
+
+DOMAIN="$1"
+print_status "Setting up ingress for $DOMAIN"
+
+# Get WAN IP
+echo ""
+print_status "Fetching your WAN IP..."
+WAN_IP=$(curl -s https://api.ipify.org)
+if [[ -z "$WAN_IP" ]]; then
+    print_error "Failed to determine WAN IP. Please check your internet connection."
+    exit 1
+fi
+print_success "Your WAN IP: $WAN_IP"
+
+# Check if domain resolves correctly
+echo ""
+print_status "Checking if $DOMAIN points to your WAN IP..."
+DOMAIN_IP=$(getent hosts "$DOMAIN" 2>/dev/null | awk '{print $1}' | head -1)
+
+if [[ "$DOMAIN_IP" == "$WAN_IP" ]]; then
+    print_success "Domain $DOMAIN correctly points to $WAN_IP!"
+elif [[ -n "$DOMAIN_IP" ]]; then
+    print_warning "Domain $DOMAIN resolves to $DOMAIN_IP, but your WAN IP is $WAN_IP"
+    echo "Update your domain's A record to point to $WAN_IP"
+    read -p "Continue anyway? (y/n): " -n 1 -r
+    echo ""
+    
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        print_error "Please update your domain's DNS settings and try again."
+        exit 1
+    fi
+else
+    print_warning "Domain $DOMAIN is not registered or DNS is not configured"
+    echo ""
+    echo "Before continuing, you need to:"
+    echo "  1. Register the domain (e.g., Porkbun, Namecheap, Google Domains)"
+    echo "  2. Create an A record pointing to: $WAN_IP"
+    echo ""
+    read -p "Have you registered and configured the domain? (y/n): " -n 1 -r
+    echo ""
+    
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        print_error "Please register the domain and configure DNS, then try again."
+        exit 1
+    fi
+    
+    print_status "Verifying domain now resolves..."
+    DOMAIN_IP=$(getent hosts "$DOMAIN" 2>/dev/null | awk '{print $1}' | head -1)
+    
+    if [[ "$DOMAIN_IP" == "$WAN_IP" ]]; then
+        print_success "Domain $DOMAIN now correctly points to $WAN_IP!"
+    else
+        print_warning "Domain still not resolving correctly. DNS may take time to propagate (up to 24-48 hours)."
+        echo "Expected: $WAN_IP"
+        echo "Got:      $DOMAIN_IP"
+        read -p "Continue anyway? (y/n): " -n 1 -r
+        echo ""
+        
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            print_error "Please wait for DNS to propagate and try again."
+            exit 1
+        fi
+    fi
+fi
+
+print_success "Domain check complete. More steps coming soon..."
 
