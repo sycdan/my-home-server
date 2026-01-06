@@ -109,11 +109,12 @@ else
 
     if echo "$API_RESPONSE" | grep -q '"status":"SUCCESS"'; then
         print_success "CNAME record created successfully!"
+				print_status "It may take a few minutes for DNS changes to propagate."
     elif echo "$API_RESPONSE" | grep -q "Domain is not opted in to API access"; then
         print_error "Domain is not opted in to API access"
         echo ""
         echo "To enable API access for your domain:"
-        echo "  1. Go to https://porkbun.com/account/"
+        echo "  1. Go to https://porkbun.com/account/domainsSpeedy"
         echo "  2. Click 'Details' next to $DOMAIN"
         echo "  3. Scroll to 'API Access' and enable it"
         echo "  4. Run this script again"
