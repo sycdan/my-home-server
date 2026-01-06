@@ -1,15 +1,21 @@
 # Services
 
-Tools for managing Docker-based services on home-server machines.
+Services are run with docker (unless otherwise specified in the service docs).
 
 ## Quick Start
+
+```bash
+./services/init <service>
+```
+
+Where `<service>` is 
 
 ### 1. Initial Setup (Bootstrap)
 
 Run this once on a server machine to install Docker and initialize services:
 
 ```bash
-./init
+
 ```
 
 The init script will:

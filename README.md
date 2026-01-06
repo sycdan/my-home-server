@@ -1,12 +1,16 @@
 # My Home Server
 
-This guide walks through setting up hostname-based routing for home-hosted services.
+Clone this repo to `~/my-home-server` on any machine that will host a service.
 
-## Ingress
+All `README.md` files herein assume commands will be run from the repo root (aka `./`).
 
-Traffic routing is handled by a reverse proxy on [Raspberry Pi 3](devices/raspberry-pi/README.md).
+## [Services](/services/README.md)
 
-### Architecture
+When documentation refers to `<service>` or `example-service`, the string should be replaced by the name of one of the folders within `./services`.
+
+## Architecture
+
+Traffic routing to (ingress) is handled by a reverse proxy on [Raspberry Pi 3](devices/raspberry-pi/README.md).
 
 ```text
 WAN Client
