@@ -5,20 +5,17 @@ ROOT_DIR="$( cd "$SCRIPT_DIR/../../" && pwd )"
 source "$ROOT_DIR/lib/common.sh"
 source "$ROOT_DIR/lib/services.sh"
 
-print_status "Setting up ingress hostnames"
-echo ""
-
 require_command "curl"
 require_command "dig" "dnsutils"
 
 source "$SCRIPT_DIR/lib/validate-porkbun-credentials.sh"
-echo ""
 
 success_count=0
 skip_count=0
 error_count=0
 
 # Show domains to be configured
+echo ""
 print_status "Configuring ingress domains:"
 get_ingress_domains | while read -r domain; do
     echo "  - $domain"
@@ -98,4 +95,8 @@ if [[ $error_count -gt 0 ]]; then
     exit 1
 fi
 
+echo ""
+source "$SCRIPT_DIR/lib/configure-nginx.sh"
+
+echo ""
 print_success "Ingress setup complete!"
