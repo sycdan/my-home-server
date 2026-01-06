@@ -1,6 +1,8 @@
 # Services
 
-Services are run with docker (unless otherwise specified in the service docs).
+Services are run with docker (unless otherwise specified in its `README.md`).
+
+Traffic routing (ingress) to services is handled by a reverse proxy on [Raspberry Pi 3](../devices/raspberry-pi/README.md).
 
 ## Quick Start
 

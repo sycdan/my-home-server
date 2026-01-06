@@ -8,24 +8,6 @@ All `README.md` files herein assume commands will be run from the repo root (aka
 
 When documentation refers to `<service>` or `example-service`, the string should be replaced by the name of one of the folders within `./services`.
 
-## Architecture
-
-Traffic routing to (ingress) is handled by a reverse proxy on [Raspberry Pi 3](devices/raspberry-pi/README.md).
-
-```text
-WAN Client
-  ↓
-Router NAT: external port → ingress.lan:80
-  ↓
-Reverse Proxy (nginx)
-  ↓
-Resolves service hostname (e.g., immich.lan) → service IP
-  ↓
-Actual services on different LAN machines
-```
-
-For traffic from within the LAN, static DNS resolution of public hostnames (with hairpinning as a fallback) allows local clients to use the reverse proxy.
-
 ## Deployment
 
 ### Step 1: Configure RouterOS DNS

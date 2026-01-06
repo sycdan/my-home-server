@@ -124,7 +124,7 @@ install_docker() {
 }
 
 list_available_services() {
-	"$ROOT_DIR/ctl" all list
+	"$ROOT_DIR/services/ctl" all list
 }
 
 setup_service() {
