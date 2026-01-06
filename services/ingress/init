@@ -4,6 +4,10 @@ set -e
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR="$( cd "$SCRIPT_DIR/../../" && pwd )"
 source "$ROOT_DIR/lib/common.sh"
+source "$ROOT_DIR/lib/services.sh"
+
+# Ensure dig is available
+require_command "dig" "dnsutils"
 
 # Check for domain argument
 if [[ -z "$1" ]]; then

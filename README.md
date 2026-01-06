@@ -11,7 +11,7 @@ A unified home infrastructure system: Docker orchestration, DNS-based service di
 | [MikroTik hEX](./docs/MikroTik%20hEX.md)           | router        | router.lan  | [RouterOS](https://help.mikrotik.com/docs/spaces/ROS/pages/328059/RouterOS)             |
 | [Netgear R7000P](./docs/Netgear%20R7000P.md)       | access point  |             | [DD-WRT](https://dd-wrt.com/)                                                           |
 | [Old Lenovo Laptop](./docs/Lenovo%204446%2038U.md) | service host  | immich.lan  | [Ubuntu](https://ubuntu.com/download/desktop?version=24.04&architecture=amd64&lts=true) |
-| [Raspberry Pi 3](./docs/Raspberry%20Pi%203.md)     | reverse proxy | ingress.lan | Linux                                                                                   |
+| [Raspberry Pi 3](./docs/Raspberry%20Pi%203.md)     | reverse proxy | ingress.lan | Debian                                                                                   |
 |                                                    |               |             |                                                                                         |
 
 ## Domains
@@ -24,7 +24,7 @@ A unified home infrastructure system: Docker orchestration, DNS-based service di
 
 ### Adding a new domain
 
-From `ingress.lan` machine:
+From the `ingress.lan` machine, modify the [SERVICES array](./lib/services.sh) then run:
 
 ```bash
 ./services/ingress/init

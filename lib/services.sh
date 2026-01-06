@@ -1,3 +1,9 @@
+# Format: "external_hostname|internal_hostname|internal_port"
+declare -a SERVICES=(
+  "photos.wildharvesthomestead.com|immich.lan|2283"
+  "stream.wildharvesthomestead.com|jellyfin.lan|8096"
+)
+
 check_root() {
 	if [[ $EUID -eq 0 ]]; then
 		print_error "This script should not be run as root"
@@ -158,4 +164,29 @@ install_docker() {
 	
 	print_success "Docker installed successfully"
 	print_warning "You may need to log out and back in for Docker group permissions to take effect"
+}
+
+require_command() {
+	local cmd=$1
+	local package=$2
+	
+	# If package not specified, assume it's the same as command
+	if [[ -z "$package" ]]; then
+		package=$cmd
+	fi
+	
+	if command -v "$cmd" &> /dev/null; then
+		return 0
+	fi
+	
+	update_system
+	print_status "Installing $package package (required for $cmd command)..."
+	sudo apt-get install -y "$package"
+	
+	if ! command -v "$cmd" &> /dev/null; then
+		print_error "Failed to install $package or command $cmd is not available"
+		exit 1
+	fi
+	
+	print_success "$package installed"
 }
