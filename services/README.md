@@ -1,6 +1,6 @@
 # Services
 
-Tools for managing multiple Docker-based services on a home server.
+Tools for managing Docker-based services on home-server machines.
 
 ## Quick Start
 
@@ -9,15 +9,13 @@ Tools for managing multiple Docker-based services on a home server.
 Run this once on a server machine to install Docker and initialize services:
 
 ```bash
-# Initialize and setup Immich
-./init immich
+./init
 ```
 
 The init script will:
 
 - Check your OS (Ubuntu recommended)
 - Install Docker and Docker Compose if needed
-- Call each service's bootstrap script (idempotent)
 
 **Note:** You may need to log out and back in for Docker group permissions to take effect.
 
