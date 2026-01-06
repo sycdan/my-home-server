@@ -170,6 +170,7 @@
     "photos.sycdan.com"
     "photos.wildharvesthomestead.com"
     "stream.sycdan.com"
+    "stream.wildharvesthomestead.com"
   }
   
   # Remove old split DNS entries
