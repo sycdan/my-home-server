@@ -4,5 +4,3 @@ library
 # data dirs
 library/*
 postgres/*
-
-.env
