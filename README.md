@@ -39,10 +39,6 @@ From the `ingress.lan` machine, modify the [SERVICES array](./lib/services.sh) t
 ./services/ingress/init
 ```
 
-## Hosted Services
-
-- **[Immich](./services/immich/README.md)**
-
 ---
 
 # OLD
