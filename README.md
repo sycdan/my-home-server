@@ -16,7 +16,7 @@ A unified home infrastructure system: Docker orchestration, DNS-based service di
 On your local machine, add `~/.ssh/config` entries for each device in `./fleet.json`, then you can run commands remotely:
 
 ```bash
-ssh service 'whoami && hostname && hostname -A && hostname -I'
+ssh device 'whoami && hostname && hostname -A && hostname -I'
 ```
 
 ## Commands
