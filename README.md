@@ -6,13 +6,22 @@ A unified home infrastructure system: Docker orchestration, DNS-based service di
 
 ## Devices
 
-| Name                                               | Role          | DNS Name    | Operating System                                                                        |
-| -------------------------------------------------- | ------------- | ----------- | --------------------------------------------------------------------------------------- |
-| [MikroTik hEX](./docs/MikroTik%20hEX.md)           | router        | router.lan  | [RouterOS](https://help.mikrotik.com/docs/spaces/ROS/pages/328059/RouterOS)             |
-| [Netgear R7000P](./docs/Netgear%20R7000P.md)       | access point  |             | [DD-WRT](https://dd-wrt.com/)                                                           |
-| [Old Lenovo Laptop](./docs/Lenovo%204446%2038U.md) | service host  | immich.lan  | [Ubuntu](https://ubuntu.com/download/desktop?version=24.04&architecture=amd64&lts=true) |
-| [Raspberry Pi 3](./docs/Raspberry%20Pi%203.md)     | reverse proxy | ingress.lan | Debian                                                                                   |
-|                                                    |               |             |                                                                                         |
+- [MikroTik hEX](./docs/MikroTik%20hEX.md) running [RouterOS](https://help.mikrotik.com/docs/spaces/ROS/pages/328059/RouterOS)
+- [Netgear R7000P](./docs/Netgear%20R7000P.md) running [DD-WRT](https://dd-wrt.com/) (access point)
+- [Old Lenovo Laptop](./docs/Lenovo%204446%2038U.md) running [Ubuntu](https://ubuntu.com/download/desktop?version=24.04&architecture=amd64&lts=true) (service host)
+- [Raspberry Pi 3](./docs/Raspberry%20Pi%203.md) running Debian (reverse proxy)
+
+### Adding a device
+
+Edit [devices.json](./devices.json) then run `./services/discovery/init`.
+
+### SSH Access
+
+On your local machine, add `~/.ssh/config` entries for each device, then you can run commands remotely:
+
+```bash
+ssh service 'whoami && hostname && hostname -A && hostname -I'
+```
 
 ## Domains
 

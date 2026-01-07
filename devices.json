@@ -1,0 +1,19 @@
+{
+	"devices": {
+		"r-pi": {
+			"primary_mac": "B8:27:EB:AB:C0:DC",
+			"secondary_mac": "B8:27:EB:FE:95:89",
+			"description": "Raspberry Pi 3"
+		},
+		"lenovo": {
+			"primary_mac": "00:23:5A:1A:A4:F6",
+			"secondary_mac": "00:1E:65:3B:C7:94",
+			"description": "Old Lenovo Laptop"
+		},
+		"htpc": {
+			"primary_mac": "A8:A1:59:F1:3E:B5",
+			"secondary_mac": "",
+			"description": "HTPC"
+		}
+	}
+}

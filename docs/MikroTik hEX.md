@@ -10,6 +10,7 @@ Connect cable modem to `ether1` port.
 - Go to Files -> Upload... and select your SSH public key
 - Go to System -> Users -> SSH Keys -> Import SSH Key and add your key to the `admin` user
 - Add a host to your local `~/.ssh/config`:
+
 ```text
 Host router
   HostName router.lan
