@@ -2,7 +2,7 @@
 .vscode/
 
 # Environment files
-services/*/.env
+.env
 
 # Generated files
 .device-scripts/
