@@ -332,6 +332,7 @@ def main(argv: List[str] | None = None) -> None:
 
     # Deploy the script to the router
     if upload_script(script_name, routeros_script, script_comment):
+      run_on_router(f'/system script run "{script_name}"')
       if create_schedule(script_name, SCHEDULE_INTERVAL):
         print_success(f"Deployed {script_name} to {ROUTER_SSH_HOST}")
         deployed_count += 1

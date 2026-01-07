@@ -4,6 +4,10 @@ A unified home infrastructure system: Docker orchestration, DNS-based service di
 
 **Key Principle:** Services are discovered by `example-service.lan` hostnames, not IPs. This allows devices to move/reboot with minimal reconfiguration.
 
+## Quick Start
+
+Run `./services/discovery/init`.
+
 ## Devices
 
 - [MikroTik hEX](./docs/MikroTik%20hEX.md) running [RouterOS](https://help.mikrotik.com/docs/spaces/ROS/pages/328059/RouterOS)

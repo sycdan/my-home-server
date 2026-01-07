@@ -14,6 +14,11 @@
 			"primary_mac": "A8:A1:59:F1:3E:B5",
 			"secondary_mac": "",
 			"description": "HTPC"
+		},
+		"dan-pc": {
+			"primary_mac": "9C:6B:00:3F:C3:CA",
+			"secondary_mac": "",
+			"description": "Dan's PC"
 		}
 	}
 }
