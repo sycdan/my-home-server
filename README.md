@@ -2,11 +2,7 @@
 
 A unified home infrastructure system: Docker orchestration, DNS-based service discovery, reverse proxy routing, and device-specific configuration scripts.
 
-**Key Principle:** Services are discovered by `example-service.lan` hostnames, not IPs. This allows devices to move/reboot with minimal reconfiguration.
-
-## Quick Start
-
-Run `./services/discovery/init`.
+**Key Principle:** Services are addressed by `device.lan` hostnames and ports, not IPs. This allows devices to move/reboot with minimal reconfiguration.
 
 ## Devices
 
@@ -15,17 +11,21 @@ Run `./services/discovery/init`.
 - [Old Lenovo Laptop](./docs/Lenovo%204446%2038U.md) running [Ubuntu](https://ubuntu.com/download/desktop?version=24.04&architecture=amd64&lts=true) (service host)
 - [Raspberry Pi 3](./docs/Raspberry%20Pi%203.md) running Debian (reverse proxy)
 
-### Adding a device
-
-Edit [devices.json](./devices.json) then run `./services/discovery/init`.
-
 ### SSH Access
 
-On your local machine, add `~/.ssh/config` entries for each device, then you can run commands remotely:
+On your local machine, add `~/.ssh/config` entries for each device in `./fleet.json`, then you can run commands remotely:
 
 ```bash
 ssh service 'whoami && hostname && hostname -A && hostname -I'
 ```
+
+## Commands
+
+### `./discover`
+
+Parses device details from `./fleet.json` and maintains static `.lan` DNS hostnames on the network by creating and deploying RouterOS scripts to the router.
+
+Run this when spinning up a new fleet or adding a device.
 
 ## Domains
 

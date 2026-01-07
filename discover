@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
-Device discovery service initializer.
+Device discovery initializer.
 Generates RouterOS scripts for each device and deploys them to the router.
-Loads configuration from .env files (multi-level support).
+Loads configuration from .env files.
 """
 
 import json
@@ -46,12 +46,12 @@ def load_config(source_dir: Path) -> dict[str, str]:
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-ROOT_DIR = SCRIPT_DIR.parent.parent
+ROOT_DIR = SCRIPT_DIR
 CONFIG = load_config(SCRIPT_DIR)
-
+DEVICE_FILENAME = "fleet.json"
 ROUTER_SSH_HOST = CONFIG["ROUTER_SSH_HOST"]
 ROUTER_SSH_USER = CONFIG["ROUTER_SSH_USER"]
-ROUTER_SSH_IDENTITY_FILE = CONFIG["ROUTER_SSH_IDENTITY_FILE"]
+ROUTER_SSH_IDENTITY_FILE = Path(CONFIG["ROUTER_SSH_IDENTITY_FILE"])
 SCHEDULE_INTERVAL = CONFIG["SCHEDULE_INTERVAL"]
 DOMAIN_SUFFIX = CONFIG["DOMAIN_SUFFIX"]
 
@@ -95,7 +95,7 @@ def load_devices(devices_file: Path) -> List[Device]:
   """Load devices from devices.json file."""
 
   if not devices_file.exists():
-    print_error(f"devices.json not found at {devices_file}")
+    print_error(f"{devices_file} does not exist")
     return []
 
   try:
@@ -297,7 +297,7 @@ def main(argv: List[str] | None = None) -> None:
   print_info(f"Using schedule interval: {SCHEDULE_INTERVAL}")
 
   # Load devices from JSON in root directory
-  devices_json_file = ROOT_DIR / "devices.json"
+  devices_json_file = ROOT_DIR / DEVICE_FILENAME
   devices = load_devices(devices_json_file)
 
   if not devices:

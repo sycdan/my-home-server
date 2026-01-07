@@ -3,3 +3,6 @@
 
 # Environment files
 services/*/.env
+
+# Generated files
+device-scripts/

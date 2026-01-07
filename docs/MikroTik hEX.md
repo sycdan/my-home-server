@@ -33,24 +33,57 @@ ssh router '/ip dns set allow-remote-requests=yes'
 
 This allows internal clients to resolve `example-service.lan` hostnames.
 
+## Scripting
+
+RouterOS scripts can be run on the router over SSH.
+
+**Upload and run a one-off script file**:
+
+```bash
+scp ./example.rsc router:/
+ssh router '/import example.rsc'
+```
+
+**Create a system script from a file**:
+
+```bash
+scp ./example.rsc router:/
+ssh router '/system script add name="example" source=[/file get example.rsc contents]'
+```
+
+**Create or update a systems script from a file**:
+
+```bash
+ssh router '{:local src [/file get example.rsc contents]; :local sid [/system script find name="example"]; :if ([:len $sid] > 0) do={ /system script set $sid source=$src } else={ /system script add name="example" source=$src }}'
+```
+
+**Run a system script**:
+
+```bash
+ssh router '/system script run "example"'
+```
+
+**Schedule a system script**:
+
+```bash
+ssh router '/system scheduler add name="example_schedule" comment="Run example script every 30 minutes" interval="00:30:00" on-event="/system script run \"example\"" disabled=no'
+ssh router '/system schedule print'
+```
+
+**Delete a schedule**:
+
+```bash
+ssh router '/system scheduler remove "example_schedule"'
+```
+
+**Delete a system script**:
+
+```bash
+ssh router '/system script remove "example"'
+```
+
 ---
 
-# OLD
-
-### Automatic Reverse Proxy Discovery
-
-A scheduled RouterOS script discovers the reverse proxy's current IP and updates split DNS. This ensures:
-- External port forwarding works (NAT rules point to reverse proxy IP)
-- Internal clients can reach `ingress.lan`
-- If the reverse proxy fails over to a different interface, DNS automatically updates
-
-**Script:** [reverse-proxy-discovery.rsc](scripts/reverse-proxy-discovery.rsc)
-
-Deploy with:
-```bash
-/system script add name="reverse-proxy-discovery" source="[paste script contents]"
-/system scheduler add name="reverse-proxy-discovery" interval="00:05:00" on-event="/system script run reverse-proxy-discovery"
-```
 
 
 ## Static IPs
