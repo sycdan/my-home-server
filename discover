@@ -127,8 +127,6 @@ def load_devices(devices_file: Path) -> List[Device]:
     print_error(f"Failed to parse devices.json: {e}")
     return []
 
-  return devices
-
 
 def run_ssh_command(
   host: str, command: str, user="", identity_file=""
