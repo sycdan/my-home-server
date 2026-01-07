@@ -14,6 +14,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
+from lib.common import print_error, print_info, print_success
+
 ROOT_DIR = Path(__file__).resolve().parent
 DEVICE_SCRIPT_CACHE_DIR = ROOT_DIR / ".device-scripts"
 FLEET_FILE = ROOT_DIR / "fleet.json"
@@ -65,34 +67,6 @@ CONFIG = load_config(ROOT_DIR)
 ROUTER_SSH_HOST = CONFIG["ROUTER_SSH_HOST"]
 SCHEDULE_INTERVAL = CONFIG["SCHEDULE_INTERVAL"]
 DOMAIN_SUFFIX = CONFIG["DOMAIN_SUFFIX"]
-
-# Colors for output
-RED = "\033[0;31m"
-GREEN = "\033[0;32m"
-YELLOW = "\033[1;33m"
-BLUE = "\033[0;34m"
-NC = "\033[0m"  # No Color
-
-
-def print_info(msg: str) -> None:
-  """Print status message in blue"""
-  print(f"{BLUE}► {NC} {msg}")
-
-
-def print_success(msg: str) -> None:
-  """Print success message in green"""
-  print(f"{GREEN}✓ {NC} {msg}")
-
-
-def print_warning(msg: str) -> None:
-  """Print warning message in yellow to stderr"""
-  print(f"{YELLOW}⚠ {NC} {msg}", file=sys.stderr)
-
-
-def print_error(msg: str) -> None:
-  """Print error message in red to stderr"""
-  print(f"{RED}✗ {NC} {msg}", file=sys.stderr)
-
 
 @dataclass
 class Device:
@@ -356,7 +330,6 @@ def main(argv: List[str] | None = None) -> None:
   if failed_count > 0:
     print_warning(f"{failed_count} failed")
     sys.exit(1)
-
 
 if __name__ == "__main__":
   main()
