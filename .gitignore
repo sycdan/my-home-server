@@ -5,4 +5,4 @@
 services/*/.env
 
 # Generated files
-device-scripts/
+.device-scripts/
