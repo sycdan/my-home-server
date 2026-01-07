@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
-from lib.common import print_error, print_info, print_success
+from lib.common import print_error, print_info, print_success, print_warning
 
 ROOT_DIR = Path(__file__).resolve().parent
 DEVICE_SCRIPT_CACHE_DIR = ROOT_DIR / ".device-scripts"
