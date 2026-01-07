@@ -6,15 +6,14 @@ Loads configuration from .env files.
 """
 
 import argparse
-import json
 import os
 import subprocess
 import sys
-from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
 from lib.common import print_error, print_info, print_success, print_warning
+from lib.devices import Device
 
 ROOT_DIR = Path(__file__).resolve().parent
 DEVICE_SCRIPT_CACHE_DIR = ROOT_DIR / ".device-scripts"
@@ -67,39 +66,6 @@ CONFIG = load_config(ROOT_DIR)
 ROUTER_SSH_HOST = CONFIG["ROUTER_SSH_HOST"]
 SCHEDULE_INTERVAL = CONFIG["SCHEDULE_INTERVAL"]
 DOMAIN_SUFFIX = CONFIG["DOMAIN_SUFFIX"]
-
-@dataclass
-class Device:
-  host: str
-  primary_mac: str
-  secondary_mac: str
-  description: str
-
-
-def load_devices(devices_file: Path) -> List[Device]:
-  """Load devices from devices.json file."""
-
-  if not devices_file.exists():
-    print_error(f"{devices_file} does not exist")
-    return []
-
-  try:
-    data = json.loads(devices_file.read_text())
-    devices: list[Device] = []
-
-    for host, device_info in data.get("devices", {}).items():
-      device = Device(
-        host=host,
-        primary_mac=device_info.get("primary_mac", ""),
-        secondary_mac=device_info.get("secondary_mac", ""),
-        description=device_info.get("description", ""),
-      )
-      devices.append(device)
-
-    return devices
-  except json.JSONDecodeError as e:
-    print_error(f"Failed to parse devices.json: {e}")
-    return []
 
 
 def run_ssh_command(
@@ -285,7 +251,7 @@ def main(argv: List[str] | None = None) -> None:
 
   DEVICE_SCRIPT_CACHE_DIR.mkdir(exist_ok=True)
 
-  devices = load_devices(FLEET_FILE)
+  devices = Device.load_all(FLEET_FILE)
   if not devices:
     print_error(f"No devices configured in {FLEET_FILE}")
     sys.exit(1)
@@ -330,6 +296,7 @@ def main(argv: List[str] | None = None) -> None:
   if failed_count > 0:
     print_warning(f"{failed_count} failed")
     sys.exit(1)
+
 
 if __name__ == "__main__":
   main()
