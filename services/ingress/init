@@ -8,11 +8,6 @@ source "$ROOT_DIR/lib/services.sh"
 # Set fleet file path
 FLEET_FILEPATH="${FLEET_FILEPATH:-$ROOT_DIR/fleet.json}"
 
-source "$SCRIPT_DIR/lib/load-services.sh"
-load_services_from_fleet
-
-source "$SCRIPT_DIR/lib/validate-domains.sh"
-
 # Check for .env file and create from example if needed
 if [[ ! -f "$SCRIPT_DIR/.env" ]]; then
 	print_status "Creating .env file from example..."
@@ -21,16 +16,15 @@ if [[ ! -f "$SCRIPT_DIR/.env" ]]; then
 	read -p "Press enter when you are done editing: "
 fi
 source "$SCRIPT_DIR/.env"
-source "$SCRIPT_DIR/lib/ensure-sbin-path.sh"
+source "$SCRIPT_DIR/lib/ensure_sbin_path.sh"
 
 require_command "jq"
 require_command "curl"
 require_command "dig" "dnsutils"
 
-source "$SCRIPT_DIR/lib/validate-domains.sh"
-parse_and_validate_domains "$FLEET_FILEPATH"
-
-source "$SCRIPT_DIR/lib/validate-porkbun-credentials.sh"
+source "$SCRIPT_DIR/lib/parse_and_validate_domains.sh"
+source "$SCRIPT_DIR/lib/validate_porkbun_credentials.sh"
+source "$SCRIPT_DIR/lib/load_services_from_fleet.sh"
 
 # Iterate only over valid domains
 for DOMAIN in "${VALID_DOMAINS[@]}"; do

@@ -7,7 +7,6 @@ parse_and_validate_domains() {
     print_error "Fleet file not found: $fleet_file"
     exit 1
   fi
-  echo "Using fleet file: $fleet_file"
   # Parse domain keys from .domains object
   local -a domains
   domains=( $(jq -r '.domains | keys[]' "$fleet_file") )

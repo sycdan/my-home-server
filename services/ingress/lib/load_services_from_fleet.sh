@@ -1,4 +1,3 @@
-# load-services.sh
 # Exports: SERVICES (array), CNAME_TARGET (string)
 
 load_services_from_fleet() {
@@ -46,11 +45,12 @@ load_services_from_fleet() {
   done < "$temp_file"
   
   rm -f "$temp_file"
-  
-  if [[ ${#SERVICES[@]} -eq 0 ]]; then
-    print_warning "No services found in $fleet_file"
-  else
-    echo "Loaded ${#SERVICES[@]} services from fleet file"
-  fi
 }
 
+echo ""
+load_services_from_fleet "$MHS_FLEET_FILEPATH"
+if [[ ${#SERVICES[@]} -eq 0 ]]; then
+  print_warning "No services found in $fleet_file"
+else
+  echo "Loaded ${#SERVICES[@]} services from fleet file"
+fi
