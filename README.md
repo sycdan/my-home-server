@@ -11,12 +11,27 @@ A unified home infrastructure system: Docker orchestration, DNS-based service di
 - [Old Lenovo Laptop](./docs/Lenovo%204446%2038U.md) running [Ubuntu](https://ubuntu.com/download/desktop?version=24.04&architecture=amd64&lts=true) (service host)
 - [Raspberry Pi 3](./docs/Raspberry%20Pi%203.md) running Debian (reverse proxy)
 
-### SSH Access
+### Adding a device
 
-On your local machine, add `~/.ssh/config` entries for each device in `./fleet.json`, then you can run commands remotely:
+On your local machine, add the device to `./fleet.json`:
+
+```json
+{
+  "devices": {
+    "my-device": {
+      "primary_mac": "AA:BB:CC:DD:EE:01",
+      "secondary_mac": "AA:BB:CC:DD:EE:02",
+      "description": "My Device"
+    }
+  }
+}
+```
+
+**Note**: `primary_mac` should be ethernet, if available; `secondary_mac` can be wireless.
 
 ```bash
-ssh device 'whoami && hostname && hostname -A && hostname -I'
+./discover
+ssh my-device 'whoami && hostname && hostname -A && hostname -I'
 ```
 
 ### Repo Access
@@ -30,14 +45,6 @@ For each device, run:
 ssh device 'ssh-keygen -t rsa -b 4096 -N "" -q <<< ""'
 ssh device 'cat .ssh/*.pub'
 ```
-
-## Commands
-
-### `./discover`
-
-Parses device details from `./fleet.json` and maintains static `.lan` DNS hostnames on the network by creating and deploying RouterOS scripts to the router.
-
-Run this when spinning up a new fleet or adding a device.
 
 ## Domains
 
