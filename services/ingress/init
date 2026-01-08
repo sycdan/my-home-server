@@ -4,6 +4,14 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR="$( cd "$SCRIPT_DIR/../../" && pwd )"
 source "$ROOT_DIR/lib/common.sh"
 source "$ROOT_DIR/lib/services.sh"
+# Check for .env file and create from example if needed
+if [[ ! -f "$SCRIPT_DIR/.env" ]]; then
+	print_status "Creating .env file from example..."
+	cp "$SCRIPT_DIR/example.env" "$SCRIPT_DIR/.env"
+	print_warning "$SCRIPT_DIR/.env file created"
+	read -p "Press enter when you are done editing: "
+fi
+source "$SCRIPT_DIR/.env"
 source "$SCRIPT_DIR/lib/ensure-sbin-path.sh"
 
 require_command "jq"

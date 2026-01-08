@@ -1,22 +1,24 @@
 # Exports: VALID_DOMAINS (array)
 
 parse_and_validate_domains() {
-  local domains_filepath="${1:-~/my-home-server/domains.json}"
-  domains_filepath="$(eval echo "$domains_filepath")" # expand ~
-  if [[ ! -f "$domains_filepath" ]]; then
-    print_error "Domains config file not found: $domains_filepath"
+  local fleet_file="${1:-~/my-home-server/fleet.json}"
+  fleet_file="$(eval echo "$fleet_file")" # expand ~
+  if [[ ! -f "$fleet_file" ]]; then
+    print_error "Fleet file not found: $fleet_file"
     exit 1
   fi
-  echo "Using domains config file: $domains_filepath"
-  # Parse domains.json into CONFIG_DOMAINS associative array (local only)
-  local -A config_domains
-  while IFS= read -r domain; do
-    config_domains["$domain"]=1
-  done < <(jq -r 'keys[]' "$domains_filepath")
+  echo "Using fleet file: $fleet_file"
+  # Parse domain keys from .domains object
+  local -a domains
+  domains=( $(jq -r '.domains | keys[]' "$fleet_file") )
+  if [[ ${#domains[@]} -eq 0 ]]; then
+    print_error "No domains found in $fleet_file"
+    exit 1
+  fi
   # Validate domains
   declare -ga VALID_DOMAINS
   VALID_DOMAINS=()
-  for domain in "${!config_domains[@]}"; do
+  for domain in "${domains[@]}"; do
     echo ""
     print_status "Checking domain: $domain"
     HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 "http://$domain" 2>/dev/null || echo "000")

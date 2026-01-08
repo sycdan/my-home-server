@@ -1,4 +1,16 @@
 {
+	"domains": {
+		"sycdan.com": {
+			"registrar": "dreamhost",
+			"managementUrl": "https://panel.dreamhost.com/index.cgi?tree=domain.dashboard#/site/sycdan.com/dns",
+			"comment": "Personal domain, configured for DDNS via freedns.afraid.org"
+		},
+		"wildharvesthomestead.com": {
+			"registrar": "porkbun",
+			"managementUrl": "https://porkbun.com/account/domainsSpeedy",
+			"comment": "Main ingress domain for family"
+		}
+	},
 	"devices": {
 		"ap": {
 			"primary_mac": "6C:CD:D6:2A:9E:DD",

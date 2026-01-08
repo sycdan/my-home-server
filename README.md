@@ -109,28 +109,6 @@ rsync -avz ./services/ingress/ ingress:~/my-home-server/services/ingress/ && ssh
 
 # OLD
 
-### 2. Deploy DNS Discovery
-
-The discovery script auto-discovers all services and updates DNS every 5 minutes:
-
-```bash
-devices/mikrotek-hex/deploy-script \
-  devices/mikrotek-hex/scripts/discovery.rsc \
-  --ssh-host router \
-  --run \
-  --schedule "00:05:00"
-```
-
-This creates DNS entries (`.lan`), NAT port forwarding (80/443 → ingress), and split DNS for public domains.
-
-**Edit [discovery.rsc](devices/mikrotek-hex/scripts/discovery.rsc)** to add service MAC addresses:
-
-```bash
-:local services {
-  {"hostname"="myservice.lan"; "interfaces"={{"AA:BB:CC:DD:EE:FF"; "ethernet"}}};
-}
-```
-
 ### 3. Initialize Services on Each Host
 
 On each Ubuntu machine that will run services:
