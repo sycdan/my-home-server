@@ -81,7 +81,7 @@ ssh device 'ssh-keygen -t rsa -b 4096 -N "" -q <<< ""'
 ssh device 'cat .ssh/*.pub'
 ```
 
-## Domains
+## [Domains](./domains.json)
 
 | Domain                   | Role           | Registrar                                                                                     |
 | ------------------------ | -------------- | --------------------------------------------------------------------------------------------- |
@@ -95,6 +95,14 @@ From the `ingress.lan` machine, modify the [SERVICES array](./lib/services.sh) t
 
 ```bash
 ./services/ingress/init
+```
+
+## Development
+
+Sync work-in-progress to a remote for testing with [rsync](./docs/Rsync.md):
+
+```bash
+rsync -avz ./services/ingress/ ingress:~/my-home-server/services/ingress/ && ssh ingress '~/my-home-server/services/ingress/init'
 ```
 
 ---
