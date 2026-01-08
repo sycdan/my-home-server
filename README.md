@@ -45,6 +45,8 @@ ssh router '/ip dns static print' | grep laptop
 
 ### Configuring SSH access
 
+You need to figure out how to enable SSH on the device, and add your SSH public key to its `~/.ssh/authorized_keys`.
+
 Add an entry to `~/.ssh/config`:
 
 ```text
@@ -52,6 +54,14 @@ Host laptop
   HostName laptop.lan
   User me
 ```
+
+Open a shell to ensure you can connect:
+
+```bash
+ssh laptop -v
+```
+
+Press `Ctrl+D` to exit.
 
 ### Running commands
 
