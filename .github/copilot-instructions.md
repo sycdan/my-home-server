@@ -163,6 +163,7 @@ Runs `./services/myservice/bootstrap.sh` after system-level setup.
 - **Compose Files:** Reference `docker-compose.yml` from upstream projects when possible to enable easy updates. Document any local customizations.
 - **Service Ports:** Each service declares its own ports in `docker-compose.yml`. No centralized port mapping—services are exposed directly or via reverse proxy.
 - **Data Persistence:** Services define volumes for data directories. Immich example: `UPLOAD_LOCATION` and `DB_DATA_LOCATION` env vars control storage paths.
+- **Code formatting:** Use consistent indentation (2 spaces), lowercase variable names with underscores for python, and clear function names in bash scripts.
 
 ## Git Strategy
 

@@ -10,57 +10,11 @@ require_command "jq"
 require_command "curl"
 require_command "dig" "dnsutils"
 
-DOMAINS_FILEPATH="${DOMAINS_FILEPATH:-~/my-home-server/domains.json}"
-DOMAINS_FILEPATH="$(eval echo "$DOMAINS_FILEPATH")" # resolve ~ to home directory
-if [[ ! -f "$DOMAINS_FILEPATH" ]]; then
-	print_error "Domains config file not found: $DOMAINS_FILEPATH"
-	exit 1
-fi
-echo "Using domains config file: $DOMAINS_FILEPATH"
-
+source "$SCRIPT_DIR/lib/validate-domains.sh"
 source "$SCRIPT_DIR/lib/validate-porkbun-credentials.sh"
 
-# Parse domains.json into a bash associative array (only keys)
-declare -A CONFIG_DOMAINS
-while IFS= read -r domain; do
-	CONFIG_DOMAINS["$domain"]=1
-done < <(jq -r 'keys[]' "$DOMAINS_FILEPATH")
-
-# Show domains to be configured
-echo ""
-print_status "Configuring ingress domains..."
-get_ingress_domains | while read -r domain; do
-	if [[ -n "${CONFIG_DOMAINS[$domain]}" ]]; then
-		echo "  - $domain"
-	else
-		print_warning "Domain $domain not found in $DOMAINS_FILEPATH, skipping."
-	fi
-done
-echo ""
-
-# Process each unique domain (filtered by domains.json)
-while read -r DOMAIN; do
-	[[ -z "$DOMAIN" ]] && continue
-	if [[ -z "${CONFIG_DOMAINS[$DOMAIN]}" ]]; then
-		print_warning "Skipping $DOMAIN (not in $DOMAINS_FILEPATH)"
-		((skip_count++))
-		continue
-	fi
-
-	print_status "Checking domain: $DOMAIN"
-
-	# Check if domain is registered (once per domain)
-	HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 "http://$DOMAIN" 2>/dev/null || echo "000")
-
-	if ! [[ "$HTTP_STATUS" =~ ^[23] ]]; then
-		print_warning "Domain $DOMAIN not registered (HTTP $HTTP_STATUS), skipping all services"
-		((skip_count++))
-		continue
-	fi
-
-	print_success "Domain $DOMAIN is registered"
-	echo ""
-
+# Iterate only over valid domains
+for DOMAIN in "${VALID_DOMAINS[@]}"; do
 	# Process all services for this domain
 	for service in "${SERVICES[@]}"; do
 		FULL_HOSTNAME="${service%%|*}"
@@ -102,7 +56,7 @@ while read -r DOMAIN; do
 		fi
 	done
 	echo ""
-done < <(get_ingress_domains)
+done
 
 if [[ $error_count -gt 0 ]]; then
 	print_warning "Some domains had errors. Check configuration and try again."
