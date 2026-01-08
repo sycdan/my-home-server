@@ -25,11 +25,21 @@
 		"lenovo": {
 			"primary_mac": "00:23:5A:1A:A4:F6",
 			"secondary_mac": "00:1E:65:3B:C7:94",
+			"services": {
+				"immich": {
+					"port": 2283
+				}
+			},
 			"description": "Old Lenovo Laptop"
 		},
 		"htpc": {
 			"primary_mac": "A8:A1:59:F1:3E:B5",
 			"secondary_mac": "",
+			"services": {
+				"jellyfin": {
+					"port": 8096
+				}
+			},
 			"description": "HTPC"
 		},
 		"dan-pc": {

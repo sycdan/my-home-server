@@ -1,36 +1,3 @@
-# Primary domain for service ingress -- DDNS points to WAN IP, using freedns.afraid.org
-CNAME_TARGET="home.sycdan.com"
-
-# Format: "external_hostname|internal_hostname|internal_port"
-declare -a SERVICES=(
-  "photos.wildharvesthomestead.com|immich.lan|2283"
-  "stream.wildharvesthomestead.com|jellyfin.lan|8096"
-)
-
-get_ingress_domains() {
-  # Extract unique base domains from SERVICES array (domain + TLD only)
-  # Example: service.domain.com -> domain.com
-  declare -A unique_domains
-  for service in "${SERVICES[@]}"; do
-    IFS='|' read -r DOMAIN _ _ <<< "$service"
-    # Extract last two parts (TLD + domain name)
-    BASE_DOMAIN=$(echo "$DOMAIN" | grep -oE '[^.]+\.[^.]+$')
-    unique_domains["$BASE_DOMAIN"]=1
-  done
-  for domain in "${!unique_domains[@]}"; do
-    echo "$domain"
-  done
-}
-
-get_external_domains() {
-  # Extract all external domains from SERVICES array (full subdomains for ingress)
-  # Example: photos.wildharvesthomestead.com
-  for service in "${SERVICES[@]}"; do
-    IFS='|' read -r DOMAIN _ _ <<< "$service"
-    echo "$DOMAIN"
-  done
-}
-
 check_root() {
 	if [[ $EUID -eq 0 ]]; then
 		print_error "This script should not be run as root"
