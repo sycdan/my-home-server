@@ -37,6 +37,12 @@ Assign a static DNS hostname to the device:
 ./discover
 ```
 
+Check that the device was discovered:
+
+```bash
+ssh router '/ip dns static print' | grep laptop
+```
+
 ### Configuring SSH access
 
 Add an entry to `~/.ssh/config`:

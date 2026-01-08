@@ -1,5 +1,10 @@
 {
 	"devices": {
+		"ap": {
+			"primary_mac": "6C:CD:D6:2A:9E:DD",
+			"secondary_mac": "",
+			"description": "Netgear R7000P"
+		},
 		"r-pi": {
 			"primary_mac": "B8:27:EB:AB:C0:DC",
 			"secondary_mac": "B8:27:EB:FE:95:89",
