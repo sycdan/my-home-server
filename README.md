@@ -18,10 +18,10 @@ On your local machine, add the device to `./fleet.json`:
 ```json
 {
   "devices": {
-    "my-device": {
+    "laptop": {
       "primary_mac": "AA:BB:CC:DD:EE:01",
       "secondary_mac": "AA:BB:CC:DD:EE:02",
-      "description": "My Device"
+      "description": "My Laptop"
     }
   }
 }
@@ -29,9 +29,28 @@ On your local machine, add the device to `./fleet.json`:
 
 **Note**: `primary_mac` should be ethernet, if available; `secondary_mac` can be wireless.
 
+### Discovering devices
+
+Assign a static DNS hostname to the device:
+
 ```bash
 ./discover
-ssh my-device 'whoami && hostname && hostname -A && hostname -I'
+```
+
+### Configuring SSH access
+
+Add an entry to `~/.ssh/config`:
+
+```text
+Host laptop
+  HostName laptop.lan
+  User me
+```
+
+### Running commands
+
+```bash
+ssh laptop 'whoami && hostname && hostname -A && hostname -I'
 ```
 
 ### Repo Access
