@@ -1,7 +1,9 @@
 # Exports: SERVICES (array), CNAME_TARGET (string)
 
 load_services_from_fleet() {
-  local fleet_file="${FLEET_FILEPATH:-~/my-home-server/fleet.json}"
+  local fleet_file=$1
+  local cname_target=$2
+  
   fleet_file="$(eval echo "$fleet_file")" # expand ~
   if [[ ! -f "$fleet_file" ]]; then
     print_error "Fleet file not found: $fleet_file"
@@ -9,15 +11,8 @@ load_services_from_fleet() {
   fi
   
   echo "Loading services from: $fleet_file"
-  
-  # Get CNAME_TARGET from environment or use default
-  CNAME_TARGET="${MHS_CNAME_TARGET:-home.sycdan.com}"
-  
-  # Load services from fleet file
   declare -ga SERVICES
   SERVICES=()
-  
-  # Parse services from devices with simpler approach
   local temp_file=$(mktemp)
   jq -r '.devices | to_entries[] | select(.value.services != null) | .key as $device | .value.services | to_entries[] | "\($device)|\(.key)|\(.value.port)"' "$fleet_file" > "$temp_file"
   
@@ -27,14 +22,14 @@ load_services_from_fleet() {
       case "$service_name" in
         "immich")
           external_hostname="photos.wildharvesthomestead.com"
-          ;;
+        ;;
         "jellyfin")
           external_hostname="stream.wildharvesthomestead.com"
-          ;;
+        ;;
         *)
           print_warning "Unknown service '$service_name' on device '$device_name', skipping"
           continue
-          ;;
+        ;;
       esac
       
       # Create service entry: "external_hostname|device.lan|port"
@@ -48,7 +43,7 @@ load_services_from_fleet() {
 }
 
 echo ""
-load_services_from_fleet "$MHS_FLEET_FILEPATH"
+load_services_from_fleet "$MHS_FLEET_FILEPATH" "$MHS_CNAME_TARGET"
 if [[ ${#SERVICES[@]} -eq 0 ]]; then
   print_warning "No services found in $fleet_file"
 else

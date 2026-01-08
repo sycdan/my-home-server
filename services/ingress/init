@@ -5,8 +5,6 @@ ROOT_DIR="$( cd "$SCRIPT_DIR/../../" && pwd )"
 source "$ROOT_DIR/.env"
 source "$ROOT_DIR/lib/common.sh"
 source "$ROOT_DIR/lib/services.sh"
-# Set fleet file path
-FLEET_FILEPATH="${FLEET_FILEPATH:-$ROOT_DIR/fleet.json}"
 
 # Check for .env file and create from example if needed
 if [[ ! -f "$SCRIPT_DIR/.env" ]]; then
@@ -17,6 +15,20 @@ if [[ ! -f "$SCRIPT_DIR/.env" ]]; then
 fi
 source "$SCRIPT_DIR/.env"
 source "$SCRIPT_DIR/lib/ensure_sbin_path.sh"
+
+if [[ -z "$MHS_FLEET_FILEPATH" ]]; then
+  print_error "MHS_FLEET_FILEPATH not set"
+  exit 1
+else
+  echo "Using fleet file path: $MHS_FLEET_FILEPATH"
+fi
+
+if [[ -z "$MHS_CNAME_TARGET" ]]; then
+  print_error "MHS_CNAME_TARGET not set"
+  exit 1
+else
+  echo "Using CNAME target: $MHS_CNAME_TARGET"
+fi
 
 require_command "jq"
 require_command "curl"
@@ -40,11 +52,11 @@ for DOMAIN in "${VALID_DOMAINS[@]}"; do
 		# Extract subdomain
 		SUBDOMAIN=$(echo "$FULL_HOSTNAME" | sed "s/\.$DOMAIN$//")
 
-		print_status "Setting up: $FULL_HOSTNAME -> $CNAME_TARGET"
+		print_status "Setting up: $FULL_HOSTNAME -> $MHS_CNAME_TARGET"
 
 		# Check if CNAME already exists
 		EXISTING_CNAME=$(dig +short $FULL_HOSTNAME CNAME 2>/dev/null | head -1)
-		if [[ "$EXISTING_CNAME" == "$CNAME_TARGET." ]]; then
+		if [[ "$EXISTING_CNAME" == "$MHS_CNAME_TARGET." ]]; then
 			print_success "CNAME already configured: $FULL_HOSTNAME"
 			((success_count++))
 			continue

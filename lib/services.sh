@@ -1,3 +1,5 @@
+FLEET_FILEPATH="${MHS_FLEET_FILEPATH:-$ROOT_DIR/fleet.json}"
+
 check_root() {
 	if [[ $EUID -eq 0 ]]; then
 		print_error "This script should not be run as root"
