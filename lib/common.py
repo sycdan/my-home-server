@@ -1,4 +1,7 @@
 import sys
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).resolve().parent.parent
 
 # Colors for output
 RED = "\033[0;31m"
