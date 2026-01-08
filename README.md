@@ -47,7 +47,7 @@ ssh router '/ip dns static print' | grep laptop
 
 You need to figure out how to enable SSH on the device, and add your SSH public key to its `~/.ssh/authorized_keys`.
 
-Add an entry to your local `~/.ssh/config`:
+Then, add an entry to your local `~/.ssh/config`:
 
 ```text
 Host laptop
