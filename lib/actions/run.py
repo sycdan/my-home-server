@@ -42,7 +42,7 @@ def validate_executable(filepath: str, root_dir: Path):
   return relative_path
 
 
-def main(argv=None) -> int:
+def main(argv=None):
   parser = argparse.ArgumentParser(
     description="Execute service scripts on remote devices"
   )
@@ -72,7 +72,7 @@ def main(argv=None) -> int:
     print_error(
       f"Service '{service_label}' is not hosted on any device in {fleet_json_path.name}"
     )
-    return 1
+    sys.exit(1)
   if args.debug:
     print_info(f"Found {service_label} service on {hosting_device.label}")
 
@@ -103,7 +103,7 @@ def main(argv=None) -> int:
     debug=args.debug,
   ):
     print_error("File synchronization failed")
-    return 1
+    sys.exit(1)
 
   print_success("File synchronization completed")
 
@@ -113,13 +113,9 @@ def main(argv=None) -> int:
   try:
     # Use call instead of run to preserve interactive terminal behavior
     subprocess.call(ssh_exec_cmd)
-    return 0
   except subprocess.CalledProcessError as e:
     print_error(f"Remote execution failed: {e}")
-    return 1
-  except Exception as e:
-    print_error(f"Unexpected error during remote execution: {e}")
-    return 1
+    sys.exit(1)
   except KeyboardInterrupt:
     print_warning("Interrupted by user")
-    return -1
+    sys.exit(-1)

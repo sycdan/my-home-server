@@ -1,4 +1,5 @@
 import os
+import sys
 import tempfile
 from pathlib import Path
 
@@ -64,7 +65,7 @@ def test_e2e():
     )
     os.chmod(test_service_command_file, 0o755)
 
-    assert (
+    try:
       run.main(
         [
           str(test_service_command_file),
@@ -73,5 +74,8 @@ def test_e2e():
           "--create-root",
         ]
       )
-      == 0
-    ), "Expected remote command to complete successfully"
+      sys.exit(0)
+    except SystemExit as e:
+      assert e.code == 0, "Expected command to complete successfully"
+    else:
+      assert False, "Expected SystemExit exception"
