@@ -3,10 +3,8 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from lib.common import print_error
-
-DOMAIN_SUFFIX = "lan"
-"""TODO: load this dynamically from config"""
+from mhs.config import DOMAIN_SUFFIX, FLEET_FILE
+from mhs.output import print_error
 
 
 def validate_mac_address(mac: str) -> bool:
@@ -34,7 +32,7 @@ class Device:
   services: dict[str, dict]  # service_label -> service_definition
 
   @classmethod
-  def load_all(cls, devices_file: Path, empty_ok=False):
+  def load_all(cls, devices_file: Path = FLEET_FILE, empty_ok=False):
     devices: list[Device] = []
 
     if not devices_file.exists():

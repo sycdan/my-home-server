@@ -1,10 +1,9 @@
-import os
 import sys
 import tempfile
 from pathlib import Path
 
 import pytest
-from lib.actions import discover
+from lib.actions.discover import core
 
 TEST_SERVICE_LABEL = "testing"
 TEST_FLEET_JSON = """
@@ -32,7 +31,7 @@ def test_e2e():
     root_dir = Path(temp_dir)
 
     try:
-      discover.main(
+      core.main(
         [
           "--root",
           str(root_dir),

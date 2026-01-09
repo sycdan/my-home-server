@@ -4,9 +4,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-from lib.common import print_error, print_info, print_success, print_warning
-from lib.devices import Device
-from lib.sync import bidirectional_sync, ensure_remote_dir
+from mhs.config import FLEET_FILE, ROOT_DIR
+from mhs.devices import Device
+from mhs.output import print_error, print_info, print_success, print_warning
+from mhs.sync import bidirectional_sync, ensure_remote_dir
 
 
 def validate_executable(filepath: str, root_dir: Path):
@@ -42,7 +43,7 @@ def validate_executable(filepath: str, root_dir: Path):
   return relative_path
 
 
-def main(argv=None):
+def call(argv=None):
   parser = argparse.ArgumentParser(
     description="Execute service scripts on remote devices"
   )
@@ -59,19 +60,16 @@ def main(argv=None):
   if args.root:
     root_dir = Path(args.root).resolve()
   else:
-    root_dir = Path(__file__).resolve().parent.parent.parent
+    root_dir = ROOT_DIR
 
   relative_executable_path = validate_executable(args.executable_path, root_dir)
   relative_service_dir = relative_executable_path.parent
   service_label = relative_service_dir.name
 
-  fleet_json_path = root_dir / "fleet.json"
-  devices = Device.load_all(fleet_json_path)
+  devices = Device.load_all()
   hosting_device = Device.find_by_service(service_label, devices)
   if hosting_device is None:
-    print_error(
-      f"Service '{service_label}' is not hosted on any device in {fleet_json_path.name}"
-    )
+    print_error(f"Service '{service_label}' is not hosted on any device")
     sys.exit(1)
   if args.debug:
     print_info(f"Found {service_label} service on {hosting_device.label}")
@@ -89,7 +87,7 @@ def main(argv=None):
   to_remote_files = [
     ".env",
     "lib/",
-    fleet_json_path.relative_to(root_dir).as_posix(),
+    FLEET_FILE.relative_to(root_dir).as_posix(),
     relative_service_dir.as_posix() + "/",
   ]
 

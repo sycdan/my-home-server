@@ -1,7 +1,7 @@
 import subprocess
 from pathlib import Path
 
-from .common import print_error, print_info, print_success
+from .output import print_error, print_info, print_success
 
 
 def run_rsync(

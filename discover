@@ -2,11 +2,11 @@
 
 import sys
 
-from lib.actions import discover
+from mhs.actions.discover import main
 
 if __name__ == "__main__":
   try:
-    discover.main()
+    main.call()
   except Exception as e:
     print(f"Error during discovery: {e}")
     sys.exit(1)

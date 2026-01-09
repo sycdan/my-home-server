@@ -11,11 +11,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-from lib.common import print_error, print_info, print_success, print_warning
-from lib.devices import Device
-from lib.discovery import generate_device_discovery_script
+from mhs.actions.discover.lib.discovery import generate_device_discovery_script
+from mhs.output import print_error, print_info, print_success, print_warning
+from mhs.devices import Device
 
-ROOT_DIR = Path(__file__).resolve().parent
 DEVICE_SCRIPT_CACHE_DIR = ROOT_DIR / ".device-scripts"
 FLEET_FILE = ROOT_DIR / "fleet.json"
 EXAMPLE_ENV_FILE = ROOT_DIR / "example.env"
@@ -165,8 +164,7 @@ def create_schedule(script_name: str, schedule_spec: str, user="admin") -> bool:
   return True
 
 
-def main(argv=None) -> int:
-  """Main entry point."""
+def call(argv=None) -> int:
   parser = argparse.ArgumentParser(
     description="Deploy device discovery scripts to router"
   )

@@ -1,4 +1,4 @@
-from lib.common import ROOT_DIR
+from mhs.output import ROOT_DIR
 
 
 def generate_device_discovery_script(

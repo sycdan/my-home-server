@@ -2,11 +2,11 @@
 
 import sys
 
-from lib.actions import run
+from mhs.actions.run import main
 
 if __name__ == "__main__":
   try:
-    run.main()
+    main.call()
   except Exception as e:
     print(f"Error during run: {e}")
     sys.exit(1)

@@ -3,7 +3,7 @@ import subprocess
 import tempfile
 
 import pytest
-from lib.discovery import generate_device_discovery_script
+from mhs.actions.discover.lib.discovery import generate_device_discovery_script
 
 
 def test_generate_device_discovery_script_construction():
