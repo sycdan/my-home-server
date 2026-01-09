@@ -1,130 +1,31 @@
-# AI Coding Instructions for my-home-server
+# Onboarding Instructions
 
-## Project Overview
+## Context
 
-**my-home-server** is a unified home infrastructure system combining:
+You are a successful and highly-respected principal engineer at a leading tech consulting company.
 
-1. **Docker orchestration** - Multi-service containerized apps
-2. **Network routing** - DNS-based service discovery and reverse proxy
-3. **Hardware management** - Device-specific configs for machines running different services
+You have been hired by a client to improve and maintain a project called "my-home-server" (MHS).
 
-**Core principle:** Self-contained services with automatic discovery, hostname-based routing, and idempotent setup.
+This project is intended to help users manage and automate their home server setups, in order to reduce dependency on cloud services and enhance privacy.
 
-## Architecture Overview
+The project is written in Python and bash, and it currently has some broken features and organizational issues.
 
-### Network & Routing Stack
+Your task is to refactor the codebase, improve its organization, and implement best practices for maintainability and scalability.
 
-```
-External Traffic (WAN)
-  ↓
-MikroTik Router (ether1 = WAN, ether2-5 = LAN bridge)
-  ├─ DNS discovery script (discovery.rsc) - finds & registers .lan hostnames
-  ├─ NAT rules - forwards ingress.lan:80/443 to Pi
-  └─ Split DNS - resolves public domains to internal IPs for LAN clients
-  ↓
-Raspberry Pi 3
-  ├─ nginx reverse proxy - routes domains to internal services
-  └─ Uses resolver directive for runtime DNS resolution
-  ↓
-Services (Immich, Jellyfin, etc.) on different machines
-```
+To get a sense of what the project's about, you can read the existing documention (though it may be inconsistent, as documentation often is) but don't get too hung up on the details. If ever in doubt, just follow the code -- only look to documentation for a general sense of purpose.
 
-**Key detail:** Services are located by `.lan` hostnames (immich.lan, jellyfin.lan) not static IPs. This allows devices to move/reboot without reconfiguring reverse proxy.
+---
 
-### Service Structure
+## Client Goals
 
-- **`services/*/`** - Containerized applications
+### ProtoBuf
 
-  - `docker-compose.yml` - Service definition
-  - `bootstrap.sh` - Idempotent setup (env, directories, validation)
-  - `example.env` - Configuration template
+We want consistent, well-defined data structures that can be easily serialized and deserialized across different components of the system, and different languages.
 
-- **`lib/common.sh`** - Shared bash utilities for all scripts
+We value not having to define schemas in multiple places.
 
-## Key Files & Important Locations
+We value self-documenting code highly.
 
-### Configuration Files
+We want to be able to generate meaningful code (and documentation for humans) from our data definitions.
 
-- **`fleet.json`** - Central configuration defining domains and services across devices
-  - `domains` - Domain registration and management info
-  - `devices` - Hardware configs with MAC addresses and hosted services
-- **`example.env`** - Project-level environment variables template
-
-### Orchestration & Control
-
-- **`services/<service>/init`** - Main bootstrap script; handles OS detection, Docker install, firewall setup, service setup
-
-### Ingress System
-
-- **`services/ingress/init`** - Ingress setup script that:
-  - Loads domains and services from `fleet.json`
-  - Validates domain registration via HTTP checks
-  - Creates DNS CNAME records via Porkbun API
-  - Configures nginx reverse proxy
-- **`services/ingress/lib/load-services.sh`** - Extracts service configs from fleet.json
-- **`services/ingress/lib/parse-and-validate-domains.sh`** - Domain validation and filtering
-
-### Network & DNS
-
-- **`lib/discovery.rsc`** - RouterOS script that:
-  - Discovers reverse proxy (Pi) and services via MAC address + ping
-  - Updates DNS `.lan` entries on the router (TTL: 5 minutes)
-  - Sets up NAT port forwarding (80/443 → ingress.lan)
-  - Configures split DNS for external domains
-  - Runs every 5 minutes automatically
-    All setup scripts must be safe to run multiple times
-
-### Environment Configuration
-
-- Service configuration lives in `.env` files (excluded from git via `.gitignore`)
-- `example.env` serves as documentation and template
-- Global config variables prefixed with `MHS_` and live in root `.env`
-
-### Error Handling Pattern
-
-All entrypoint scripts use `set -e` to exit on first error. Use the three-level messaging system:
-
-```bash
-print_status "Starting operation..."  # Blue [INFO]
-print_success "Completed"             # Green [SUCCESS]
-print_warning "Note this"             # Yellow [WARNING]
-print_error "Failed"                  # Red [ERROR]
-```
-
-### Script Root Finding
-
-Service-bootstrapping scripts locate their own directory and project root using:
-
-```bash
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-ROOT_DIR="$( cd "$SCRIPT_DIR/../../" && pwd )"
-source "$ROOT_DIR/lib/common.sh"
-source "$SCRIPT_DIR/.env"
-```
-
-## Adding a New Service
-
-1. **Add to fleet.json:** Update device entry with service definition:
-   ```json
-   "devices": {
-     "mydevice": {
-       "services": {
-         "myservice": {
-           "port": 8080
-         }
-       }
-     }
-   }
-   ```
-2. **Create service directory:** `mkdir services/myservice`
-3. **Add docker-compose.yml:** Use upstream source when available
-4. **Create example.env:** Document all configuration options
-
-## Important Implementation Notes
-
-- **Code formatting:** Use consistent indentation (2 spaces), lowercase variable names with underscores for python, and clear function names in bash scripts.
-
-## Git Strategy
-
-- `.env` files are git-ignored (user-specific configuration)
-- `example.env` files are committed (documentation)
+Investigate the viability of using [protocol buffers](https://protobuf.dev/) throughout.
