@@ -1,33 +1,38 @@
 # My Home Server
 
-A unified home infrastructure system: Docker orchestration, DNS-based service discovery, reverse proxy routing, and device-specific configuration scripts.
+A unified home infrastructure system: Docker orchestration, DNS-based service discovery, reverse proxy routing, and protobuf configuration.
 
 **Key Principle:** Services are addressed by `device.lan` hostnames and ports, not IPs. This allows devices to move/reboot with minimal reconfiguration.
 
-## [Devices](./fleet.json)
+## Devices
 
 - [MikroTik hEX](./docs/MikroTik%20hEX.md) running [RouterOS](https://help.mikrotik.com/docs/spaces/ROS/pages/328059/RouterOS)
 - [Netgear R7000P](./docs/Netgear%20R7000P.md) running [DD-WRT](https://dd-wrt.com/) (access point)
 - [Old Lenovo Laptop](./docs/Lenovo%204446%2038U.md) running [Ubuntu](https://ubuntu.com/download/desktop?version=24.04&architecture=amd64&lts=true) (service host)
 - [Raspberry Pi 3](./docs/Raspberry%20Pi%203.md) running Debian (reverse proxy)
 
-### Adding a device
+### Adding a device or service
 
-On your local machine, add the device to `./fleet.json`:
+On your local machine, edit the [fleet file](./mhs/config/fleet.textproto):
 
-```json
-{
-  "devices": {
-    "laptop": {
-      "primary_mac": "AA:BB:CC:DD:EE:01",
-      "secondary_mac": "AA:BB:CC:DD:EE:02",
-      "description": "My Laptop"
+```proto
+devices {
+  key: "my-laptop"
+  value {
+    macs: "AA:BB:CC:DD:EE:01"
+    macs: "AA:BB:CC:DD:EE:02"
+    services {
+      key: "my-service"
+      value {
+        port: 59999
+      }
     }
+    comment: "Personal laptop"
   }
 }
 ```
 
-**Note**: `primary_mac` should be ethernet, if available; `secondary_mac` can be wireless.
+**Note**: The first MAC should be ethernet, if available; the second can be wireless.
 
 ### Discovering devices
 

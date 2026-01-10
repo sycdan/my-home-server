@@ -1,0 +1,73 @@
+comment: "Wild Harvest Homelab"
+domains {
+  key: "sycdan.com"
+  value {
+    comment: "Personal domain, configured for DDNS via freedns.afraid.org"
+    registrar: "dreamhost"
+    management_url: "https://panel.dreamhost.com/index.cgi?tree=domain.dashboard#/site/sycdan.com/dns"
+  }
+}
+domains {
+  key: "wildharvesthomestead.com"
+  value {
+    comment: "Main ingress domain for homelab (goes via sycdan.com)"
+    registrar: "porkbun"
+    management_url: "https://porkbun.com/account/domainsSpeedy"
+  }
+}
+devices {
+  key: "ap"
+  value {
+    comment: "Netgear R7000P"
+    macs: "6C:CD:D6:2A:9E:DD"
+  }
+}
+devices {
+  key: "r-pi"
+  value {
+    comment: "Raspberry Pi 3"
+    macs: "B8:27:EB:AB:C0:DC"
+    macs: "B8:27:EB:FE:95:89"
+    services {
+      key: "ingress"
+      value {
+        port: 80
+      }
+    }
+    ssh_host: "ingress"
+  }
+}
+devices {
+  key: "lenovo"
+  value {
+    comment: "Old Lenovo Laptop"
+    macs: "00:23:5A:1A:A4:F6"
+    macs: "00:1E:65:3B:C7:94"
+    services {
+      key: "immich"
+      value {
+        port: 2283
+      }
+    }
+  }
+}
+devices {
+  key: "htpc"
+  value {
+    comment: "HTPC"
+    macs: "A8:A1:59:F1:3E:B5"
+    services {
+      key: "jellyfin"
+      value {
+        port: 8096
+      }
+    }
+  }
+}
+devices {
+  key: "dan-pc"
+  value {
+    comment: "Dan's PC"
+    macs: "9C:6B:00:3F:C3:CA"
+  }
+}

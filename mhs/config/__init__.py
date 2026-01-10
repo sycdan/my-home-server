@@ -1,6 +1,6 @@
 from pathlib import Path
 
-ROOT_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 FLEET_FILE = ROOT_DIR / "fleet.json"
 EXAMPLE_ENV_FILE = ROOT_DIR / "example.env"
 ENV_FILE = ROOT_DIR / ".env"

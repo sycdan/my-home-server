@@ -1,0 +1,26 @@
+edition = "2024";
+package mhs.config;
+
+message Fleet {
+  string              comment = 1;
+  map<string, Domain> domains = 2;
+  map<string, Device> devices = 3;
+}
+
+message Domain {
+  string comment        = 1;
+  string registrar      = 2;
+  string management_url = 3;
+}
+
+message Device {
+  string               comment  = 1;
+  repeated string      macs     = 2;
+  string               ssh_host = 3;
+  map<string, Service> services = 4;
+}
+
+message Service {
+  string comment = 1;
+  int32  port    = 2;
+}
