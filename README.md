@@ -99,6 +99,29 @@ From the `ingress.lan` machine, modify the [SERVICES array](./lib/services.sh) t
 
 ## Development
 
+### Install protobuf compiler
+
+Get the [latest release for your system](https://github.com/protocolbuffers/protobuf/releases):
+
+**Examples:**
+
+- [Windows](https://github.com/protocolbuffers/protobuf/releases/download/v33.3/protoc-33.3-win64.zip)
+  - Unzip to `C:\protoc` and ensure `C:\protoc\bin` is on your path.
+
+Verify installation:
+
+```bash
+protoc --version
+```
+
+### Install python requirements
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+https://github.com/protocolbuffers/protobuf/releases
+
 Sync work-in-progress to a remote for testing with [rsync](./docs/Rsync.md):
 
 ```bash
