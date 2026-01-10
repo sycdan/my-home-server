@@ -18,7 +18,7 @@ To get a sense of what the project's about, you can read the existing documentio
 
 ## Client Goals
 
-### ProtoBuf
+### Efficiency & Portability
 
 We want consistent, well-defined data structures that can be easily serialized and deserialized across different components of the system, and different languages.
 
@@ -28,4 +28,28 @@ We value self-documenting code highly.
 
 We want to be able to generate meaningful code (and documentation for humans) from our data definitions.
 
-Investigate the viability of using [protocol buffers](https://protobuf.dev/) throughout.
+### Usability
+
+We want our users to have a smooth experience setting up and using MHS, with minimal manual configuration.
+
+We want to present a clear set of top-levels commands for users to interact with the system.
+
+### Maintainability
+
+We need to be able to add components and features to MHS easily, without having to make extensive changes to existing code.
+
+Refactoring and improving the codebase should be straightforward and low-risk.
+
+### Provability
+
+We want to be able to run tests that perform all the user-accessible functionality of MHS, to ensure that changes don't break existing features.
+
+### Quality
+
+We expect all code to be formatted, linted, tested and fully functional before it reaches main.
+
+Commit messages should be clear and descriptive as to their intent and side effects.
+
+There should be a pre-push hook that scans all code for compliance.
+
+**Key Consideration:** If user functionality is broken, fix it before proceeding with refactoring or adding features.
