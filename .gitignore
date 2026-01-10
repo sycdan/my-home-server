@@ -6,3 +6,5 @@
 
 # Generated files
 .temp/
+*_pb2.py
+*_pb2.pyi
