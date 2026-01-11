@@ -44,6 +44,8 @@ Refactoring and improving the codebase should be straightforward and low-risk.
 
 We want to be able to run tests that perform all the user-accessible functionality of MHS, to ensure that changes don't break existing features.
 
+When you work on a new action, you should update `.vscode/launch.json` to add a debug configuration for that action, which calls pytest to test the new code.
+
 ### Quality
 
 We would like to build a bulletproof api and software delivery system.
