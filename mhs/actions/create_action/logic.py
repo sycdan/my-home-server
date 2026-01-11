@@ -1,9 +1,13 @@
 import re
 import textwrap
 from pathlib import Path
+from string import Template
 
 from mhs.actions.create_action.messages_pb2 import CreateActionRequest, CreateActionResponse
 from mhs.config import BASE_DOMAIN, ROOT_DIR
+
+ACTION_DIR = Path(__file__).parent
+TEMPLATES_DIR = ACTION_DIR / "templates"
 
 
 def to_snake_case(name):
@@ -14,60 +18,73 @@ def to_camel_case(name):
   return "".join(word.capitalize() for word in re.split(r"[^a-zA-Z0-9]", name) if word)
 
 
+def to_dotpath(path: Path):
+  return ".".join(path.as_posix().split("/"))
+
+
+def ensure_proto_files(proto_dir: Path, action_name: str, domain_path: Path) -> None:
+  messages_file = proto_dir / "messages.proto"
+  messages_file.parent.mkdir(parents=True, exist_ok=True)
+  if messages_file.exists():
+    raise RuntimeError(f"Proto file already exists: {messages_file.relative_to(ROOT_DIR)}")
+
+  tmpl_path = TEMPLATES_DIR / "messages.proto.tmpl"
+  tmpl = Template(tmpl_path.read_text(encoding="utf-8"))
+  proto_content = tmpl.substitute(
+    package_dotpath=to_dotpath(domain_path / "actions" / to_snake_case(action_name)),
+    action_name_camel=to_camel_case(action_name),
+  )
+  messages_file.write_text(proto_content.strip() + "\n")
+
+
+def create_file(file_path: Path):
+  """Example:
+  ```
+  if create_file(some_path):
+    print("created new file")
+  else:
+    print("file already existed")
+  ```
+  """
+  if not file_path.exists():
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    file_path.write_text("")
+    return True
+  return False
+
+
+def ensure_logic_module(action_dir: Path):
+  logic_module = action_dir / "logic.py"
+  if not create_file(logic_module):
+    return
+
+  tpl_path = TEMPLATES_DIR / "logic.py.tmpl"
+  tpl = Template(tpl_path.read_text(encoding="utf-8"))
+  action_path = action_dir.relative_to(ROOT_DIR)
+  content = tpl.substitute(
+    action_name_camel=to_camel_case(action_path.name),
+    package_dotpath=to_dotpath(action_path),
+  )
+  logic_module.write_text(content)
+
+
 def handle(msg: CreateActionRequest) -> CreateActionResponse:
   errors = []
   try:
-    domain_path = Path(msg.domain_path.strip())
+    domain_path = Path(msg.domain_path.strip())  # must start with base domain
     domain_dir = ROOT_DIR / BASE_DOMAIN / domain_path.relative_to(BASE_DOMAIN)
+    domain_dir.mkdir(parents=True, exist_ok=True)
     action_name = msg.action_name.strip()
-    action_dir = domain_dir / "actions" / to_snake_case(action_name)
+    action_snake = to_snake_case(action_name)
+    package_dotpath = to_dotpath(domain_path / "actions" / action_snake)
+    action_dir = domain_dir / "actions" / action_snake
+    create_file(action_dir / "__init__.py")
     action_path = action_dir.relative_to(ROOT_DIR)
     proto_dir = ROOT_DIR / "proto" / action_path
-
-    domain_dir.parent.mkdir(parents=True, exist_ok=True)
-    proto_dir.parent.mkdir(parents=True, exist_ok=True)
-
-    proto_name = to_camel_case(action_name)
-    proto_file = proto_dir / "messages.proto"
-    if proto_file.exists():
-      raise RuntimeError(f"Proto file already exists: {proto_file.relative_to(ROOT_DIR)}")
-
-    proto_content = (
-      textwrap.dedent(f"""
-      edition = "2024";
-      package mhs.{domain_path_str.replace("/", ".")}.actions.{to_snake_case(action_name)};
-
-      message {proto_name}Request {{
-
-      }}
-
-      message {proto_name}Response {{
-      }}
-    """).strip()
-      + "\n"
-    )
-    proto_file.write_text(proto_content)
-    # Python package __init__.py
-    init_file = action_dir / "__init__.py"
-    if not init_file.exists():
-      init_file.write_text("")
-    # logic.py
-    logic_file = action_dir / "logic.py"
-    if not logic_file.exists():
-      logic_content = (
-        textwrap.dedent(f"""
-        from mhs.{domain_path_str.replace("/", ".")}.actions.{to_snake_case(action_name)}.messages_pb2 import {proto_name}Request, {proto_name}Response
-
-        def handle(msg: {proto_name}Request) -> {proto_name}Response:
-          print(f"Handling {{msg}}")
-          return {proto_name}Response()
-      """).strip()
-        + "\n"
-      )
-      logic_file.write_text(logic_content)
+    ensure_proto_files(proto_dir, action_name, domain_path)
+    ensure_logic_module(action_dir)
   except Exception as e:
     errors.append(str(e))
-
   if errors:
     return CreateActionResponse(success=False, errors=errors)
   print(f"Created action {action_dir.relative_to(ROOT_DIR)}")

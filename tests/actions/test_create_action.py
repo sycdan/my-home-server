@@ -7,7 +7,7 @@ from mhs.config import BASE_DOMAIN, ROOT_DIR
 
 def test_create_action_basic():
   """Test that a new action can be created with minimal input."""
-  domain_dir = ROOT_DIR / BASE_DOMAIN / uuid.uuid4().hex / "example"
+  domain_dir = ROOT_DIR / BASE_DOMAIN / "examples" / uuid.uuid4().hex
   assert not domain_dir.exists()
 
   domain_path = domain_dir.relative_to(ROOT_DIR).as_posix()
