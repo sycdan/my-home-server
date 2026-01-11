@@ -4,7 +4,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from mhs.actions.run import main
+from mhs.actions.run import logic
 
 TEST_SERVICE_LABEL = "testing"
 TEST_FLEET_JSON = """
@@ -66,7 +66,7 @@ def test_e2e():
     os.chmod(test_service_command_file, 0o755)
 
     try:
-      main.call(
+      logic.call(
         [
           str(test_service_command_file),
           "--root",

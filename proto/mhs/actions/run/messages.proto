@@ -1,0 +1,8 @@
+edition = "2024";
+package mhs.actions.run;
+
+message RunRequest {
+}
+
+message RunResponse {
+}

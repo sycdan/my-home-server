@@ -1,0 +1,11 @@
+edition = "2024";
+package mhs.discovery.actions.discover_devices;
+
+message DiscoverDevicesRequest
+{
+
+}
+
+message DiscoverDevicesResponse
+{
+}

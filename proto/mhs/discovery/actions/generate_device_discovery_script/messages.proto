@@ -1,0 +1,13 @@
+edition = "2024";
+package mhs.discovery.actions.generate_device_discovery_script;
+
+message GenerateDiscoveryScriptRequest {
+  string hostname      = 1;
+  string primary_mac   = 2;
+  string secondary_mac = 3;
+}
+
+message GenerateDiscoveryScriptResponse {
+  string script = 1;
+
+}
