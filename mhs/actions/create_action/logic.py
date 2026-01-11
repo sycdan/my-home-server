@@ -1,25 +1,17 @@
-import re
 from pathlib import Path
 from string import Template
+
 
 from mhs import proto
 from mhs.actions.create_action.messages_pb2 import CreateActionRequest, CreateActionResponse
 from mhs.config import BASE_DOMAIN, ROOT_DIR
+from mhs.util import to_snake_case, to_camel_case, to_dotpath
 
 ACTION_DIR = Path(__file__).parent
 TEMPLATES_DIR = ACTION_DIR / "templates"
 
 
-def to_snake_case(name):
-  return re.sub(r"[^a-zA-Z0-9]+", "_", name).strip("_").lower()
 
-
-def to_camel_case(name):
-  return "".join(word.capitalize() for word in re.split(r"[^a-zA-Z0-9]", name) if word)
-
-
-def to_dotpath(path: Path):
-  return ".".join(path.as_posix().split("/"))
 
 
 def ensure_proto_files(proto_dir: Path):
