@@ -1,0 +1,9 @@
+edition = "2024";
+package mhs.mhs.821ee6fe08f34e318c38b450dc874596.example.actions.do_stuff;
+
+message DoStuffRequest {
+
+}
+
+message DoStuffResponse {
+}
