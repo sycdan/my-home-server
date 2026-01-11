@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from mhs.util import to_camel_case, to_dotpath, to_snake_case
+from mhs.util import to_camel_case, to_dot_path, to_snake_case
 
 
 @pytest.mark.parametrize(
@@ -46,4 +46,4 @@ def test_to_camel_case(input_text, expected):
   ],
 )
 def test_to_dotpath(input_path, expected):
-  assert to_dotpath(input_path) == expected
+  assert to_dot_path(input_path) == expected

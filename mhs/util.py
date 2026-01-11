@@ -10,5 +10,5 @@ def to_camel_case(name):
   return "".join(word.capitalize() for word in re.split(r"[^a-zA-Z0-9]", name) if word)
 
 
-def to_dotpath(path: Path):
+def to_dot_path(path: Path):
   return ".".join(path.as_posix().split("/"))

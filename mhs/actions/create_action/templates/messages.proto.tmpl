@@ -1,11 +1,11 @@
 edition = "2024";
-package ${package_dotpath};
+package ${action_package};
 
-message ${action_name_camel}Request {
-  // Define request fields here
+// Define request fields in here
+message ${action_camel}Request {
 }
 
-message ${action_name_camel}Response {
-  bool success = 1; // do not change this line
-  // Define additional response fields here
+// Define response fields in here
+message ${action_camel}Response {
+  repeated string errors = 1; // do not change this line
 }

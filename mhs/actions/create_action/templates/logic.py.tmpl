@@ -1,9 +1,9 @@
 from pathlib import Path
-from ${package_dotpath}.messages_pb2 import ${action_name_camel}Request, ${action_name_camel}Response
+from ${action_package}.messages_pb2 import ${action_camel}Request, ${action_camel}Response
 
 ACTION_DIR = Path(__file__).parent
 TEMPLATES_DIR = ACTION_DIR / "templates"
 
-def handle(msg: ${action_name_camel}Request):
+def handle(msg: ${action_camel}Request):
   print(f"Handling {msg}")
-  return ${action_name_camel}Response()
+  return ${action_camel}Response()

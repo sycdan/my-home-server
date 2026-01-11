@@ -5,9 +5,7 @@ from pathlib import Path
 
 from google.protobuf import json_format, text_format
 
-from mhs.config import FLEET_FILE, PROTOC_PATH, ROOT_DIR
-
-PROTO_DIR = ROOT_DIR / "proto"
+from mhs.config import FLEET_FILE, PROTO_DIR, PROTOC_PATH, ROOT_DIR
 
 
 def find_proto_files():
