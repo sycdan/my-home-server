@@ -96,7 +96,7 @@ def parse_bool(value: str):
 
 
 def build_request_parser(request_class: type[Message]):
-  parser = argparse.ArgumentParser(description=f"Args for {request_class}")
+  parser = argparse.ArgumentParser(description=f"Args for {request_class}", add_help=False)
   for field in request_class.DESCRIPTOR.fields:
     if field.type in (FieldDescriptor.TYPE_DOUBLE, FieldDescriptor.TYPE_FLOAT):
       parser.add_argument(f"--{field.name}", type=float)
@@ -129,15 +129,34 @@ def build_request_object(req_class: type[Message], req_args: argparse.Namespace)
 def main():
   parser = argparse.ArgumentParser(
     description="Entrypoint for dynamic action execution.",
-    usage="%(prog)s action_path [--field=value ...]",
+    add_help=False,  # We'll handle help manually
   )
-  parser.add_argument("action_path", help="Path to the action's directory or logic file.")
+  parser.add_argument(
+    "action_path", nargs="?", default="", help="Path to the action's directory or logic file."
+  )
+  parser.add_argument("-h", "--help", action="store_true", help="Show help message and exit.")
   args, remaining = parser.parse_known_args()
+
+  # Show base help if no action_path is provided
+  if not args.action_path:
+    if args.help:
+      parser.print_help()
+    else:
+      parser.print_usage()
+    return
+
   action_dir = locate_action_directory(Path(args.action_path).resolve())
   logic_module = load_logic_module(action_dir / "logic.py")
   req_handler = get_handler_function(logic_module)
   req_class = get_request_class(req_handler)
   req_parser = build_request_parser(req_class)
+
+  # Show action-specific help if requested
+  if args.help:
+    req_parser.prog = f"./call {args.action_path}"
+    req_parser.print_help()
+    return
+
   req_args = req_parser.parse_args(remaining)
   req_obj = build_request_object(req_class, req_args)
   response = req_handler(req_obj)
