@@ -1,8 +1,8 @@
 import re
-import textwrap
 from pathlib import Path
 from string import Template
 
+from mhs import proto
 from mhs.actions.create_action.messages_pb2 import CreateActionRequest, CreateActionResponse
 from mhs.config import BASE_DOMAIN, ROOT_DIR
 
@@ -22,7 +22,7 @@ def to_dotpath(path: Path):
   return ".".join(path.as_posix().split("/"))
 
 
-def ensure_proto_files(proto_dir: Path, action_name: str, domain_path: Path) -> None:
+def ensure_proto_files(proto_dir: Path):
   messages_file = proto_dir / "messages.proto"
   messages_file.parent.mkdir(parents=True, exist_ok=True)
   if messages_file.exists():
@@ -30,11 +30,15 @@ def ensure_proto_files(proto_dir: Path, action_name: str, domain_path: Path) -> 
 
   tmpl_path = TEMPLATES_DIR / "messages.proto.tmpl"
   tmpl = Template(tmpl_path.read_text(encoding="utf-8"))
+  action_snake = proto_dir.name
   proto_content = tmpl.substitute(
-    package_dotpath=to_dotpath(domain_path / "actions" / to_snake_case(action_name)),
-    action_name_camel=to_camel_case(action_name),
+    package_dotpath=to_dotpath(domain_path / "actions" / action_snake),
+    action_name_camel=to_camel_case(action_snake),
   )
   messages_file.write_text(proto_content.strip() + "\n")
+  return [
+    messages_file,
+  ]
 
 
 def create_file(file_path: Path):
@@ -68,24 +72,24 @@ def ensure_logic_module(action_dir: Path):
   logic_module.write_text(content)
 
 
-def handle(msg: CreateActionRequest) -> CreateActionResponse:
+def handle(msg: CreateActionRequest):
   errors = []
+  proto_files: list[str] = []
   try:
     domain_path = Path(msg.domain_path.strip())  # must start with base domain
     domain_dir = ROOT_DIR / BASE_DOMAIN / domain_path.relative_to(BASE_DOMAIN)
     domain_dir.mkdir(parents=True, exist_ok=True)
     action_name = msg.action_name.strip()
     action_snake = to_snake_case(action_name)
-    package_dotpath = to_dotpath(domain_path / "actions" / action_snake)
     action_dir = domain_dir / "actions" / action_snake
     create_file(action_dir / "__init__.py")
     action_path = action_dir.relative_to(ROOT_DIR)
     proto_dir = ROOT_DIR / "proto" / action_path
-    ensure_proto_files(proto_dir, action_name, domain_path)
+    proto_files.extend([x.relative_to(ROOT_DIR).as_posix() for x in ensure_proto_files(proto_dir)])
     ensure_logic_module(action_dir)
   except Exception as e:
     errors.append(str(e))
   if errors:
     return CreateActionResponse(success=False, errors=errors)
   print(f"Created action {action_dir.relative_to(ROOT_DIR)}")
-  return CreateActionResponse(success=True, errors=[])
+  return CreateActionResponse(success=True, proto_files=proto_files)

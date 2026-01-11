@@ -3,6 +3,7 @@ import uuid
 
 from mhs.actions.create_action.logic import CreateActionRequest, handle
 from mhs.config import BASE_DOMAIN, ROOT_DIR
+from mhs.proto import generate_proto
 
 
 def test_create_action_basic():
@@ -14,6 +15,8 @@ def test_create_action_basic():
   req = CreateActionRequest(action_name="Do Stuff", domain_path=domain_path)
   resp = handle(req)
   assert resp.success
+
+  generate_proto([ROOT_DIR / x for x in resp.proto_files])
 
   # Verify expected structure and files
   py_dir = domain_dir / "actions" / "do_stuff"

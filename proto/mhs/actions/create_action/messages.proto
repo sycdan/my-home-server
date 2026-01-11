@@ -7,6 +7,9 @@ message CreateActionRequest {
 }
 
 message CreateActionResponse {
-  bool success = 1;
-  repeated string errors = 2;
+  bool            success = 1;
+  repeated string errors  = 2;
+
+  // List of created proto files (relative to project root)
+  repeated string proto_files = 3;
 }
