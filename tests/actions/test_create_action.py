@@ -1,8 +1,9 @@
 import shutil
+import subprocess
 import uuid
 
 from mhs.actions.create_action.logic import CreateActionRequest, handle
-from mhs.config import BASE_DOMAIN, ROOT_DIR
+from mhs.config import BASE_DOMAIN, PYTHON, ROOT_DIR
 
 
 def test_create_action_basic():
@@ -23,6 +24,10 @@ def test_create_action_basic():
   assert (py_dir / "__init__.py").is_file(), "Missing __init__.py"
   assert (py_dir / "logic.py").is_file(), "Missing logic.py"
   assert (proto_dir / "messages.proto").is_file(), "Missing messages.proto"
+
+  # Invoke the new action
+  action_path = py_dir.relative_to(ROOT_DIR).as_posix()
+  subprocess.run([PYTHON, "call", action_path], check=True)
 
   # Clean up
   shutil.rmtree(domain_dir, ignore_errors=True)
