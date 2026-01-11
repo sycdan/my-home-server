@@ -46,6 +46,8 @@ We want to be able to run tests that perform all the user-accessible functionali
 
 ### Quality
 
+We would like to build a bulletproof api and software delivery system.
+
 We expect all code to be formatted, linted, tested and fully functional before it reaches main.
 
 Commit messages should be clear and descriptive as to their intent and side effects.

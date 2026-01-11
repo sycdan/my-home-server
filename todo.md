@@ -18,6 +18,7 @@ The user should then be able to ssh to discovered devices.
 
 ## Prerequisites
 
-Let's make sure that it is even possible to define supplementary ssh config files on the local system, such that they are parsed when running `ssh`.
-
 **Important:** do not manually edit textproto -- we need to parse it into python objects, mutate those, then re-export.
+
+---
+
