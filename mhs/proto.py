@@ -45,5 +45,3 @@ def generate_proto(files: list[Path] | None = None):
 #   with open(FLEET_FILE, "w") as f:
 #     json.dump(generated, f, indent=2)
 
-
-print(generate_proto())
