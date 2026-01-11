@@ -3,10 +3,10 @@ package ${action_package};
 
 // Define request fields in here
 message ${action_camel}Request {
-  bool dry_run = 1; // do not change this line
+  bool dry_run = 1; // If true: don't make changes, just report what would be done
 }
 
 // Define response fields in here
 message ${action_camel}Response {
-  repeated string errors = 1; // do not change this line
+  repeated string errors = 1; // If empty: action succeeded
 }
