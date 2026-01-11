@@ -135,33 +135,8 @@ rsync -avz ./services/ingress/ ingress:~/my-home-server/services/ingress/ && ssh
 
 ### Creating Actions
 
-For an action named `Do Stuff` (in natural language) inside the package `mhs.example.actions`, create a file named `proto/mhs/example/actions/do_stuff/messages.proto`:
-
-```proto
-edition = "2024";
-package mhs.example.actions.do_stuff;
-
-message DoStuffRequest
-{
-
-}
-
-message DoStuffResponse
-{
-}
-```
-
-Add your required fields, then run `./build`.
-
-Create `mhs/example/actions/do_stuff/__init__.py` (empty).
-
-Create `mhs/example/actions/do_stuff/logic.py`:
-
-```python
-from mhs.example.actions.messages_pb2 import DoStuffRequest, DoStuffResponse
-
-def handle(msg: DoStuffRequest) -> DoStuffResponse:
-  print(f"Handling {msg}")
+```bash
+./call mhs/actions/create_action --help
 ```
 
 ## Troubleshooting
