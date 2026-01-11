@@ -1,3 +1,8 @@
-#!/usr/bin/env bash
-python -c 'import mhs.proto; mhs.proto.generate_proto()'
+#!/usr/bin/env python
+import mhs.proto
+
+print("Generating proto files...")
+mhs.proto.generate_proto()
+print("Proto files generated successfully.")
+
 # python -c 'import mhs.proto; mhs.proto.generate_fleet_json()'
