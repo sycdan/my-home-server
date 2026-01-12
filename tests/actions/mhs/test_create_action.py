@@ -2,10 +2,13 @@ import shutil
 import subprocess
 import uuid
 
+import pytest
+
 from mhs.actions.create_action.logic import CreateActionRequest, handle
 from mhs.config import BASE_DOMAIN, PYTHON, ROOT_DIR
 
 
+@pytest.mark.integration
 def test_create_action_basic():
   """Test that a new action can be created with minimal input."""
   domain_dir = ROOT_DIR / BASE_DOMAIN / "examples" / f"x{uuid.uuid4().hex}"
