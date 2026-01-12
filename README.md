@@ -119,13 +119,38 @@ Verify installation:
 protoc --version
 ```
 
+### Install buf (protobuf linter)
+
+Download the [latest buf release](https://github.com/bufbuild/buf/releases) for your system:
+
+**Examples:**
+
+- **Windows:** Download `buf-Windows-x86_64.exe`, rename to `buf.exe`, and place in your PATH
+- **macOS:** `brew install bufbuild/buf/buf`
+- **Linux:** Download the appropriate binary and place in `/usr/local/bin/buf`
+
+Verify installation:
+
+```bash
+# Note: If you have oh-my-bash installed, you may need to use the full path
+# due to a naming conflict with the oh-my-bash 'buf' backup function
+/path/to/buf --version
+```
+
+To lint protobuf files:
+
+```bash
+# Use full path if you have oh-my-bash naming conflict
+/c/Users/Dan/bin/buf lint proto/
+```
+
 ### Install python requirements
 
 ```bash
 pip install -r requirements-dev.txt
 ```
 
-https://github.com/protocolbuffers/protobuf/releases
+[Protocol Buffers Releases](https://github.com/protocolbuffers/protobuf/releases)
 
 Sync work-in-progress to a remote for testing with [rsync](./docs/Rsync.md):
 
