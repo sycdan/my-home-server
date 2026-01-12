@@ -76,7 +76,6 @@ def handle(msg: RunRequest) -> RunResponse:
       (relative_service_dir / ".env").as_posix(),
     ]
     to_remote_files = [
-      ".env",
       "lib/",
       fleet_file_path.relative_to(root_dir).as_posix(),
       relative_service_dir.as_posix() + "/",
