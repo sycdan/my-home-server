@@ -38,8 +38,8 @@ def test_upload_and_run_discovery_script_on_router():
     # Run script on router
     ssh_cmd = ["ssh", router_host, f"/import {script_name}"]
     result = run(ssh_cmd)
+    assert result.stdout.strip().endswith("executed successfully")
     assert "Using IP" in result.stdout
-    assert "=== Complete ===" in result.stdout
 
     # Cleanup
     run(["ssh", router_host, f'/file remove "{script_name}"'])
