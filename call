@@ -150,10 +150,10 @@ def main():
   req_handler = get_handler_function(logic_module)
   req_class = get_request_class(req_handler)
   req_parser = build_request_parser(req_class)
+  req_parser.prog = f"./call {args.action_path}"
 
   # Show action-specific help if requested
   if args.help:
-    req_parser.prog = f"./call {args.action_path}"
     req_parser.print_help()
     return
 
