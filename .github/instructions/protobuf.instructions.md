@@ -21,6 +21,10 @@ applyTo: "**/*.proto"
 - Use `edition = "2024"` in all `.proto` files.
   - [More info](https://protobuf.dev/programming-guides/editions/#edition-2024)
 
+## Notes
+
+Any directory in `./proto` that contains a `messages.proto` file represents an action (and will have a corresponding `logic.py` file within `./mhs`, based on the proto package path).
+
 ## Examples
 
 The following schema will generate a Python class named `ExampleMessage`:
