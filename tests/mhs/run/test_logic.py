@@ -4,7 +4,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from mhs.actions.run import logic
+from mhs.run import logic
 
 TEST_SERVICE_LABEL = "testing"
 TEST_FLEET_JSON = """

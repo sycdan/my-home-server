@@ -1,5 +1,5 @@
 edition = "2024";
-package mhs.actions.create_action;
+package mhs.create_action;
 
 message CreateActionRequest {
   string action_name = 1; // e.g.: "Do Stuff"

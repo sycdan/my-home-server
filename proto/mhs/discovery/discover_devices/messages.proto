@@ -1,5 +1,5 @@
 edition = "2024";
-package mhs.local.actions.discover_devices;
+package mhs.discovery.discover_devices;
 
 // Discover devices on the network and update fleet configuration.
 message DiscoverDevicesRequest {

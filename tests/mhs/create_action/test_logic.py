@@ -4,7 +4,7 @@ import uuid
 
 import pytest
 
-from mhs.actions.create_action.logic import CreateActionRequest, handle
+from mhs.create_action.logic import CreateActionRequest, handle
 from mhs.config import BASE_DOMAIN, PYTHON, ROOT_DIR
 
 
@@ -20,8 +20,8 @@ def test_create_action_basic():
   assert not resp.errors, f"Errors: {resp.errors}"
 
   # Verify expected structure and files
-  py_dir = domain_dir / "actions" / "do_stuff"
-  proto_dir = ROOT_DIR / "proto" / domain_path / "actions" / "do_stuff"
+  py_dir = domain_dir / "do_stuff"
+  proto_dir = ROOT_DIR / "proto" / domain_path / "do_stuff"
   assert py_dir.is_dir(), f"Missing {py_dir}"
   assert proto_dir.is_dir(), f"Missing {proto_dir}"
   assert (py_dir / "__init__.py").is_file(), "Missing __init__.py"

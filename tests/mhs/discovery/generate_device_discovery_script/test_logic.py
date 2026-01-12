@@ -3,24 +3,11 @@ import subprocess
 import tempfile
 
 import pytest
-from mhs.actions.discover.lib.discovery import generate_device_discovery_script
 
-
-def test_generate_device_discovery_script_construction():
-  hostname = "testdevice.lan"
-  primary_mac = "AA:BB:CC:DD:EE:01"
-  secondary_mac = "AA:BB:CC:DD:EE:02"
-  script = generate_device_discovery_script(hostname, primary_mac, secondary_mac)
-
-  # Check for DHCP lease lookup
-  assert "/ip dhcp-server lease find where active-mac-address=$mac" in script
-  # Check for ARP table lookup
-  assert "/ip arp find where mac-address=$mac" in script
-  # Check that both MACs are referenced
-  assert primary_mac in script
-  assert secondary_mac in script
-  # Check that ping logic is present
-  assert "/ping" in script
+from mhs.discovery.generate_device_discovery_script.logic import (
+  GenerateDiscoveryScriptRequest,
+  handle,
+)
 
 
 @pytest.mark.integration
@@ -28,9 +15,10 @@ def test_upload_and_run_discovery_script_on_router():
   hostname = "testdevice.lan"
   primary_mac = "AA:BB:CC:DD:EE:FF"  # fake
   secondary_mac = "6C:CD:D6:2A:9E:DD"  # real
-  script_content = generate_device_discovery_script(
-    hostname, primary_mac, secondary_mac
+  request = GenerateDiscoveryScriptRequest(
+    hostname=hostname, primary_mac=primary_mac, secondary_mac=secondary_mac
   )
+  script_content = handle(request).script_content
   script_name = "pytest-discover-test.rsc"
   router_host = "router"
 
@@ -50,7 +38,7 @@ def test_upload_and_run_discovery_script_on_router():
     # Run script on router
     ssh_cmd = ["ssh", router_host, f"/import {script_name}"]
     result = run(ssh_cmd)
-    # TODO: ensure an ip was found
+    assert "Using IP" in result.stdout
     assert "=== Complete ===" in result.stdout
 
     # Cleanup

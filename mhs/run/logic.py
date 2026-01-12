@@ -66,7 +66,8 @@ def call(argv=None):
   relative_service_dir = relative_executable_path.parent
   service_label = relative_service_dir.name
 
-  devices = Device.load_all()
+  fleet_file_path = root_dir / "fleet.json"
+  devices = Device.load_all(fleet_file_path)
   hosting_device = Device.find_by_service(service_label, devices)
   if hosting_device is None:
     print_error(f"Service '{service_label}' is not hosted on any device")
@@ -87,7 +88,7 @@ def call(argv=None):
   to_remote_files = [
     ".env",
     "lib/",
-    FLEET_FILE.relative_to(root_dir).as_posix(),
+    fleet_file_path.relative_to(root_dir).as_posix(),
     relative_service_dir.as_posix() + "/",
   ]
 

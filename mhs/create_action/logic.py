@@ -1,7 +1,7 @@
 from pathlib import Path
 from string import Template
 
-from mhs.actions.create_action.messages_pb2 import CreateActionRequest, CreateActionResponse
+from mhs.create_action.messages_pb2 import CreateActionRequest, CreateActionResponse
 from mhs.config import BASE_DOMAIN, PROTO_DIR, ROOT_DIR
 from mhs.proto import generate_proto
 from mhs.util import to_camel_case, to_dot_path, to_snake_case
@@ -68,7 +68,7 @@ def handle(msg: CreateActionRequest):
     domain_dir.mkdir(parents=True, exist_ok=True)
     action_name = msg.action_name.strip()
     action_snake = to_snake_case(action_name)
-    action_dir = domain_dir / "actions" / action_snake
+    action_dir = domain_dir / action_snake
     create_file(action_dir / "__init__.py")
     action_path = action_dir.relative_to(ROOT_DIR)
     ensure_logic_module(action_dir)
