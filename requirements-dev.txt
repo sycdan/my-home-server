@@ -3,3 +3,4 @@
 
 # Dev-only requirements
 pytest~=9.0
+pytest-cov~=6.0
