@@ -31,3 +31,5 @@ message ExampleMessage {
   int32 value = 2;
 }
 ```
+
+Run `./build` to generate code from protobuf definitions.
