@@ -30,4 +30,4 @@ applyTo: "**/*.py"
 
 ## Notes
 
-- Any package directory within `./mhs` that contains a `logic.py` file is considered an "action".
+- Any directory within `./mhs` that contains a `logic.py` file is considered an "action" (the filename must be an exact match).
