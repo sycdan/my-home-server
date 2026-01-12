@@ -5,20 +5,7 @@ from pathlib import Path
 
 from mhs.config import DOMAIN_SUFFIX, FLEET_FILE
 from mhs.output import print_error
-
-
-def validate_mac_address(mac: str) -> bool:
-  """Validate MAC address format"""
-  if len(mac.split(":")) != 6:
-    return False
-  for part in mac.split(":"):
-    if len(part) != 2:
-      return False
-    try:
-      int(part, 16)
-    except ValueError:
-      return False
-  return True
+from mhs.util import normalize_mac_address
 
 
 @dataclass
@@ -53,10 +40,8 @@ class Device:
           description=definition.get("description", label),
           services=definition.get("services", {}),
         )
-        if not validate_mac_address(device.primary_mac):
-          print_error(
-            f"Invalid primary MAC address for device '{label}': {device.primary_mac}"
-          )
+        if not normalize_mac_address(device.primary_mac):
+          print_error(f"Invalid primary MAC address for device '{label}': {device.primary_mac}")
           continue
         devices.append(device)
     except json.JSONDecodeError as e:
@@ -69,9 +54,7 @@ class Device:
     return devices
 
   @classmethod
-  def find_by_service(
-    cls, service_label: str, devices: list["Device"]
-  ) -> "Device | None":
+  def find_by_service(cls, service_label: str, devices: list["Device"]) -> "Device | None":
     """Find the device that hosts the specified service"""
     for device in devices:
       if service_label in device.services:

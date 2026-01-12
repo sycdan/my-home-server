@@ -12,3 +12,17 @@ def to_camel_case(name):
 
 def to_dot_path(path: Path):
   return ".".join(path.as_posix().split("/"))
+
+
+def normalize_mac_address(mac: str):
+  """Returns normalized MAC address if valid, else empty string."""
+  if len(mac.split(":")) != 6:
+    return ""
+  for part in mac.split(":"):
+    if len(part) != 2:
+      return ""
+    try:
+      int(part, 16)
+    except ValueError:
+      return ""
+  return mac.upper()
