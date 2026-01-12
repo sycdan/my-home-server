@@ -1,5 +1,6 @@
 from pathlib import Path
 
+DEBUG = True
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 TEMP_DIR = ROOT_DIR / ".temp"
 BASE_DOMAIN = "mhs"
