@@ -1,24 +1,23 @@
 # Today's Task
 
+**Refactor actions.**
+
+## Recommended Pre-reading
+
+Read the `.github` instructions.
+
 Look at [this test](tests/actions/test_create_action.py) to learn about creating actions.
 
-We need to build out the local domain actions.
+## Goal
 
-The local domain actions primarily have side effects (if any) for the user's local machine (e.g. creating/updating files), but they can touch remote machines (via ssh) and potentially have side-effects there also.
+All tests
 
-## Actions
+We need to refactor the action system, as it is a bit clunky.
 
-Let's start with `Discover Devices`.
+Instead of identifying an action by having it reside in an `/actions/` subdir, let's make it simpler: the presence of a `logic.py` file makes its directory an action.
 
-This action will query the router (ssh router '/command') to find devices connected to the LAN, e.g. via the ARP table, and check if they exist in the [fleet config](mhs/config/fleet.textproto). If not, it will add them. It will create or update supplementary ssh config files (**not** in the user's main `.ssh/config`) and update them with the active hostname for that device (static dns name, if available, otherwise IP).
+There should be a 1:1 correspondence with logic files in `./mhs` and `messages.proto` files in `./proto` -- that is, their directory paths should match, as should the package in the proto file. If all this lines up, we can confidently say it's a valid action and it can join our api, to be run via `python call`.
 
-When creating ssh hosts, `Host <MacAddressWithoutColons>` sections will be generated, unless there is a `<name>.lan` hostname for the device, in which case the `<name>` will be used. Newly-created config files will be named `<MacAddressWithoutColons>`.
+Does that make sense? Let me know if you need clarification.
 
-The user should then be able to ssh to discovered devices.
-
-## Prerequisites
-
-**Important:** do not manually edit textproto -- we need to parse it into python objects, mutate those, then re-export.
-
----
-
+Briefly summarize the scope of work before proceeding.
