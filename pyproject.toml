@@ -3,7 +3,7 @@ markers = [
   "integration: marks tests as integration tests (may require external dependencies)",
 ]
 testpaths = ["tests"]
-norecursedirs = ["examples", "x*", "*.egg", ".*", "build", "dist", "__pycache__"]
+norecursedirs = ["__pycache__"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]

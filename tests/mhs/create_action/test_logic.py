@@ -8,47 +8,48 @@ from mhs.config import BASE_DOMAIN, PYTHON, ROOT_DIR
 from mhs.create_action.logic import CreateActionRequest, handle
 
 
+@pytest.fixture(autouse=True)
+def cleanup_example_dirs():
+  """Automatically clean up any leftover example directories after each test."""
+  yield  # Run the test
+  # Cleanup after test regardless of success/failure
+  for pattern in ["mhs/examples/x*", "proto/mhs/examples/x*", "tests/mhs/examples/x*"]:
+    for path in ROOT_DIR.glob(pattern):
+      if path.is_dir():
+        shutil.rmtree(path, ignore_errors=True)
+
+
 def test_create_action_fails_when_proto_file_already_exists():
-  action_dir = ROOT_DIR / BASE_DOMAIN / "examples" / f"x{uuid.uuid4().hex}" / "test_action"
-  domain_path = action_dir.parent.relative_to(ROOT_DIR).as_posix()
+  domain_dir = ROOT_DIR / BASE_DOMAIN / "examples" / f"x{uuid.uuid4().hex}"
+  domain_path = domain_dir.relative_to(ROOT_DIR).as_posix()
 
   # Create the proto directory and file first
   proto_dir = ROOT_DIR / "proto" / domain_path / "test_action"
   proto_dir.mkdir(parents=True, exist_ok=True)
   (proto_dir / "messages.proto").write_text("existing content")
 
-  try:
-    req = CreateActionRequest(action_name="Test Action", domain_path=domain_path)
-    resp = handle(req)
-    assert resp.errors, "Expected error when proto file exists"
-    assert "already exists" in resp.errors[0]
-  finally:
-    # Clean up
-    shutil.rmtree(action_dir, ignore_errors=True)
-    shutil.rmtree(ROOT_DIR / "proto" / domain_path, ignore_errors=True)
+  req = CreateActionRequest(action_name="Test Action", domain_path=domain_path)
+  resp = handle(req)
+  assert resp.errors, "Expected error when proto file exists"
+  assert "already exists" in resp.errors[0]
 
 
 def test_create_action_handles_existing_files_gracefully():
-  action_dir = ROOT_DIR / BASE_DOMAIN / "examples" / f"x{uuid.uuid4().hex}" / "test_action"
-  domain_path = action_dir.parent.relative_to(ROOT_DIR).as_posix()
+  domain_dir = ROOT_DIR / BASE_DOMAIN / "examples" / f"x{uuid.uuid4().hex}"
+  domain_path = domain_dir.relative_to(ROOT_DIR).as_posix()
+  action_dir = domain_dir / "test_action"
 
   # Pre-create some files to test early returns
   action_dir.mkdir(parents=True, exist_ok=True)
   (action_dir / "logic.py").write_text("# existing logic")
 
-  test_dir = ROOT_DIR / "tests" / domain_path / action_dir.name
+  test_dir = ROOT_DIR / "tests" / domain_path / "test_action"
   test_dir.mkdir(parents=True, exist_ok=True)
   (test_dir / "test_logic.py").write_text("# existing test")
 
-  try:
-    req = CreateActionRequest(action_name="Test Action", domain_path=domain_path)
-    resp = handle(req)
-    assert not resp.errors, f"Unexpected errors: {resp.errors}"
-  finally:
-    # Clean up
-    shutil.rmtree(action_dir, ignore_errors=True)
-    shutil.rmtree(ROOT_DIR / "proto" / domain_path, ignore_errors=True)
-    shutil.rmtree(ROOT_DIR / "tests" / domain_path, ignore_errors=True)
+  req = CreateActionRequest(action_name="Test Action", domain_path=domain_path)
+  resp = handle(req)
+  assert not resp.errors, f"Unexpected errors: {resp.errors}"
 
 
 def test_create_action_fails_with_invalid_domain_path():
@@ -84,8 +85,3 @@ def test_create_action_succeeds_with_valid_input():
   # Invoke the new action
   action_path = py_dir.relative_to(ROOT_DIR).as_posix()
   subprocess.run([PYTHON, "call", action_path], check=True)
-
-  # Clean up
-  shutil.rmtree(domain_dir, ignore_errors=True)
-  shutil.rmtree(proto_dir, ignore_errors=True)
-  shutil.rmtree(test_dir, ignore_errors=True)

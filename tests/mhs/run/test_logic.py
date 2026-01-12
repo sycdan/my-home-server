@@ -40,7 +40,7 @@ def test_validate_executable_fails_when_path_is_directory():
     root_dir = Path(temp_dir)
     dir_path = root_dir / "services" / "test"
     dir_path.mkdir(parents=True)
-    
+
     with pytest.raises(SystemExit):
       validate_executable(str(dir_path), root_dir)
 
@@ -52,7 +52,7 @@ def test_validate_executable_fails_when_file_outside_project():
     # Create a file outside the root directory
     outside_file = Path(temp_dir).parent / "outside_file"
     outside_file.write_text("#!/bin/bash\necho test")
-    
+
     try:
       with pytest.raises(SystemExit):
         validate_executable(str(outside_file), root_dir)
@@ -67,23 +67,23 @@ def test_validate_executable_fails_when_not_in_services_directory():
     wrong_file = root_dir / "wrong" / "location" / "script"
     wrong_file.parent.mkdir(parents=True)
     wrong_file.write_text("#!/bin/bash\necho test")
-    
+
     with pytest.raises(SystemExit):
       validate_executable(str(wrong_file), root_dir)
 
 
-@patch('os.access')
+@patch("os.access")
 def test_validate_executable_warns_when_file_not_executable(mock_access):
   """Test that validate_executable warns but succeeds when file is not marked executable."""
   mock_access.return_value = False  # Mock non-executable file
-  
+
   with tempfile.TemporaryDirectory() as temp_dir:
     root_dir = Path(temp_dir)
     service_dir = root_dir / "services" / "test"
     service_dir.mkdir(parents=True)
     script_file = service_dir / "init"
     script_file.write_text("#!/bin/bash\necho test")
-    
+
     with patch("mhs.run.logic.print_warning") as mock_warn:
       result = validate_executable(str(script_file), root_dir)
       assert result == Path("services/test/init")
@@ -99,37 +99,35 @@ def test_validate_executable_succeeds_with_valid_executable():
     script_file = service_dir / "init"
     script_file.write_text("#!/bin/bash\necho test")
     os.chmod(script_file, 0o755)
-    
+
     result = validate_executable(str(script_file), root_dir)
     assert result == Path("services/test/init")
 
 
-@patch('mhs.run.logic.Device.load_all')
+@patch("mhs.run.logic.Device.load_all")
 def test_handle_fails_when_service_not_found_in_fleet(mock_load_all):
   """Test that handle fails with descriptive error when service is not configured in fleet.json."""
   # Mock empty device list
   mock_load_all.return_value = []
-  
+
   with tempfile.TemporaryDirectory() as temp_dir:
     root_dir = Path(temp_dir)
-    
-    # Create fleet file 
+
+    # Create fleet file
     fleet_file = root_dir / "fleet.json"
     fleet_file.write_text('{"devices": {}}')
-    
+
     # Create service directory and executable
     service_dir = root_dir / "services" / "unknown"
     service_dir.mkdir(parents=True)
     script_file = service_dir / "init"
     script_file.write_text("#!/bin/bash\necho test")
     os.chmod(script_file, 0o755)
-    
+
     request = RunRequest(
-      executable_path=str(script_file),
-      root_directory=str(root_dir),
-      debug=False
+      executable_path=str(script_file), root_directory=str(root_dir), debug=False
     )
-    
+
     response = handle(request)
     assert response.errors
     assert "is not hosted on any device" in response.errors[0]
@@ -139,27 +137,25 @@ def test_handle_fails_when_service_not_found_in_fleet(mock_load_all):
 def test_handle_fails_when_file_synchronization_fails(mock_sync):
   """Test that handle fails with descriptive error when file synchronization to remote host fails."""
   mock_sync.return_value = False
-  
+
   with tempfile.TemporaryDirectory() as temp_dir:
     root_dir = Path(temp_dir)
-    
+
     # Create fleet file with service
     fleet_file = root_dir / "fleet.json"
     fleet_file.write_text(TEST_FLEET_JSON)
-    
+
     # Create service directory and executable
     service_dir = root_dir / "services" / TEST_SERVICE_LABEL
     service_dir.mkdir(parents=True)
     script_file = service_dir / "init"
     script_file.write_text("#!/bin/bash\necho test")
     os.chmod(script_file, 0o755)
-    
+
     request = RunRequest(
-      executable_path=str(script_file),
-      root_directory=str(root_dir),
-      debug=False
+      executable_path=str(script_file), root_directory=str(root_dir), debug=False
     )
-    
+
     response = handle(request)
     assert response.errors
     assert "File synchronization failed" in response.errors[0]
@@ -170,34 +166,32 @@ def test_handle_fails_when_file_synchronization_fails(mock_sync):
 def test_handle_fails_when_remote_execution_fails(mock_sync, mock_run):
   """Test that handle fails with descriptive error when remote command execution fails."""
   mock_sync.return_value = True
-  
+
   # Mock failed subprocess execution
   mock_result = Mock()
   mock_result.returncode = 1
   mock_result.stderr = "Command failed"
   mock_result.stdout = ""
   mock_run.return_value = mock_result
-  
+
   with tempfile.TemporaryDirectory() as temp_dir:
     root_dir = Path(temp_dir)
-    
+
     # Create fleet file with service
     fleet_file = root_dir / "fleet.json"
     fleet_file.write_text(TEST_FLEET_JSON)
-    
+
     # Create service directory and executable
     service_dir = root_dir / "services" / TEST_SERVICE_LABEL
     service_dir.mkdir(parents=True)
     script_file = service_dir / "init"
     script_file.write_text("#!/bin/bash\necho test")
     os.chmod(script_file, 0o755)
-    
+
     request = RunRequest(
-      executable_path=str(script_file),
-      root_directory=str(root_dir),
-      debug=False
+      executable_path=str(script_file), root_directory=str(root_dir), debug=False
     )
-    
+
     response = handle(request)
     assert response.errors
     assert "Remote execution failed" in response.errors[0]
@@ -209,35 +203,32 @@ def test_handle_fails_when_remote_execution_fails(mock_sync, mock_run):
 def test_handle_succeeds_with_debug_output(mock_ensure_dir, mock_sync, mock_run):
   """Test that handle succeeds and provides detailed debug output when debug mode is enabled."""
   mock_sync.return_value = True
-  
+
   # Mock successful subprocess execution
   mock_result = Mock()
   mock_result.returncode = 0
   mock_result.stderr = ""
   mock_result.stdout = "Command output"
   mock_run.return_value = mock_result
-  
+
   with tempfile.TemporaryDirectory() as temp_dir:
     root_dir = Path(temp_dir)
-    
+
     # Create fleet file with service
     fleet_file = root_dir / "fleet.json"
     fleet_file.write_text(TEST_FLEET_JSON)
-    
+
     # Create service directory and executable
     service_dir = root_dir / "services" / TEST_SERVICE_LABEL
     service_dir.mkdir(parents=True)
     script_file = service_dir / "init"
     script_file.write_text("#!/bin/bash\necho test")
     os.chmod(script_file, 0o755)
-    
+
     request = RunRequest(
-      executable_path=str(script_file),
-      root_directory=str(root_dir),
-      create_root=True,
-      debug=True
+      executable_path=str(script_file), root_directory=str(root_dir), create_root=True, debug=True
     )
-    
+
     response = handle(request)
     assert not response.errors
     assert "Command executed successfully" in response.output
@@ -251,29 +242,28 @@ def test_handle_gracefully_handles_unexpected_exceptions():
   # Create a request that will cause an exception in the try block
   with tempfile.TemporaryDirectory() as temp_dir:
     root_dir = Path(temp_dir)
-    
+
     # Create invalid fleet file to trigger JSON decode error in Device.load_all
     fleet_file = root_dir / "fleet.json"
     fleet_file.write_text("invalid json{{}")
-    
+
     # Create service and executable
     service_dir = root_dir / "services" / "test"
     service_dir.mkdir(parents=True)
     script_file = service_dir / "init"
     script_file.write_text("#!/bin/bash\necho test")
     os.chmod(script_file, 0o755)
-    
+
     # Mock Device.load_all to raise an exception
-    with patch('mhs.run.logic.Device.load_all', side_effect=Exception("Test exception")):
+    with patch("mhs.run.logic.Device.load_all", side_effect=Exception("Test exception")):
       request = RunRequest(
-        executable_path=str(script_file),
-        root_directory=str(root_dir),
-        debug=False
+        executable_path=str(script_file), root_directory=str(root_dir), debug=False
       )
-      
+
       response = handle(request)
       assert response.errors
       assert "Test exception" in response.errors[0]
+
 
 TEST_SERVICE_LABEL = "testing"
 TEST_FLEET_JSON = """
