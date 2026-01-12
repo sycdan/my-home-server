@@ -1,9 +1,0 @@
-edition = "2024";
-package mhs.mhs.actions.do_stuff;
-
-message DoStuffRequest {
-
-}
-
-message DoStuffResponse {
-}
