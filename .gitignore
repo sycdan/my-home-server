@@ -5,6 +5,7 @@
 .env
 
 # Generated files
+.coverage
 .temp/
 *_pb2.py
 *_pb2.pyi
