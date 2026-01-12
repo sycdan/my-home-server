@@ -1,11 +1,8 @@
-import json
 import os
 import subprocess
 from pathlib import Path
 
-from google.protobuf import json_format, text_format
-
-from mhs.config import FLEET_FILE, PROTO_DIR, PROTOC_PATH, ROOT_DIR
+from mhs.config import PROTO_DIR, PROTOC_PATH, ROOT_DIR
 
 
 def find_proto_files():
@@ -32,16 +29,3 @@ def generate_proto(files: list[Path] | None = None):
   result = subprocess.run(args, capture_output=True, text=True, cwd=ROOT_DIR)
   if result.returncode != 0:
     raise RuntimeError(f"Failed while compiling proto files: {result.stderr}")
-
-
-# def generate_fleet_json():
-#   from mhs.config import fleet_pb2
-
-#   with open("mhs/config/fleet.textproto", "r") as f:
-#     text = f.read()
-#   proto_obj = fleet_pb2.Fleet()
-#   text_format.Parse(text, proto_obj)
-#   generated = json_format.MessageToDict(proto_obj, preserving_proto_field_name=True)
-#   with open(FLEET_FILE, "w") as f:
-#     json.dump(generated, f, indent=2)
-
