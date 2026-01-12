@@ -1,10 +1,10 @@
 import os
-import sys
 import tempfile
 from pathlib import Path
 
 import pytest
-from mhs.run import logic
+
+from mhs.run.logic import RunRequest, handle
 
 TEST_SERVICE_LABEL = "testing"
 TEST_FLEET_JSON = """
@@ -66,16 +66,14 @@ def test_e2e():
     os.chmod(test_service_command_file, 0o755)
 
     try:
-      logic.call(
-        [
-          str(test_service_command_file),
-          "--root",
-          str(root_dir),
-          "--create-root",
-        ]
+      request = RunRequest(
+        executable_path=str(test_service_command_file),
+        root_directory=str(root_dir),
+        create_root=True,
+        debug=False,
       )
-      sys.exit(0)
-    except SystemExit as e:
-      assert e.code == 0, "Expected command to complete successfully"
-    else:
-      assert False, "Expected SystemExit exception"
+      response = handle(request)
+      assert not response.errors, f"Expected no errors but got: {response.errors}"
+      assert "Command executed successfully" in response.output
+    except Exception as e:
+      assert False, f"Expected command to complete successfully but got: {e}"

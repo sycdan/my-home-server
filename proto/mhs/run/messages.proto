@@ -2,7 +2,13 @@ edition = "2024";
 package mhs.run;
 
 message RunRequest {
+  string executable_path = 1; // Path to executable script to run
+  string root_directory  = 2; // Root directory of the project
+  bool   create_root     = 3; // Create remote root directory if it does not exist
+  bool   debug           = 4; // Enable debug output
 }
 
 message RunResponse {
+  repeated string errors = 1; // If empty: action succeeded
+  string          output = 2; // Output from the execution
 }
