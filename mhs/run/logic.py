@@ -1,3 +1,5 @@
+"""Execute a service's script/binary on its hosting device."""
+
 import os
 import subprocess
 import sys
