@@ -1,23 +1,19 @@
 # Today's Task
 
-**Refactor actions.**
+Harden action system.
 
 ## Recommended Pre-reading
 
 Read the `.github` instructions.
 
-Look at [this test](tests/actions/test_create_action.py) to learn about creating actions.
+Look at [this test](tests/mhs/create_action/test_logic.py) to learn about creating actions.
 
-## Goal
+## Acceptance Criteria
 
-All tests
+Each action created should generate a corresponding test_logic.py file in a mirrored directory in `./tests`.
 
-We need to refactor the action system, as it is a bit clunky.
+Existing actions should have matching logic tests.
 
-Instead of identifying an action by having it reside in an `/actions/` subdir, let's make it simpler: the presence of a `logic.py` file makes its directory an action.
+Test coverage for logic.py files should provably be as near to 100% as we can get without huge effort.
 
-There should be a 1:1 correspondence with logic files in `./mhs` and `messages.proto` files in `./proto` -- that is, their directory paths should match, as should the package in the proto file. If all this lines up, we can confidently say it's a valid action and it can join our api, to be run via `python call`.
-
-Does that make sense? Let me know if you need clarification.
-
-Briefly summarize the scope of work before proceeding.
+A test_log.py template should exist and its existence verified by testing.
