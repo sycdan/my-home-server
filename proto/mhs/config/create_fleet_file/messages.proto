@@ -1,8 +1,0 @@
-edition = "2024";
-package mhs.config.create_fleet_file;
-
-message CreateFleetFileRequest {
-}
-
-message CreateFleetFileResponse {
-}

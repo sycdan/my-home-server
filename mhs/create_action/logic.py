@@ -1,8 +1,8 @@
 from pathlib import Path
 from string import Template
 
-from mhs.create_action.messages_pb2 import CreateActionRequest, CreateActionResponse
 from mhs.config import BASE_DOMAIN, PROTO_DIR, ROOT_DIR
+from mhs.create_action.messages_pb2 import CreateActionRequest, CreateActionResponse
 from mhs.proto import generate_proto
 from mhs.util import to_camel_case, to_dot_path, to_snake_case
 
@@ -60,6 +60,31 @@ def ensure_logic_module(action_dir: Path):
   logic_module.write_text(content)
 
 
+def ensure_test_module(action_dir: Path):
+  """Create test file for the action in the tests directory."""
+  action_path = action_dir.relative_to(ROOT_DIR)
+  test_dir = ROOT_DIR / "tests" / action_path
+  test_file = test_dir / "test_logic.py"
+  if not create_file(test_file):
+    return
+
+  tpl_path = TEMPLATES_DIR / "test_logic.py.tmpl"
+  tpl = Template(tpl_path.read_text(encoding="utf-8"))
+  content = tpl.substitute(
+    action_package=to_dot_path(action_path),
+    action_camel=to_camel_case(action_path.name),
+    action_snake=to_snake_case(action_path.name),
+  )
+  test_file.write_text(content)
+
+  # Create __init__.py files  as needed
+  create_file(test_dir / "__init__.py")
+  parent_dir = test_dir.parent
+  while parent_dir != ROOT_DIR / "tests":
+    create_file(parent_dir / "__init__.py")
+    parent_dir = parent_dir.parent
+
+
 def handle(msg: CreateActionRequest):
   errors = []
   try:
@@ -72,6 +97,7 @@ def handle(msg: CreateActionRequest):
     create_file(action_dir / "__init__.py")
     action_path = action_dir.relative_to(ROOT_DIR)
     ensure_logic_module(action_dir)
+    ensure_test_module(action_dir)
     proto_dir = PROTO_DIR / action_path
     generate_proto(ensure_proto_files(proto_dir))
   except Exception as e:
