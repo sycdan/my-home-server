@@ -1,5 +1,5 @@
-edition = "2024";
-package mhs.run;
+edition = "2023";
+package mhs.run.v1;
 
 message RunRequest {
   string executable_path = 1; // Path to executable script to run

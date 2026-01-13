@@ -1,5 +1,5 @@
-edition = "2024";
-package mhs.discovery.generate_device_discovery_script;
+edition = "2023";
+package mhs.discovery.generate_device_discovery_script.v1;
 
 message GenerateDiscoveryScriptRequest {
   string hostname      = 1;
