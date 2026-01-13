@@ -5,6 +5,7 @@
 .env
 
 # Generated files
+__pycache__/
 .coverage
 htmlcov/
 .temp/

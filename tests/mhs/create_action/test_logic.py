@@ -13,14 +13,14 @@ def cleanup_example_dirs():
   """Automatically clean up any leftover example directories after each test."""
   yield  # Run the test
   # Cleanup after test regardless of success/failure
-  for pattern in ["mhs/examples/x*", "proto/mhs/examples/x*", "tests/mhs/examples/x*"]:
+  for pattern in ["mhs/example/x*", "proto/mhs/example/x*", "tests/mhs/example/x*"]:
     for path in ROOT_DIR.glob(pattern):
       if path.is_dir():
         shutil.rmtree(path, ignore_errors=True)
 
 
 def test_create_action_fails_when_proto_file_already_exists():
-  domain_dir = ROOT_DIR / BASE_DOMAIN / "examples" / f"x{uuid.uuid4().hex}"
+  domain_dir = ROOT_DIR / BASE_DOMAIN / "example" / f"x{uuid.uuid4().hex}"
   domain_path = domain_dir.relative_to(ROOT_DIR).as_posix()
 
   # Create the proto directory and file first
@@ -35,7 +35,7 @@ def test_create_action_fails_when_proto_file_already_exists():
 
 
 def test_create_action_handles_existing_files_gracefully():
-  domain_dir = ROOT_DIR / BASE_DOMAIN / "examples" / f"x{uuid.uuid4().hex}"
+  domain_dir = ROOT_DIR / BASE_DOMAIN / "example" / f"x{uuid.uuid4().hex}"
   domain_path = domain_dir.relative_to(ROOT_DIR).as_posix()
   action_dir = domain_dir / "test_action"
 
@@ -61,7 +61,7 @@ def test_create_action_fails_with_invalid_domain_path():
 @pytest.mark.integration
 def test_create_action_succeeds_with_valid_input():
   """Test that a new action can be created successfully with valid input."""
-  domain_dir = ROOT_DIR / BASE_DOMAIN / "examples" / f"x{uuid.uuid4().hex}"
+  domain_dir = ROOT_DIR / BASE_DOMAIN / "example" / f"x{uuid.uuid4().hex}"
   assert not domain_dir.exists()
 
   domain_path = domain_dir.relative_to(ROOT_DIR).as_posix()

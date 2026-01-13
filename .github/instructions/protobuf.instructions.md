@@ -23,7 +23,7 @@ applyTo: "**/*.proto"
 
 ## Notes
 
-Any directory in `./proto` that contains a `messages.proto` file represents an action (and will have a corresponding `logic.py` file within `./mhs`, based on the proto package path).
+Any directory in `proto/` that starts with `v` and contains a `contracts.proto` file represents an API action (and will have a corresponding `service.py` file within `mhs/api/`, based on the proto package path).
 
 ## Examples
 
@@ -36,4 +36,4 @@ message ExampleMessage {
 }
 ```
 
-Run `./build` to generate code from protobuf definitions.
+Run `./gen` to generate code from protobuf definitions.
