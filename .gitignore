@@ -6,6 +6,7 @@
 
 # Generated files
 __pycache__/
+gen/
 .coverage
 htmlcov/
 .temp/
