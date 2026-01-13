@@ -17,3 +17,7 @@ The user should then be able to ssh to discovered devices.
 ## Prerequisites
 
 **Important:** do not manually edit textproto -- we need to parse it into python objects, mutate those, then re-export.
+
+## Golden Testing
+
+Add pytest --update-golden or somesuch.
