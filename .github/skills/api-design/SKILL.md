@@ -18,9 +18,9 @@ When a surface moves from v1 to v2, all endpoints inside it move together.
 
 That's it.
 
-## How to Identify a Surface in a Path
+## Identifying a Surface
 
-A surface is always the entire namespace before the version in a path.
+A surface is always the entire namespace after the api root and before the version in a path.
 
 ### Examples
 
