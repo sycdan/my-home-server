@@ -28,7 +28,7 @@ applyTo: "**/*.proto"
 
 ## Notes
 
-- Any directory in `proto/` that starts with `v` and contains a `contract.proto` file represents an API action.
+- Any directory in `proto/` that contains a `contract.proto` file represents an API action.
 
 ## Examples
 

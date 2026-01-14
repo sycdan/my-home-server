@@ -40,3 +40,7 @@ The **internal domain** contains the system's own concerns: data storage, config
 External domains often imply corresponding internal domains. For example: `mhs.internal.core.run` would contain the logic that implements the `external.core.run` action.
 
 The connection between internal and external domains is made by a **service layer** or **API adapter** -- a versioned interface that translates between external request shapes (versioned, generated) and internal domain logic (unversioned, handwritten).
+
+Typically, protobuf is used minimally in the internal domain; mostly for settings shape.
+
+A nuance is that internal domain actions *may* be defined in protobuf, but they will generate CLIs instead of APIs.
