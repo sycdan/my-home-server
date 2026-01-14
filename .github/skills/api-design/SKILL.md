@@ -107,7 +107,9 @@ And your files lives at:
 proto: proto/devices/execute/v1/execute.proto
 adapter: api/devices/execute/v1/adapter.py
 handler: api/devices/execute/v1/handler.py
-tests: tests/devices/execute/v1/...
+tests: |
+  tests/devices/execute/v1/test_handler.py
+  tests/devices/execute/v1/test_adapter.py
 ```
 
 The proto file is always named after the last segment of the surface (the leaf) because:
