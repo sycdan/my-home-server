@@ -27,7 +27,6 @@ A surface is always the entire namespace after the api root and before the versi
 ```yaml
 api_path: api/users/v1
 package: users/v1
-namespace: users
 surface: users
 version: v1
 endpoints: GetUser, ListUsers, DeactivateUser
@@ -36,7 +35,6 @@ endpoints: GetUser, ListUsers, DeactivateUser
 ```yaml
 api_path: api/internal/devices/execute/v2
 package: internal/devices/execute/v2
-namespace: internal/devices/execute
 surface: internal/devices/execute
 version: v2
 endpoints: ExecuteCommand
@@ -45,7 +43,6 @@ endpoints: ExecuteCommand
 ```yaml
 api_path: api/organization/building/control/v3
 package: organization/building/control/v3
-namespace: organization/building/control
 surface: organization/building/control
 version: v3
 endpoints: ChangeSetpoint, ResetAlarm
