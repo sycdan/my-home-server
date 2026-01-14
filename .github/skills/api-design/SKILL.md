@@ -95,7 +95,13 @@ surface: devices/execute
 version: v1
 ```
 
-Your files lives at:
+Then:
+
+```yaml
+leaf: execute
+```
+
+And your files lives at:
 
 ```yaml
 proto: proto/devices/execute/v1/execute.proto
@@ -104,11 +110,31 @@ handler: api/devices/execute/v1/handler.py
 tests: tests/devices/execute/v1/...
 ```
 
-The proto file is always named after the last segment of the surface because:
+The proto file is always named after the last segment of the surface (the leaf) because:
 
 - it keeps filenames short
 - it avoids repeating parent namespaces
 - it matches the package name
 - it keeps codegen paths predictable
 
-So the rule is: `proto/<surface>/<version>/<last-surface-segment>.proto`
+So the rule is: `proto/<surface>/<version>/<leaf>.proto`
+
+## Summary of the Rules (the cheat sheet)
+
+- Plural nouns -> resource surfaces
+  - users, devices, reports
+
+- Singular verbs -> operation surfaces
+  - sync, execute, search, ingest
+
+- Surfaces represent interaction boundaries, not domains
+  - Domains stay noun‑based and unversioned
+
+- The proto file is named after the last segment of the surface
+  - proto/<surface>/<version>/<leaf>.proto
+
+- Surfaces can be nested
+  - internal/devices/execute/v1
+
+- Each surface gets its own versioned folder
+  - Never mix surfaces
