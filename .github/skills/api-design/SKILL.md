@@ -121,6 +121,18 @@ The proto file is always named after the last segment of the surface (the leaf) 
 
 So the rule is: `proto/<surface>/<version>/<leaf>.proto`
 
+## How do I add a new endpoint?
+
+To add a new endpoint to `devices/execute/v1`, you:
+
+- Add messages to `proto/devices/execute/v1/execute.proto`
+- Regenerate code
+- Add handler method
+- Add adapter function
+- Add tests
+
+You never touch other surfaces.
+
 ## Summary of the Rules (the cheat sheet)
 
 - Plural nouns -> resource surfaces
