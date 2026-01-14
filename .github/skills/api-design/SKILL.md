@@ -2,44 +2,48 @@
 name: api-design
 description: Use this when asked to make changes to the API, or reason about surfaces, packages, proto files, adapters or handlers.
 ---
-## The meaning of "surface"
+## The Meaning of "Surface"
 
-A surface is:
-
-> A versioned **namespace** that defines a coherent API boundary with its own contract, adapter, and handler.
+A **surface** is a versioned **namespace** that defines a coherent API boundary with its own contract, adapter, and handler.
 
 - It is *not* a domain.
 - It is *not* an endpoint (it may contain one or many).
 - It is *not* a single operation (though it may present like one).
 
-A surface is the unit of versioning.
-
 If you version it, it's a surface; if not, it's not a surface.
 
-That's the whole rule.
+That's it.
 
-## How to identify a surface in a path
+## How to Identify a Surface in a Path
 
 A surface is always the entire namespace before the version in a path.
 
 ### Examples
 
-- Package: `users/v1`
-- Surface: `users`
-- Version: `v1`
-- Some likely endpoints: GetUser, ListUsers, DeactivateUser
+```yaml
+package: users/v1
+surface: users
+version: v1
+endpoints: GetUser, ListUsers, DeactivateUser
+```
 
-- Package: `internal/devices/execute/v2`
-- Surface: `internal/devices/execute`
-- Version: `v2`
-- Some likely endpoints: ExecuteCommand
+```yaml
+package: internal/devices/execute/v2
+surface: internal/devices/execute
+version: v2
+endpoints: ExecuteCommand
+```
 
-- Package: `organization/building/control/v3`
-- Surface: `organization/building/control`
-- Version: `v3`
-- Some likely endpoints: ChangeSetpoint, ResetAlarm
+```yaml
+package: organization/building/control/v3
+surface: organization/building/control
+version: v3
+endpoints: ChangeSetpoint, ResetAlarm
+```
 
-### Why does the surface not include the version?
+You may ask:
+
+> "Why does the surface not include the version?"
 
 Because versioning applies to the entire surface, not individual endpoints.
 
@@ -86,7 +90,7 @@ Pluralize nouns. Don't pluralize verbs.
 
 That's it.
 
-## What files are in a surface package?
+## API Package Contents
 
 Given:
 
@@ -121,19 +125,32 @@ The proto file is always named after the last segment of the surface (the leaf) 
 
 So the rule is: `proto/<surface>/<version>/<leaf>.proto`
 
-## How do I add a new endpoint?
+## How to Add an Endpoint
 
 To add a new endpoint to `devices/execute/v1`, you:
 
-- Add messages to `proto/devices/execute/v1/execute.proto`
-- Regenerate code
-- Add handler method
-- Add adapter function
-- Add tests
+- add messages to `proto/devices/execute/v1/execute.proto` (e.g. Request & Response)
+- regenerate code
+- add handler method
+- add adapter functions
+- add tests
 
 You never touch other surfaces.
 
-## How do I add a new surface?
+## When to Add a Surface
+
+Create a new surface when:
+
+- the namespace is new
+- the versioning lifecycle is independent
+- the conceptual grouping is distinct
+- the interaction pattern is distinct
+- the exposure model is different
+- the proto file is becoming too large (try to keep under 1000 LOC)
+
+Otherwise, add the endpoint to an existing surface.
+
+## How to Add a New Surface
 
 To add billing/payments/v1, you create:
 
