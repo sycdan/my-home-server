@@ -137,7 +137,7 @@ To add a new endpoint to `devices/execute/v1`, you:
 
 You never touch other surfaces.
 
-## When to Add a Surface
+## When to Add a Surface for a New Endpoint
 
 Create a new surface when:
 
