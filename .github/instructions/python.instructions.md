@@ -7,11 +7,7 @@ applyTo: "**/*.py"
 ## Coding Style
 
 - Refer to `pyproject.toml` for ruff configuration and follow those formatting & linting rules.
-- All imports should be placed at the top of the file, grouped in the following order with a blank line between each group:
-  1. Standard library imports
-  2. Third-party imports
-  3. Local application/library-specific imports
-  - The only exceptions would be to avoid circular dependencies, or other extenuating circumstances.
+- All imports should be placed at the top of the file, except in special cases where doing so causes problems (e.g a circular dependency).
 - Do not add return type hints to function definitions, allowing the type checker to infer them.
 - Do add type hints for function parameters.
 - Do add type hints for local arrays that will be returned from functions.
