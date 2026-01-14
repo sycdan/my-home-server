@@ -10,7 +10,11 @@ A **surface** is a versioned **namespace** that defines a coherent API boundary 
 - It is *not* an endpoint (it may contain one or many).
 - It is *not* a single operation (though it may present like one).
 
-If you version it, it's a surface; if not, it's not a surface.
+Surfaces are the **unit of versioning** -- endpoints themselves are not versioned.
+
+When a surface moves from v1 to v2, all endpoints inside it move together.
+
+> If you version it, it's a surface; if not, it's not.
 
 That's it.
 
@@ -21,21 +25,27 @@ A surface is always the entire namespace before the version in a path.
 ### Examples
 
 ```yaml
+api_path: api/users/v1
 package: users/v1
+namespace: users
 surface: users
 version: v1
 endpoints: GetUser, ListUsers, DeactivateUser
 ```
 
 ```yaml
+api_path: api/internal/devices/execute/v2
 package: internal/devices/execute/v2
+namespace: internal/devices/execute
 surface: internal/devices/execute
 version: v2
 endpoints: ExecuteCommand
 ```
 
 ```yaml
+api_path: api/organization/building/control/v3
 package: organization/building/control/v3
+namespace: organization/building/control
 surface: organization/building/control
 version: v3
 endpoints: ChangeSetpoint, ResetAlarm
@@ -150,6 +160,8 @@ Create a new surface when:
 
 Otherwise, add the endpoint to an existing surface.
 
+Avoid creating surfaces that differ only by a single endpoint unless the versioning lifecycle or exposure model truly differs.
+
 ## How to Add a New Surface
 
 To add billing/payments/v1, you create:
@@ -183,3 +195,9 @@ Done.
 
 - Each surface gets its own versioned folder
   - Never mix surfaces
+
+- Surfaces may span multiple path segments, mixing nouns and verbs
+  - e.g.: internal/devices/execute
+
+- Leaf collisions are acceptable, because the path disambiguates them
+  - e.g.: devices/execute & commands/execute
