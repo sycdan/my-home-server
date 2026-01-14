@@ -108,8 +108,8 @@ proto: proto/devices/execute/v1/execute.proto
 adapter: api/devices/execute/v1/adapter.py
 handler: api/devices/execute/v1/handler.py
 tests: |
-  tests/devices/execute/v1/test_handler.py
   tests/devices/execute/v1/test_adapter.py
+  tests/devices/execute/v1/test_handler.py
 ```
 
 The proto file is always named after the last segment of the surface (the leaf) because:
@@ -132,6 +132,20 @@ To add a new endpoint to `devices/execute/v1`, you:
 - Add tests
 
 You never touch other surfaces.
+
+## How do I add a new surface?
+
+To add billing/payments/v1, you create:
+
+```text
+proto/billing/payments/v1/payments.proto
+api/billing/payments/v1/handler.py
+api/billing/payments/v1/adapter.py
+tests/billing/payments/v1/test_adapter.py
+tests/billing/payments/v1/test_handler.py
+```
+
+Done.
 
 ## Summary of the Rules (the cheat sheet)
 
