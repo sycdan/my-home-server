@@ -18,12 +18,17 @@ applyTo: "**/*.proto"
 
 ## Additional Requirements
 
-- Use `edition = "2024"` in all `.proto` files.
-  - [More info](https://protobuf.dev/programming-guides/editions/#edition-2024)
+- Use `edition = "2023"` in all `.proto` files.
+  - [More info](https://protobuf.dev/programming-guides/editions/#edition-2023)
+- Use a `package` path that reflects the domain structure and directory layout:
+  - Start with `external` or `internal` to denote the root domain
+  - Follow with subdomains as needed
+  - End with the action name and version
+  - Example: `package internal.new_action.v1;`
 
 ## Notes
 
-Any directory in `proto/` that starts with `v` and contains a `contracts.proto` file represents an API action (and will have a corresponding `service.py` file within `mhs/api/`, based on the proto package path).
+- Any directory in `proto/` that starts with `v` and contains a `contract.proto` file represents an API action.
 
 ## Examples
 
@@ -36,4 +41,4 @@ message ExampleMessage {
 }
 ```
 
-Run `./gen` to generate code from protobuf definitions.
+Run `./make` to generate code from protobuf definitions.
