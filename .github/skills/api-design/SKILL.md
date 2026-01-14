@@ -142,10 +142,10 @@ You never touch other surfaces.
 Create a new surface when:
 
 - the namespace is new
-- the versioning lifecycle is independent
-- the conceptual grouping is distinct
-- the interaction pattern is distinct
-- the exposure model is different
+- the versioning lifecycle is different (e.g. internal vs public)
+- the conceptual grouping is distinct (e.g. `billing/payments` vs `billing/invoices`)
+- the interaction pattern is distinct (e.g. `DiscoverDevice` in `devices/locate` not `devices/execute`)
+- the exposure model is different (e.g. admin vs user)
 - the proto file is becoming too large (try to keep under 1000 LOC)
 
 Otherwise, add the endpoint to an existing surface.
