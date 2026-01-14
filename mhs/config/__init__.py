@@ -2,6 +2,7 @@ from pathlib import Path
 
 DEBUG = True
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+TESTS_DIR = ROOT_DIR / "tests"
 TEMP_DIR = ROOT_DIR / ".temp"
 BASE_DOMAIN = "mhs"
 FLEET_FILE = ROOT_DIR / "fleet.json"
