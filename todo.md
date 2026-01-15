@@ -5,3 +5,4 @@
 - rename proto files
   - contracts -> surface name
 - create api action/command (core domain)
+- cli router
