@@ -10,6 +10,8 @@ A **capability**...
 - is a cohesive set of domain behaviors centered around a single domain concept
 - comprises a set of operations (commands, queries)
 - contains services that encapsulate domain logic
+- evolves with the domain concept
+- applies the Single Responsibility Principle
 
 In our application, `scaffolding` is a **capability** (and *also* a domain).
 
