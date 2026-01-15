@@ -1,6 +1,6 @@
 ---
 name: domain-design
-description: Use this when asked to make changes to or reason about a domain capability, handler, query, command, model or service.
+description: Use this when asked to make changes to or reason about a domain capability, handler, query, command, action, model or service.
 ---
 ## Meaning of "Capability"
 
