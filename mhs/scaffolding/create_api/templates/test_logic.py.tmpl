@@ -1,0 +1,10 @@
+import pytest
+
+from ${action_package}.logic import ${action_camel}Request, handle
+
+@pytest.mark.integration
+def test_happy_path():
+  """Ensure ${action_snake} succeeds with real data."""
+  request = ${action_camel}Request()
+  response = handle(request)
+  assert not response.errors, f"Unexpected errors: {response.errors}"

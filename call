@@ -23,26 +23,45 @@ def to_json(obj):
   return obj
 
 
-def locate_action_directory(action_path: Path | str) -> Path:
-  """Locate the action directory given a path to either the directory or logic file."""
+def locate_action_file(action_directory: Path) -> Path:
+  command_file = action_directory / "command.py"
+  query_file = action_directory / "query.py"
+
+  if command_file.exists() and query_file.exists():
+    print_error(f"Either command.py or query.py may exist in {action_directory}, but not both.")
+    sys.exit(1)
+
+  if command_file.exists():
+    return command_file
+
+  if query_file.exists():
+    return query_file
+
+  print_error(f"No action file found in {action_directory}. Create either command.py or query.py.")
+  sys.exit(1)
+
+
+def locate_action_dir(action_path: Path | str) -> Path:
   if not isinstance(action_path, Path):
     action_path = Path(action_path)
+
+  if not action_path.is_absolute():
+    action_path = action_path.resolve()
 
   if not action_path.exists():
     print_error(f"Action path does not exist: {action_path}")
     sys.exit(1)
 
   if action_path.is_dir():
-    logic_file = action_path / "logic.py"
-    if not logic_file.exists():
-      print_error(f"No logic.py file found in {action_path}")
-      sys.exit(1)
-    return action_path
-  elif action_path.is_file() and action_path.name == "logic.py":
+    if locate_action_file(action_path):
+      return action_path
+  elif action_path.is_file() and action_path.name in ("command.py", "query.py"):
     return action_path.parent
-  else:
-    print_error(f"Invalid action path: {action_path}. Must be a directory or logic.py file.")
-    sys.exit(1)
+
+  print_error(
+    f"Invalid action path: {action_path}. Must be a directory or command.py/query.py file."
+  )
+  sys.exit(1)
 
 
 def load_logic_module(logic_path: Path):
@@ -131,9 +150,7 @@ def main():
     description="Entrypoint for dynamic action execution.",
     add_help=False,  # We'll handle help manually
   )
-  parser.add_argument(
-    "action_path", nargs="?", default="", help="Path to the action's directory or logic file."
-  )
+  parser.add_argument("action_path", nargs="?", default="", help="Path to the action's directory.")
   parser.add_argument("-h", "--help", action="store_true", help="Show help message and exit.")
   args, remaining = parser.parse_known_args()
 
@@ -145,8 +162,9 @@ def main():
       parser.print_usage()
     return
 
-  action_dir = locate_action_directory(Path(args.action_path).resolve())
-  logic_module = load_logic_module(action_dir / "logic.py")
+  action_dir = locate_action_dir(args.action_path)
+  action_file = locate_action_file(action_dir)
+  logic_module = load_logic_module(action_file)
   req_handler = get_handler_function(logic_module)
   req_class = get_request_class(req_handler)
   req_parser = build_request_parser(req_class)
