@@ -6,7 +6,40 @@ description: Use this when asked to make changes to or reason about a domain cap
 
 A domain capability is a cohesive set of domain behaviors centered around a single domain concept.
 
-You could also call it a domain **slice**.
+## General rule for extracting capabilities from paths
+
+Given a domain path like: `a.b.c.d`
+
+Use this rule:
+
+- Drop namespaces (a, internal, organization, etc.)
+- Find the last noun before the verb
+- That noun is the capability
+- The final segment (verb) is the action
+
+### How to detect the verb
+
+Verbs tend to be:
+
+```text
+audit
+configure
+create
+delete
+execute
+export
+get
+import
+list
+monitor
+provision
+render
+reporting
+sync
+update
+```
+
+Everything before the verb is the capability path.
 
 ## Structure
 
