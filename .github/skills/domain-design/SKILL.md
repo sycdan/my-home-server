@@ -19,14 +19,13 @@ Given a domain path like: `internal.network.devices.execute`
 
 Use this rule:
 
-- Drop namespaces (`internal.network`)
-- Find the last noun before the verb
+> Find the last noun before the verb
 
 That noun (`devices`) is the capability.
 
-### How to detect the verb
+Everything before the verb is the capability path.
 
-Verbs tend to be:
+Verbs tend to be like:
 
 ```text
 audit
@@ -46,22 +45,41 @@ sync
 update
 ```
 
-Everything before the verb is the capability path.
-
 ## Structure
 
-A capability folder contains actions:
+A capability folder contains domain objects & services, plus actions:
 
 ```text
 scaffolding/
-  utils.py
-  create_api/
-    command.py
-    handler.py
-  create_capability/
-    command.py
-    handler.py
+  models/...
+  services/...
+  create_action/
+    templates/...   <- optional
+    command.py      <- contains CreateActionCommand
+    handler.py      <- implements the command logic
   list_capabilities/
-    query.py
-    handler.py
+    query.py        <- contains ListCapabilitiesQuery
+    handler.py      <- implements the query logic
 ```
+
+**Example command.py:**
+
+```python
+@dataclass
+class CreateCapabilityCommand:
+  pass
+```
+
+**Example query.py:**
+
+```python
+@dataclass
+class ListCapabilitiesQuery:
+  pass
+```
+
+## Notes
+
+Capabilities are created automatically when the first action within them is created.
+
+A capability should not exist without at least one action.
