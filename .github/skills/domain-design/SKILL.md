@@ -70,6 +70,8 @@ class CreateCapabilityCommand:
   pass
 ```
 
+When using HTTP/1.1, commands must be invoked using the POST method.
+
 **Example query.py:**
 
 ```python
@@ -77,6 +79,8 @@ class CreateCapabilityCommand:
 class ListCapabilitiesQuery:
   pass
 ```
+
+When using HTTP/1.1, commands may be invoked using either POST or GET methods (POST is required for sufficiently large queries).
 
 ## Notes
 
