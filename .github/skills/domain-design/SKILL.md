@@ -6,6 +6,8 @@ description: Use this when asked to make changes to or reason about a domain cap
 
 A domain capability is a cohesive set of domain behaviors centered around a single domain concept.
 
+You could also call it a domain **slice**.
+
 ## Structure
 
 A capability folder contains the domain model, domain services, and the set of actions (commands/queries + handlers) that operate on that domain concept.
