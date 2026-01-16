@@ -131,7 +131,7 @@ from example.domain.<verb_noun>.handler import handle_<verb_noun>
 from example.domain import models
 ```
 
-> "If ?"
+> "Where is the main CLI entrypoint to a domain, if it has one?"
 
 ```python
 from example.domain.engine import runtime
