@@ -51,7 +51,7 @@ A capability folder contains domain objects & services, plus actions:
 
 ```text
 /<domain>/
-  models/...
+  models/...         <- persisted domain state
   engine/...         <- runtime mechanics (side effects allowed)
   rules/...          <- pure domain logic (no side effects)
   <verb>_<noun>/     <- actions (commands/queries + handlers)
