@@ -11,7 +11,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from mhs.output import print_error, print_info, print_success, print_warning
+from scaf.output import print_error, print_info, print_success, print_warning
 from mhs.devices import Device
 from mhs.actions.discover.lib.discovery import generate_device_discovery_script
 

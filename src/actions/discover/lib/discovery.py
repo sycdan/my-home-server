@@ -1,4 +1,4 @@
-from mhs.output import ROOT_DIR
+from scaf.output import ROOT_DIR
 
 
 def generate_device_discovery_script(

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from mhs.config import DOMAIN_SUFFIX, FLEET_FILE
-from mhs.output import print_error
+from scaf.output import print_error
 from mhs.util import normalize_mac_address
 
 
