@@ -51,12 +51,13 @@ A capability folder contains domain objects & services, plus actions:
 
 ```text
 /<domain>/
-  models/...         <- persisted domain state
   engine/...         <- runtime mechanics (side effects allowed)
+  models/...         <- persisted domain state
   rules/...          <- pure domain logic (no side effects)
-  <verb>_<noun>/     <- actions (commands/queries + handlers)
-    templates/...    <- optional
-    command|query.py <- contains request shape dataclass
+  templates/...      <- shared templates for the whole domain
+  <verb>_<noun>/     <- entrypoint to a domain action
+    templates/...    <- optional action-specific templates
+    command|query.py <- depends on data access requirements
     handler.py       <- implements the action logic
 ```
 
