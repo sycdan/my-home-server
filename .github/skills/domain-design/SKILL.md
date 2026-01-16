@@ -52,16 +52,14 @@ update
 A capability folder contains domain objects & services, plus actions:
 
 ```text
-scaffolding/
+/<domain>/
   models/...
-  services/...
-  create_action/
-    templates/...   <- optional
-    command.py      <- contains CreateActionCommand
-    handler.py      <- implements the command logic
-  list_capabilities/
-    query.py        <- contains ListCapabilitiesQuery
-    handler.py      <- implements the query logic
+  engine/...         <- runtime mechanics (side effects allowed)
+  rules/...          <- pure domain logic (no side effects)
+  <verb>_<noun>/     <- actions (commands/queries + handlers)
+    templates/...    <- optional
+    command|query.py <- contains request shape dataclass
+    handler.py       <- implements the action logic
 ```
 
 **Example command.py:**
@@ -89,3 +87,53 @@ When using HTTP/1.1, commands may be invoked using either POST or GET methods (P
 Capabilities are created automatically when the first action within them is created.
 
 A capability should not exist without at least one action.
+
+## FAQ
+
+> "Where does validation logic live?"
+
+```python
+from example.domain.rules import validation
+```
+
+> "Where are naming conventions defined?"
+
+```python
+from example.domain.rules import naming
+```
+
+> "What if I need to load modules dynamically?"
+
+```python
+from example.domain.engine import loader
+```
+
+> "Where is the shape of a read-only action defined?"
+
+```python
+from example.domain.<verb_noun>.query import <VerbNoun>Query
+```
+
+> "Where is the shape of a read-write or write-only action defined?"
+
+```python
+from example.domain.<verb_noun>.command import <VerbNoun>Command
+```
+
+> "Where is an action's logic defined?"
+
+```python
+from example.domain.<verb_noun>.handler import handle_<verb_noun>
+```
+
+> "Where do I put domain models?"
+
+```python
+from example.domain import models
+```
+
+> "Where do I put runtime helpers or execution context?"
+
+```python
+from example.domain.engine import runtime
+```
