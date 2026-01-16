@@ -13,8 +13,6 @@ A **capability**...
 - evolves with the domain concept
 - applies the Single Responsibility Principle
 
-In our application, `scaffolding` is a **capability** (and *also* a domain).
-
 ## General rule for extracting capabilities from paths
 
 Given a domain path like: `internal.network.devices.execute`
