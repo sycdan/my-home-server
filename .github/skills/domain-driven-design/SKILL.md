@@ -55,11 +55,11 @@ A capability folder contains domain objects & services, plus actions:
 
 ```text
 /<domain>/
-  engine/...         <- runtime mechanics (side effects allowed)
   models/...         <- persisted domain state
   rules/...          <- pure domain logic (no side effects)
   templates/...      <- shared templates for the whole domain
   errors.py          <- domain-specific exceptions
+  <utility>.py       <- domain mechanics (side effects allowed)
   <verb>_<noun>/     <- entrypoint to a domain action
     templates/...    <- optional action-specific templates
     command|query.py <- depends on data access requirements
@@ -104,7 +104,7 @@ from example.domain.rules import naming
 > "What if I need to load modules dynamically?"
 
 ```python
-from example.domain.engine import loader
+from example.domain import loader
 ```
 
 > "Where is the shape of a read-only action defined?"
@@ -134,5 +134,5 @@ from example.domain import models
 > "Where is the main CLI entrypoint to a domain, if it has one?"
 
 ```python
-from example.domain.engine import runtime
+from example.domain import cli
 ```
