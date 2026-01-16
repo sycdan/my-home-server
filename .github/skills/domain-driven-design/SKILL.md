@@ -13,6 +13,10 @@ A **capability**...
 - evolves with the domain concept
 - applies the Single Responsibility Principle
 
+Capabilities are created automatically when the first action within them is created.
+
+A capability should not exist without at least one action.
+
 ## General rule for extracting capabilities from paths
 
 Given a domain path like: `internal.network.devices.execute`
@@ -80,12 +84,6 @@ class ListCapabilitiesQuery:
 ```
 
 When using HTTP/1.1, commands may be invoked using either POST or GET methods (POST is required for sufficiently large queries).
-
-## Notes
-
-Capabilities are created automatically when the first action within them is created.
-
-A capability should not exist without at least one action.
 
 ## FAQ
 
