@@ -131,7 +131,7 @@ from example.domain.<verb_noun>.handler import handle_<verb_noun>
 from example.domain import models
 ```
 
-> "Where do I put runtime helpers or execution context?"
+> "If ?"
 
 ```python
 from example.domain.engine import runtime
