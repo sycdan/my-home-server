@@ -59,9 +59,11 @@ A capability folder contains domain objects & services, plus actions:
   models/...         <- persisted domain state
   rules/...          <- pure domain logic (no side effects)
   templates/...      <- shared templates for the whole domain
+  errors.py          <- domain-specific exceptions
   <verb>_<noun>/     <- entrypoint to a domain action
     templates/...    <- optional action-specific templates
     command|query.py <- depends on data access requirements
+    errors.py        <- optional domain-specific exceptions
     handler.py       <- implements the action logic
 ```
 
