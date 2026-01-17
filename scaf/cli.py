@@ -1,9 +1,31 @@
 import argparse
+import dataclasses
 import sys
 
 from scaf.action_package.load.handler import handle as load_domain_action
 from scaf.action_package.load.query import LoadQuery
 from scaf.output import print_error
+
+
+def build_parser_from_shape(shape_class: type, description: str):
+  parser = argparse.ArgumentParser(description=description)
+
+  for field in dataclasses.fields(shape_class):
+    name = field.name
+    type_ = field.type
+    default = field.default
+
+    if default is dataclasses.MISSING:
+      # required positional
+      parser.add_argument(name, type=type_)
+    else:
+      # optional flag or option
+      if type_ is bool:
+        parser.add_argument(f"--{name}", action="store_true", default=default)
+      else:
+        parser.add_argument(f"--{name}", type=type_, default=default)
+
+  return parser
 
 
 def main(argv=None):
@@ -26,8 +48,13 @@ def main(argv=None):
   try:
     domain_action = load_domain_action(LoadQuery(args.action_path))
     action_comment = domain_action.init_module.__doc__ or "No comment."
-    req_class = get_request_class(req_handler)
-    req_parser = build_request_parser(req_class)
+
+    shape_class = domain_action.shape_class
+    shape_parser = build_parser_from_shape(shape_class, description=action_comment)
+    action_args = shape_parser.parse_args(remaining)
+    shape_instance = shape_class(**vars(action_args))
+    result = domain_action.logic_module.handle(shape_instance)
+
     req_parser.prog = f"./call {args.action_path}"
 
     # Show action-specific help if requested
