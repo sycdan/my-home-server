@@ -12,7 +12,7 @@ Domains...
 - evolve independently from API surfaces (which are versioned)
 - provide action pathways for users to interact with domain objects
 
-Think of a domain path like `organization.building.device.io` as a chain of nested concepts, each narrowing the scope of meaning. It's not describing "many organizations" or "many buildings" -- it’s describing the conceptual space where this capability lives.
+Think of a domain path like `organization.building.device.io` as a chain of nested concepts, each narrowing the scope of meaning. It's not describing "many organizations" or "many buildings" -- it’s describing the conceptual space where each capability lives.
 
 ## Meaning of "Capability"
 
