@@ -24,10 +24,8 @@ A **capability**...
 - contains services that encapsulate domain logic
 - evolves with the domain concept
 - applies the Single Responsibility Principle
-
-Capabilities are created automatically when the first action within them is created.
-
-A capability should not exist without at least one action.
+- should not exist without at least one action
+- is created automatically when the first action within it is created
 
 **Example:**
 
