@@ -1,2 +1,0 @@
-class ScaffoldingError(Exception):
-  pass

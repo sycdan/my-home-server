@@ -1,8 +1,7 @@
 import argparse
 import sys
 
-from scaf.errors import ScaffoldingError
-from scaf.loader import load_domain_action, locate_action_file
+from scaf.loader import load_domain_action
 from scaf.output import print_error
 
 
@@ -25,9 +24,7 @@ def main(argv=None):
 
   try:
     domain_action = load_domain_action(args.action_path)
-    action_comment = domain_action.action_module.__doc__ or "No comment."
-    action_file = locate_action_file(action_dir)
-    logic_module = load_logic_module(action_file)
+    action_comment = domain_action.action_package.__doc__ or "No comment."
     req_handler = get_handler_function(logic_module)
     req_class = get_request_class(req_handler)
     req_parser = build_request_parser(req_class)
@@ -42,6 +39,6 @@ def main(argv=None):
     req_obj = build_request_object(req_class, req_args)
     response = req_handler(req_obj)
     print(json.dumps(to_json(response), indent=2))
-  except ScaffoldingError as e:
+  except RuntimeError as e:
     print_error(str(e))
     sys.exit(1)
