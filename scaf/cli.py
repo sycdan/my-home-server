@@ -50,17 +50,17 @@ def main(argv=None):
     action_comment = domain_action.init_module.__doc__ or "No comment."
 
     shape_class = domain_action.shape_class
-    shape_parser = build_parser_from_shape(shape_class, description=action_comment)
-    action_args = shape_parser.parse_args(remaining)
-    shape_instance = shape_class(**vars(action_args))
-    result = domain_action.logic_module.handle(shape_instance)
-
-    req_parser.prog = f"./call {args.action_path}"
+    action_parser = build_parser_from_shape(shape_class, description=action_comment)
+    action_parser.prog = f"./call {args.action_path}"
 
     # Show action-specific help if requested
     if args.help:
-      req_parser.print_help()
+      action_parser.print_help()
       return
+
+    action_args = action_parser.parse_args(remaining)
+    shape_instance = shape_class(**vars(action_args))
+    result = domain_action.logic_module.handle(shape_instance)
 
     req_args = req_parser.parse_args(remaining)
     req_obj = build_request_object(req_class, req_args)
