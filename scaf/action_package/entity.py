@@ -17,3 +17,4 @@ class ActionPackage:
   """Loaded from handler.py."""
   action_hash: str
   """The hash of the full path to the domain action folder."""
+  shape_class: type
