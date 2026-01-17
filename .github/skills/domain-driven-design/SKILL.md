@@ -88,6 +88,8 @@ An action package folder looks like:
   handler.py
 ```
 
+Entities live at the domain level as stable nouns; capabilities are functional subsystems; actions are verbs; and the final segment of any action path must always be the action.
+
 **Example command.py:**
 
 ```python
