@@ -2,6 +2,18 @@
 name: domain-driven-design
 description: Use this when asked to make changes to or reason about a domain capability, handler, query, command, action, model or service.
 ---
+## Meaning of "Domain"
+
+A domain is a conceptual boundary -- a slice of the system that represents a stable idea, not a specific instance or a collection of instances. Domains are named with **singular nouns** because they model concepts, not lists.
+
+Domains...
+
+- contain unversioned logic and entities
+- evolve independently from API surfaces (which are versioned)
+- provide action pathways for users to interact with domain objects
+
+Think of a domain path like `organization.building.device.io` as a chain of nested concepts, each narrowing the scope of meaning. It's not describing "many organizations" or "many buildings" -- it’s describing the conceptual space where this capability lives.
+
 ## Meaning of "Capability"
 
 A **capability**...
