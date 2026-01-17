@@ -142,6 +142,8 @@ When using HTTP/1.1, commands may be invoked using either POST or GET methods (P
 
 ## Meaning of "Action Path"
 
+The filesystem path to an action's files:
+
 e.g. `cyberdyne/skynet/defense/fire_nukes`
 
 The final segment of any action path is always the action to perform.
