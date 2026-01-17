@@ -79,6 +79,15 @@ A capability folder contains domain objects & services, plus actions:
     handler.py       <- implements the action logic
 ```
 
+An action package folder looks like:
+
+```text
+<domain>/<capability>/<action>/
+  __init__.py
+  command.oy or query.py
+  handler.py
+```
+
 **Example command.py:**
 
 ```python
