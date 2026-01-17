@@ -2,6 +2,7 @@ import argparse
 import dataclasses
 import sys
 
+from mhs.config import ROOT_DIR
 from scaf.action_package.load.handler import handle as load_domain_action
 from scaf.action_package.load.query import LoadQuery
 from scaf.output import print_error
@@ -51,7 +52,7 @@ def main(argv=None):
 
     shape_class = domain_action.shape_class
     action_parser = build_parser_from_shape(shape_class, description=action_comment)
-    action_parser.prog = f"./call {args.action_path}"
+    action_parser.prog = f"./call {domain_action.action_dir.relative_to(ROOT_DIR).as_posix()}"
 
     # Show action-specific help if requested
     if args.help:
