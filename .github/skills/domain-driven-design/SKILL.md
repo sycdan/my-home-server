@@ -18,7 +18,7 @@ Think of a domain path like `organization.building.device.io` as a chain of nest
 
 A **capability**...
 
-- is a domain concept (a noun)
+- is a domain subsystem
 - is a cohesive set of domain behaviors centered around a single domain concept
 - comprises a set of operations (commands, queries)
 - contains services that encapsulate domain logic
@@ -29,7 +29,18 @@ Capabilities are created automatically when the first action within them is crea
 
 A capability should not exist without at least one action.
 
-## General rule for extracting capabilities from paths
+**Example:**
+
+```text
+cyberdyne/           <- domain
+  skynet/            <- domain
+    defense/         <- capability
+      fire_nukes/    <- action
+        command.py   <- action shape
+        handler.py   <- execution logic
+```
+
+### General rule for extracting capabilities from paths
 
 Given a domain path like: `internal.network.devices.execute`
 
@@ -61,7 +72,7 @@ sync
 update
 ```
 
-## Structure
+### Structure
 
 A capability folder contains domain objects & services, plus actions:
 
@@ -109,6 +120,56 @@ class ListCapabilitiesQuery:
 ```
 
 When using HTTP/1.1, commands may be invoked using either POST or GET methods (POST is required for sufficiently large queries).
+
+## Meaning of "Stable Entity"
+
+A **stable** entity...
+
+- is a *simple* entity
+- exists in a domain has no exposed actions
+- is not *capable*
+
+In REST terms, it is a **resource**.
+
+**Example:**
+
+```text
+cyberdyne/           <- domain
+  skynet/            <- domain
+    weapon/          <- capability
+      nuke/          <- entity
+        entity.py    <- entity shape
+        rules.py     <- validation logic
+```
+
+## Meaning of "Capable Entity"
+
+A **capable** entity...
+
+- is a *complex* entity
+- exists in a domain and exposes one or more actions
+- is a **resource controller** in REST terms
+
+**Example:**
+
+```text
+cyberdyne/           <- domain
+  skynet/            <- domain
+    nuke/            <- capable entity
+      entity.py      <- entity shape
+      arm/           <- action
+        command.py   <- action shape
+        handler.py   <- execution logic
+      disarm/        <- action
+        command.py   <- action shape
+        handler.py   <- execution logic
+      status/        <- action (read-only)
+        query.py     <- action shape
+        handler.py   <- execution logic
+      fire/          <- action
+        command.py   <- action shape
+        handler.py   <- execution logic
+```
 
 ## FAQ
 
