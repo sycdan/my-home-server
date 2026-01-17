@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from mhs.config import BASE_DOMAIN, PYTHON, ROOT_DIR
+from mhs.config import BASE_DOMAIN, ROOT_DIR
 from scaf import cli
 
 
