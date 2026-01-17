@@ -33,7 +33,7 @@ def test_create_action_does_not_overwrite_existing_files():
     "--comment",
     "Create a new domain action.",
   ]
-  cli.main(["scaf/create_action"] + action_args)
+  cli.main(["scaf/create_action/handler.py"] + action_args)
   # TODO hash it after creation to verify files created
   # TODO create again
   # TODO hash it again to verify no changes

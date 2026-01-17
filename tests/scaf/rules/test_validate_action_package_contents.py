@@ -1,6 +1,6 @@
 import pytest
 
-from scaf.rules import validate_action_package_contents
+from scaf.rules.pure import validate_action_package_contents
 
 
 def test_valid_package_with_command():

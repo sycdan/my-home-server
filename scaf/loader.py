@@ -8,16 +8,11 @@ from hashlib import sha256
 from pathlib import Path
 from types import FunctionType, ModuleType
 
+from mhs.config import ROOT_DIR
+from scaf.action_package.entity import ActionPackage
+from scaf.action_package.rules import must_contain_required_files
 from scaf.output import print_error
 from scaf.tools import ensure_init_files
-
-
-@dataclass
-class DomainAction:
-  action_dir: Path
-  action_hash: str  # of the action file
-  action_module: ModuleType  # the command.py or query.py module
-  action_package: ModuleType  # module from the action_dir
 
 
 def load_handler_module(action_dir: Path) -> ModuleType:
@@ -71,6 +66,7 @@ def resolve_path(action_path: Path | str) -> Path:
 
 
 def locate_action_file(action_path: Path | str) -> Path:
+  """returns the path to the action's command.py or query.py file."""
   action_path = resolve_path(action_path)
   if not action_path.exists():
     raise RuntimeError(f"Action path does not exist: {action_path}")
@@ -114,16 +110,36 @@ def _load_module_from_file(file: Path, hash: str = "") -> ModuleType:
   return module
 
 
-def load_domain_action(action_path: str) -> DomainAction:
+def _get_handler_function(logic_module: ModuleType) -> FunctionType:
+  pass
+
+
+def _ensure_action_dir(action_path: Path | str) -> Path:
+  if isinstance(action_path, str):
+    action_path = Path(action_path)
+  action_path = action_path.resolve()
+  if not action_path.exists():
+    raise RuntimeError(f"Action path does not exist: {action_path.relative_to(ROOT_DIR)}.")
+  action_dir = action_path if action_path.is_dir() else action_path.parent
+  return action_dir
+
+
+def load_domain_action(action_path: Path | str) -> ActionPackage:
+  action_dir = _ensure_action_dir(action_path)
+  must_contain_required_files([f.name for f in action_dir.iterdir()])
+
+  handler_module = load_handler_module(action_path)
   action_file = locate_action_file(action_path)
-  action_hash = sha256(action_file.as_posix().encode("utf-8")).hexdigest()
   action_dir = action_file.parent
+  action_hash = sha256(action_dir.as_posix().encode("utf-8")).hexdigest()
   ensure_init_files(action_dir)
-  action_module = _load_module_from_file(action_file, action_hash)
-  action_package = _load_module_from_file(action_dir / "__init__.py")
-  return DomainAction(
-    action_dir=action_dir,
+  action_package = _load_module_from_file(action_dir / "__init__.py", action_hash)
+  action_module = _load_module_from_file(action_file)
+  handler = get_handler_function(logic_module)
+  return DomainActionPackage(
     action_hash=action_hash,
-    action_module=action_module,
+    action_dir=action_dir,
     action_package=action_package,
+    action_file=action_file,
+    action_module=action_module,
   )

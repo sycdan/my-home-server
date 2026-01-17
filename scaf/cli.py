@@ -25,7 +25,6 @@ def main(argv=None):
   try:
     domain_action = load_domain_action(args.action_path)
     action_comment = domain_action.action_package.__doc__ or "No comment."
-    req_handler = get_handler_function(logic_module)
     req_class = get_request_class(req_handler)
     req_parser = build_request_parser(req_class)
     req_parser.prog = f"./call {args.action_path}"
