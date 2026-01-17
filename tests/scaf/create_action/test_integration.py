@@ -1,12 +1,12 @@
 import shutil
-import subprocess
 import uuid
-from pathlib import Path
 
 import pytest
 
 from mhs.config import BASE_DOMAIN, ROOT_DIR
 from scaf import cli
+
+pytestmark = pytest.mark.integration
 
 
 @pytest.fixture(autouse=True)
@@ -20,7 +20,6 @@ def cleanup_example_dirs():
         shutil.rmtree(path, ignore_errors=True)
 
 
-@pytest.mark.integration
 def test_create_action_does_not_overwrite_existing_files():
   """We'll create an action twice with the same data."""
   new_domain_dir = ROOT_DIR / BASE_DOMAIN / "example" / f"x{uuid.uuid4().hex[:8]}"
