@@ -70,55 +70,6 @@ sync
 update
 ```
 
-### Structure
-
-A capability folder contains domain objects & services, plus actions:
-
-```text
-/<domain>/
-  models/...         <- persisted domain state
-  rules/...          <- pure domain logic (no side effects)
-  templates/...      <- shared templates for the whole domain
-  errors.py          <- domain-specific exceptions
-  <utility>.py       <- domain mechanics (side effects allowed)
-  <verb>_<noun>/     <- entrypoint to a domain action
-    templates/...    <- optional action-specific templates
-    command|query.py <- depends on data access requirements
-    errors.py        <- optional domain-specific exceptions
-    handler.py       <- implements the action logic
-```
-
-An action package folder looks like:
-
-```text
-<domain>/<capability>/<action>/
-  __init__.py
-  command.oy or query.py
-  handler.py
-```
-
-Entities live at the domain level as stable nouns; capabilities are functional subsystems; actions are verbs; and the final segment of any action path must always be the action.
-
-**Example command.py:**
-
-```python
-@dataclass
-class CreateCapabilityCommand:
-  pass
-```
-
-When using HTTP/1.1, commands must be invoked using the POST method.
-
-**Example query.py:**
-
-```python
-@dataclass
-class ListCapabilitiesQuery:
-  pass
-```
-
-When using HTTP/1.1, commands may be invoked using either POST or GET methods (POST is required for sufficiently large queries).
-
 ## Meaning of "Stable Entity"
 
 A **stable** entity...
@@ -168,6 +119,32 @@ cyberdyne/           <- domain
         command.py   <- action shape
         handler.py   <- execution logic
 ```
+
+**Example command.py:**
+
+```python
+@dataclass
+class CreateCapabilityCommand:
+  pass
+```
+
+When using HTTP/1.1, commands must be invoked using the POST method.
+
+**Example query.py:**
+
+```python
+@dataclass
+class ListCapabilitiesQuery:
+  pass
+```
+
+When using HTTP/1.1, commands may be invoked using either POST or GET methods (POST is required for sufficiently large queries).
+
+## Meaning of "Action Path"
+
+e.g. `cyberdyne/skynet/defense/fire_nukes`
+
+The final segment of any action path is always the action to perform.
 
 ## FAQ
 
