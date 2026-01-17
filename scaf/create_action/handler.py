@@ -84,7 +84,7 @@ def ensure_test_module(action_dir: Path):
     parent_dir = parent_dir.parent
 
 
-def handle_create_action(command: CreateActionCommand):
+def handle(command: CreateActionCommand):
   errors = []
   try:
     domain_path = Path(msg.domain_path.strip())  # must start with base domain

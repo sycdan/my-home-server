@@ -1,4 +1,5 @@
 import os
+from hashlib import sha256
 from pathlib import Path
 
 from mhs.config import ROOT_DIR, TESTS_DIR
@@ -23,3 +24,7 @@ def make_logic_stubs():
         test_file.parent.mkdir(parents=True, exist_ok=True)
         test_file.write_text("# Logic tests will go here")
         print("Created logic test stub:", test_file)
+
+
+def compute_hash(path: Path) -> str:
+  return sha256(path.as_posix().encode("utf-8")).hexdigest()

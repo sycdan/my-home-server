@@ -5,13 +5,15 @@ from types import ModuleType
 
 @dataclass
 class ActionPackage:
+  """A domain action loaded from the filesystem."""
+
   action_dir: Path
-  """The path to the domain action folder (which contains __init__.py)"""
-  action_package: ModuleType
-  """The module loaded from the action_dir (__init__.py)"""
-  action_file: Path
-  """The path to the action_file (command.py or query.py)"""
-  action_module: ModuleType
-  """The module loaded from the action_file (command.py or query.py)"""
+  """Domain action folder (containing handler.py)."""
+  init_module: ModuleType
+  """Loaded from the __init__.py in the action folder."""
+  shape_module: ModuleType
+  """Loaded from command.py or query.py."""
+  logic_module: ModuleType
+  """Loaded from handler.py."""
   action_hash: str
-  """The hash of the full path to the domain folder."""
+  """The hash of the full path to the domain action folder."""
