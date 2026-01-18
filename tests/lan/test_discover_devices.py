@@ -3,7 +3,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from lib.actions.discover import core
+from mhs.lan.discover_devices import cli
 
 TEST_SERVICE_LABEL = "testing"
 TEST_FLEET_JSON = """
@@ -31,7 +31,7 @@ def test_e2e():
     root_dir = Path(temp_dir)
 
     try:
-      core.main(
+      cli.main(
         [
           "--root",
           str(root_dir),
