@@ -1,6 +1,5 @@
-from pathlib import Path
+from mhs import ROOT_DIR
 
-ROOT_DIR = Path(__file__).resolve().parent.parent
 FLEET_FILE = ROOT_DIR / "fleet.json"
 EXAMPLE_ENV_FILE = ROOT_DIR / "example.env"
 ENV_FILE = ROOT_DIR / ".env"

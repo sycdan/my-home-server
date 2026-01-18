@@ -11,9 +11,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-from mhs.actions.discover.lib.discovery import generate_device_discovery_script
+from mhs import ROOT_DIR
+from mhs.device.entity import Device
+from mhs.lan.discover_devices import tools
 from mhs.output import print_error, print_info, print_success, print_warning
-from mhs.devices import Device
 
 DEVICE_SCRIPT_CACHE_DIR = ROOT_DIR / ".device-scripts"
 FLEET_FILE = ROOT_DIR / "fleet.json"
@@ -164,7 +165,7 @@ def create_schedule(script_name: str, schedule_spec: str, user="admin") -> bool:
   return True
 
 
-def call(argv=None) -> int:
+def main(argv=None) -> int:
   parser = argparse.ArgumentParser(
     description="Deploy device discovery scripts to router"
   )
@@ -196,7 +197,7 @@ def call(argv=None) -> int:
     script_name = f"discover-{device.label}"
     script_file = DEVICE_SCRIPT_CACHE_DIR / f"{script_name}.rsc"
     script_comment = f"Discover {name} ({device.hostname})"
-    script_content = generate_device_discovery_script(
+    script_content = tools(
       device.hostname,
       device.primary_mac,
       device.secondary_mac,

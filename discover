@@ -2,11 +2,11 @@
 
 import sys
 
-from mhs.actions.discover import main
+from mhs.lan.discover_devices import cli
 
 if __name__ == "__main__":
   try:
-    main.call()
+    cli.main()
   except Exception as e:
     print(f"Error during discovery: {e}")
     sys.exit(1)

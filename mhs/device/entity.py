@@ -5,20 +5,7 @@ from pathlib import Path
 
 from mhs.config import DOMAIN_SUFFIX, FLEET_FILE
 from mhs.output import print_error
-
-
-def validate_mac_address(mac: str) -> bool:
-  """Validate MAC address format"""
-  if len(mac.split(":")) != 6:
-    return False
-  for part in mac.split(":"):
-    if len(part) != 2:
-      return False
-    try:
-      int(part, 16)
-    except ValueError:
-      return False
-  return True
+from mhs.tools import validate_mac_address
 
 
 @dataclass
@@ -56,6 +43,10 @@ class Device:
         if not validate_mac_address(device.primary_mac):
           print_error(
             f"Invalid primary MAC address for device '{label}': {device.primary_mac}"
+          )
+        if device.secondary_mac and not validate_mac_address(device.secondary_mac):
+          print_error(
+            f"Invalid secondary MAC address for device '{label}': {device.secondary_mac}"
           )
           continue
         devices.append(device)
