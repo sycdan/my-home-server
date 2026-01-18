@@ -2,8 +2,6 @@
 
 A unified home infrastructure system: Docker orchestration, DNS-based service discovery, reverse proxy routing, and device-specific configuration scripts.
 
-**Key Principle:** Services are addressed by `device.lan` hostnames and ports, not IPs. This allows devices to move/reboot with minimal reconfiguration.
-
 ## [Devices](./fleet.json)
 
 - [MikroTik hEX](./docs/MikroTik%20hEX.md) running [RouterOS](https://help.mikrotik.com/docs/spaces/ROS/pages/328059/RouterOS)
