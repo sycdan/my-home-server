@@ -9,6 +9,8 @@ A unified home infrastructure system: Docker orchestration, DNS-based service di
 - [Old Lenovo Laptop](./docs/Lenovo%204446%2038U.md) running [Ubuntu](https://ubuntu.com/download/desktop?version=24.04&architecture=amd64&lts=true) (service host)
 - [Raspberry Pi 3](./docs/Raspberry%20Pi%203.md) running Debian (reverse proxy)
 
+**Note:** follow first-time setup docs for each device before continuing.
+
 ### Adding a device
 
 On your local machine, add the device to `./fleet.json`:
@@ -29,7 +31,7 @@ On your local machine, add the device to `./fleet.json`:
 
 ### Discovering devices
 
-Assign a static DNS hostname to the device:
+Run this when adding a device, or if IPs have changed:
 
 ```bash
 ./discover
