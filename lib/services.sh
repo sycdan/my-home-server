@@ -206,3 +206,12 @@ source_env_file() {
   print_status "Sourcing env vars from $env_file"
   source "$env_file"
 }
+
+skip_step() {
+  # SKIP_STEPS must be an array defined in the calling script
+  local step="$1"
+  for s in "${SKIP_STEPS[@]}"; do
+    [[ "$s" == "$step" ]] && return 0
+  done
+  return 1
+}

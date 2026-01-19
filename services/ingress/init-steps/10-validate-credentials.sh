@@ -18,6 +18,5 @@ validate_porkbun_credentials() {
   fi
 }
 
-echo ""
 validate_porkbun_credentials "$PORKBUN_API_KEY" "$PORKBUN_SECRET_KEY"
 print_success "Porkbun API credentials validated"

@@ -1,5 +1,3 @@
-# Exports: SERVICES (array)
-
 load_services_from_fleet() {
   local fleet_file=$1
   
@@ -9,7 +7,7 @@ load_services_from_fleet() {
     exit 1
   fi
   
-  echo "Loading services from: $fleet_file"
+  print_status "Loading services from: $fleet_file"
   declare -ga SERVICES
   SERVICES=()
   local temp_file=$(mktemp)
@@ -31,16 +29,15 @@ load_services_from_fleet() {
     # Construct full service entry
     local service_entry="${subdomain}.${domain}|${device_name}.lan|${port}"
     SERVICES+=("$service_entry")
-    echo "  Loaded service: $service_entry"
+    print_status "Loaded service: $service_entry"
   done < "$temp_file"
   
   rm -f "$temp_file"
 }
 
-echo ""
 load_services_from_fleet "$MHS_FLEET_FILEPATH"
 if [[ ${#SERVICES[@]} -eq 0 ]]; then
   print_warning "No services found in fleet file"
 else
-  echo "Loaded ${#SERVICES[@]} services from fleet file"
+  print_success "Loaded ${#SERVICES[@]} services from fleet file"
 fi

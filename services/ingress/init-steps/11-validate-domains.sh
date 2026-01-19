@@ -1,5 +1,4 @@
 # Exports: VALID_DOMAINS (array)
-
 parse_and_validate_domains() {
   local fleet_file="${1:-~/my-home-server/fleet.json}"
   fleet_file="$(eval echo "$fleet_file")" # expand ~
@@ -14,17 +13,16 @@ parse_and_validate_domains() {
     print_error "No domains found in $fleet_file"
     exit 1
   fi
-  echo "Found ${#domains[@]} domains in fleet file"
+  print_status "Found ${#domains[@]} domains in $fleet_file"
   # Validate domains
   declare -ga VALID_DOMAINS
   VALID_DOMAINS=()
   for domain_key in "${domains[@]}"; do
     local domain=$(jq -r --arg dk "$domain_key" '.domains[$dk].domain' "$fleet_file")
     if [[ -z "$domain" || "$domain" == "null" ]]; then
-      print_warning "Domain key '$domain_key' not found in fleet file, skipping"
+      print_warning "Domain key '$domain_key' not found in $fleet_file, skipping"
       continue
     fi
-    echo ""
     print_status "Checking domain: $domain"
     HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 "http://$domain" 2>/dev/null || echo "000")
     if ! [[ "$HTTP_STATUS" =~ ^[23] ]]; then
@@ -36,5 +34,4 @@ parse_and_validate_domains() {
   done
 }
 
-echo ""
 parse_and_validate_domains "$1"
