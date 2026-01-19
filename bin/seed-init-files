@@ -6,7 +6,6 @@ Ensure __init__.py files exist in subdirs.
 import argparse
 import sys
 from pathlib import Path
-from re import sub
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
