@@ -35,6 +35,10 @@ def run_rsync(
     text=True,
   )
 
+  if debug:
+    print_info(f"rsync stdout: {result.stdout}")
+    print_info(f"rsync stderr: {result.stderr}")
+
   if result.returncode == 0:
     if debug:
       print_success(f"Files {operation}ed successfully")
@@ -97,7 +101,8 @@ def bidirectional_sync(
 
     pullback_cmd = [
       "rsync",
-      "-avuz",
+      "-auz",
+      "-vv" if debug else "-v",
       "--relative",
       "--files-from",
       down_includes.relative_to(root_dir).as_posix(),
@@ -119,7 +124,9 @@ def bidirectional_sync(
 
     push_cmd = [
       "rsync",
-      "-avuz",
+      "-az",
+      "-vv" if debug else "-v",
+      "--delete",
       "--relative",
       "--files-from",
       up_includes.relative_to(root_dir).as_posix(),

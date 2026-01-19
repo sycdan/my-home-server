@@ -43,6 +43,17 @@ def validate_executable(filepath: str, root_dir: Path):
   return relative_path
 
 
+def gather_files_to_sync(src_dir: str, root_dir: Path):
+  """filepaths must be strings relative to root_dir"""
+  filepaths = []
+  real_src_dir = (root_dir / src_dir).resolve()
+  for root, _, files in os.walk(real_src_dir):
+    for file in files:
+      file_path = Path(root) / file
+      filepaths.append(file_path.relative_to(root_dir).as_posix())
+  return filepaths
+
+
 def main(argv=None):
   parser = argparse.ArgumentParser(
     description="Execute service scripts on remote devices"
@@ -80,18 +91,18 @@ def main(argv=None):
     print_info(f"Ensuring remote root directory exists on {ssh_host}...")
     ensure_remote_dir(ssh_host, f"{root_dir.name}/")
 
-  # All paths must be strings relative to root_dir, and dirs must have trailing slashes
+  # Paths are relative to root dir
   from_remote_files = [
-    (relative_service_dir / ".env").as_posix(),
+    f"services/{service_label}/.env",
   ]
   to_remote_files = [
     ".env",
-    "lib/",
     fleet_file.relative_to(root_dir).as_posix(),
-    relative_service_dir.as_posix() + "/",
   ]
+  to_remote_files.extend(gather_files_to_sync("lib", root_dir))
+  to_remote_files.extend(gather_files_to_sync(f"services/{service_label}", root_dir))
 
-  print_info(f"Syncing files with {ssh_host}...")
+  print_info(msg=f"Syncing files with {ssh_host}...")
   if not bidirectional_sync(
     ssh_host=ssh_host,
     service_label=service_label,
