@@ -32,3 +32,12 @@ sudo ufw enable
 ```
 
 Put your SSH pubkey in `~/ssh/authorized_keys`.
+
+## Mounting Drives
+
+```bash
+# list device uuids
+lsblk -f 
+
+# add to fstab
+```
