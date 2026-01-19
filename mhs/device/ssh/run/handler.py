@@ -76,10 +76,9 @@ def main(argv=None):
     print_info(f"Found {service_label} service on {hosting_device.label}")
 
   ssh_host = hosting_device.ssh_host
-  remote_base = root_dir.name
   if args.create_root:
     print_info(f"Ensuring remote root directory exists on {ssh_host}...")
-    ensure_remote_dir(ssh_host, f"{remote_base}/")
+    ensure_remote_dir(ssh_host, f"{root_dir.name}/")
 
   # All paths must be strings relative to root_dir, and dirs must have trailing slashes
   from_remote_files = [
@@ -108,7 +107,7 @@ def main(argv=None):
 
   remote_executable = relative_executable_path.as_posix()
   print_info(f"Executing {remote_executable} on {hosting_device.label}...")
-  ssh_exec_cmd = ["ssh", "-t", ssh_host, f"cd {remote_base} && {remote_executable}"]
+  ssh_exec_cmd = ["ssh", "-t", ssh_host, f"cd {root_dir.name} && {remote_executable}"]
   try:
     # Use call instead of run to preserve interactive terminal behavior
     subprocess.call(ssh_exec_cmd)
