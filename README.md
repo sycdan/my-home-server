@@ -14,8 +14,7 @@ On your local machine, add the device to `./fleet.json`:
 {
   "devices": {
     "laptop": {
-      "primary_mac": "AA:BB:CC:DD:EE:01",
-      "secondary_mac": "AA:BB:CC:DD:EE:02",
+      "macs": ["AA:BB:CC:DD:EE:01", "AA:BB:CC:DD:EE:02"],
       "description": "My Laptop"
     }
   }
