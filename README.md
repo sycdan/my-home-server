@@ -69,6 +69,8 @@ ssh laptop 'whoami && hostname && hostname -A && hostname -I'
 
 Create a <domain_label>.md file in `docs/domains/`.
 
+Add to [fleet](<fleet.json>)
+
 TODO: what next? edit files in services/ingress probably
 
 ```bash
