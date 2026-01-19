@@ -34,7 +34,6 @@ Services (Immich, Jellyfin, etc.) on different machines
 ### Service Structure
 
 - **`services/*/`** - Containerized applications
-
   - `docker-compose.yml` - Service definition
   - `bootstrap.sh` - Idempotent setup (env, directories, validation)
   - `example.env` - Configuration template
@@ -66,13 +65,8 @@ Services (Immich, Jellyfin, etc.) on different machines
 
 ### Network & DNS
 
-- **`lib/discovery.rsc`** - RouterOS script that:
-  - Discovers reverse proxy (Pi) and services via MAC address + ping
+- **`bin/deploy-discovery-scripts`** - Creates a RouterOS script per device that:
   - Updates DNS `.lan` entries on the router (TTL: 5 minutes)
-  - Sets up NAT port forwarding (80/443 → ingress.lan)
-  - Configures split DNS for external domains
-  - Runs every 5 minutes automatically
-    All setup scripts must be safe to run multiple times
 
 ### Environment Configuration
 
