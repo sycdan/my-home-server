@@ -39,7 +39,7 @@ ssh router '/ip dns static print' | grep laptop
 
 ### Configuring SSH access
 
-You need to figure out how to enable [SSH](<docs/SSH.md>) on the device, and add your SSH public key to its `~/.ssh/authorized_keys`.
+You need to figure out how to enable [SSH](<docs/SSH.md>) on the device, based on its OS.
 
 Then, add an entry to your local `~/.ssh/config`:
 
