@@ -6,11 +6,6 @@ if ! command -v nginx &> /dev/null; then
     exit 1
 fi
 
-FORCE_RECREATE=false
-if [[ "$1" == "--force" ]]; then
-    FORCE_RECREATE=true
-fi
-
 NGINX_SITES_AVAILABLE="/etc/nginx/sites-available"
 NGINX_SITES_ENABLED="/etc/nginx/sites-enabled"
 
@@ -24,7 +19,7 @@ sudo rm -f "$NGINX_SITES_ENABLED/default"
 # This avoids duplicate resolver errors across multiple server blocks
 # and keeps ingress-specific settings separate and idempotent
 INGRESS_CONF="/etc/nginx/conf.d/00-my-home-server-ingress.conf"
-if [[ ! -f "$INGRESS_CONF" ]] || [[ "$FORCE_RECREATE" == true ]]; then
+if [[ ! -f "$INGRESS_CONF" ]] || [[ "$FORCE" == 1 ]]; then
     sudo tee "$INGRESS_CONF" >/dev/null << 'EOF'
 # Ingress DNS resolver for static hostnames
 resolver 192.168.1.1 valid=10s;
@@ -46,7 +41,7 @@ for service in "${SERVICES[@]}"; do
     ENABLED_LINK="$NGINX_SITES_ENABLED/ingress-$CONFIG_NAME"
     
     # Check if config already exists
-    if [[ -f "$CONFIG_FILE" ]] && [[ "$FORCE_RECREATE" == false ]]; then
+    if [[ -f "$CONFIG_FILE" ]] && [[ "$FORCE" == 0 ]]; then
         print_success "nginx config already exists: $DOMAIN"
         ((config_count++))
         continue
@@ -78,7 +73,7 @@ server {
 EOF
     
     # Create symlink if it doesn't exist
-    if [[ ! -L "$ENABLED_LINK" ]] || [[ "$FORCE_RECREATE" == true ]]; then
+    if [[ ! -L "$ENABLED_LINK" ]] || [[ "$FORCE" == 1 ]]; then
         sudo ln -sf "$CONFIG_FILE" "$ENABLED_LINK"
     fi
     

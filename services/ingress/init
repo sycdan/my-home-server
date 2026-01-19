@@ -25,6 +25,21 @@ else
   echo "Using CNAME target: $MHS_CNAME_TARGET"
 fi
 
+# Parse args
+FORCE=0
+while [[ $# -gt 0 ]]; do
+	case "$1" in
+		--force)
+			FORCE=1
+			shift
+			;;
+		*)
+			# drop unknown args
+			shift
+			;;
+	esac
+done
+
 require_command "jq"
 require_command "curl"
 require_command "dig" "dnsutils"
