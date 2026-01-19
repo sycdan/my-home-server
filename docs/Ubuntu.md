@@ -10,28 +10,7 @@ Write to flash drive (e.g. with Balena Etcher).
 
 Restart machine and pick the flash drive as the boot device.
 
-## Configure SSH
-
-```bash
-# update system
-sudo apt update
-sudo apt upgrade -y
-
-# install openssh server
-sudo apt install ssh -y
-
-# start server on boot
-sudo systemctl enable ssh
-
-# verify status
-sudo systemctl status ssh
-
-# allow ssh through firewall
-sudo ufw allow ssh
-sudo ufw enable
-```
-
-Put your SSH pubkey in `~/ssh/authorized_keys`.
+Configure [SSH](<SSH.md>).
 
 ## Mounting Drives
 
