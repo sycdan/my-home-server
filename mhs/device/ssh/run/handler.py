@@ -43,7 +43,7 @@ def validate_executable(filepath: str, root_dir: Path):
   return relative_path
 
 
-def call(argv=None):
+def main(argv=None):
   parser = argparse.ArgumentParser(
     description="Execute service scripts on remote devices"
   )
