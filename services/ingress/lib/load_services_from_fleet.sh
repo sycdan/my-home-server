@@ -1,4 +1,4 @@
-# Exports: SERVICES (array), CNAME_TARGET (string)
+# Exports: SERVICES (array)
 
 load_services_from_fleet() {
   local fleet_file=$1
@@ -18,24 +18,20 @@ load_services_from_fleet() {
   
   while IFS='|' read -r device_name service_name port subdomain domain_key; do
     if [[ -n "$device_name" && -n "$service_name" && -n "$port" && -n "$subdomain" && -n "$domain_key" ]]; then
-      # Map service names to external subdomains and domains
-      case "$service_name" in
-        "immich")
-          external_hostname="photos.wildharvesthomestead.com"
-        ;;
-        "jellyfin")
-          external_hostname="stream.wildharvesthomestead.com"
-        ;;
-        *)
-          print_warning "Unknown service '$service_name' on device '$device_name', skipping"
-          continue
-        ;;
-      esac
+      # get the actual domain from domain_key
+      local domain=$(jq -r --arg dk "$domain_key" '.domains[$dk].domain' "$fleet_file")
+      if [[ -z "$domain" || "$domain" == "null" ]]; then
+        print_warning "Domain key '$domain_key' not found for service '$service_name' on device '$device_name', skipping"
+        continue
+      fi
       
-      # Create service entry: "external_hostname|device.lan|port"
-      service_entry="${external_hostname}|${device_name}.lan|${port}"
+      # Construct full service entry
+      local full_hostname="${subdomain}.${domain}"
+      service_entry="${full_hostname}|${device_name}.lan|${port}"
       SERVICES+=("$service_entry")
       echo "  Loaded service: $service_entry"
+    else
+      print_warning "Incomplete service definition in fleet file for device '$device_name', skipping"
     fi
   done < "$temp_file"
   
@@ -43,9 +39,9 @@ load_services_from_fleet() {
 }
 
 echo ""
-load_services_from_fleet "$MHS_FLEET_FILEPATH" "$MHS_CNAME_TARGET"
+load_services_from_fleet "$MHS_FLEET_FILEPATH"
 if [[ ${#SERVICES[@]} -eq 0 ]]; then
-  print_warning "No services found in $fleet_file"
+  print_warning "No services found in fleet file"
 else
   echo "Loaded ${#SERVICES[@]} services from fleet file"
 fi

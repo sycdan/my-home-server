@@ -1,7 +1,6 @@
 # Creates individual site config files for each service
-# Usage: source configure-nginx.sh [--force]
 
-# Check if running on Pi (has nginx)
+# Check if nginx is installed
 if ! command -v nginx &> /dev/null; then
     print_warning "nginx not installed, are you running on the correct machine?"
     exit 1
@@ -15,7 +14,7 @@ fi
 NGINX_SITES_AVAILABLE="/etc/nginx/sites-available"
 NGINX_SITES_ENABLED="/etc/nginx/sites-enabled"
 
-print_status "Configuring nginx reverse proxy"
+print_status "Configuring nginx as reverse proxy"
 
 echo ""
 print_status "Cleaning up old nginx configurations..."
@@ -27,7 +26,7 @@ sudo rm -f "$NGINX_SITES_ENABLED/default"
 INGRESS_CONF="/etc/nginx/conf.d/00-my-home-server-ingress.conf"
 if [[ ! -f "$INGRESS_CONF" ]] || [[ "$FORCE_RECREATE" == true ]]; then
     sudo tee "$INGRESS_CONF" >/dev/null << 'EOF'
-# Ingress DNS resolver for .lan hostnames (router)
+# Ingress DNS resolver for static hostnames
 resolver 192.168.1.1 valid=10s;
 resolver_timeout 5s;
 
