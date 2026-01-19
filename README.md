@@ -2,12 +2,7 @@
 
 A unified home infrastructure system: Docker orchestration, DNS-based service discovery, reverse proxy routing, and device-specific configuration scripts.
 
-## [Devices](./fleet.json)
-
-- [MikroTik hEX](./docs/MikroTik%20hEX.md) running [RouterOS](https://help.mikrotik.com/docs/spaces/ROS/pages/328059/RouterOS)
-- [Netgear R7000P](./docs/Netgear%20R7000P.md) running [DD-WRT](https://dd-wrt.com/) (access point)
-- [Old Lenovo Laptop](./docs/Lenovo%204446%2038U.md) running [Ubuntu](https://ubuntu.com/download/desktop?version=24.04&architecture=amd64&lts=true) (service host)
-- [Raspberry Pi 3](./docs/Raspberry%20Pi%203.md) running Debian (reverse proxy)
+## [Devices](./docs/devices/)
 
 **Note:** follow first-time setup docs for each device before continuing.
 

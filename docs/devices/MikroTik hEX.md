@@ -1,3 +1,7 @@
+# Mikrotik hEX
+
+Runs [RouterOS](https://help.mikrotik.com/docs/spaces/ROS/pages/328059/RouterOS).
+
 ## Setup
 
 Connect cable modem to `ether1` port.

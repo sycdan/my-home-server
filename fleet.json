@@ -73,11 +73,11 @@
 			],
 			"description": "Dan's iPhone"
 		},
-		"nicole-pc": {
+		"server-pc": {
 			"macs": [
 				"70:85:C2:4F:35:AB"
 			],
-			"description": "Nicole's PC"
+			"description": "Server PC"
 		},
 		"nicole-laptop": {
 			"macs": [

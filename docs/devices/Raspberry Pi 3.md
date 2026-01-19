@@ -1,3 +1,7 @@
+# Raspberry Pi 3
+
+Running Debian.
+
 Acts as a reverse proxy to route traffic from the public internet to internal services.
 
 ```ssh-pubkey

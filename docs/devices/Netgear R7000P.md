@@ -1,6 +1,10 @@
-Wireless `access-point`.
+# Netgear R7000P
 
-Connected to [[devices/mikrotek-hex/README]]  on `ether2`.
+Running [DD-WRT](https://dd-wrt.com/)
+
+Functions as a wireless `access-point`.
+
+Connected to [router](<MikroTik hEX.md>) on `ether2`.
 
 After a factory settings reset, must be switched from router to AP mode (disabling DHCP).
 
