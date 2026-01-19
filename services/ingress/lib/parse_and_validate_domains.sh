@@ -14,10 +14,16 @@ parse_and_validate_domains() {
     print_error "No domains found in $fleet_file"
     exit 1
   fi
+  echo "Found ${#domains[@]} domains in fleet file"
   # Validate domains
   declare -ga VALID_DOMAINS
   VALID_DOMAINS=()
-  for domain in "${domains[@]}"; do
+  for domain_key in "${domains[@]}"; do
+    local domain=$(jq -r --arg dk "$domain_key" '.domains[$dk].domain' "$fleet_file")
+    if [[ -z "$domain" || "$domain" == "null" ]]; then
+      print_warning "Domain key '$domain_key' not found in fleet file, skipping"
+      continue
+    fi
     echo ""
     print_status "Checking domain: $domain"
     HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 "http://$domain" 2>/dev/null || echo "000")
