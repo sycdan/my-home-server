@@ -41,7 +41,7 @@ ssh router '/ip dns static print' | grep laptop
 
 You need to figure out how to enable [SSH](<docs/SSH.md>) on the device, based on its OS.
 
-Then, add an entry to your local `~/.ssh/config`:
+Then, add an entry to your local `~/.ssh/config`, using the DNS hostname from the router:
 
 ```text
 Host laptop
