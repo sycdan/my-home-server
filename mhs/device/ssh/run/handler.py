@@ -66,7 +66,7 @@ def main(argv=None):
     help="Create remote root directory if it does not exist",
   )
   parser.add_argument("--debug", action="store_true", help="Enable debug output")
-  args = parser.parse_args(argv)
+  args, remaining = parser.parse_known_args(argv)
 
   if args.root:
     root_dir = Path(args.root).resolve()
@@ -118,7 +118,8 @@ def main(argv=None):
 
   remote_executable = relative_executable_path.as_posix()
   print_info(f"Executing {remote_executable} on {hosting_device.label}...")
-  ssh_exec_cmd = ["ssh", "-t", ssh_host, f"cd {root_dir.name} && {remote_executable}"]
+  remote_cmd = f"cd {root_dir.name} && {remote_executable} {' '.join(remaining)}"
+  ssh_exec_cmd = ["ssh", "-t", ssh_host, remote_cmd]
   try:
     # Use call instead of run to preserve interactive terminal behavior
     subprocess.call(ssh_exec_cmd)

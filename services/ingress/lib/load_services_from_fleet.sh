@@ -2,7 +2,6 @@
 
 load_services_from_fleet() {
   local fleet_file=$1
-  local cname_target=$2
   
   fleet_file="$(eval echo "$fleet_file")" # expand ~
   if [[ ! -f "$fleet_file" ]]; then
