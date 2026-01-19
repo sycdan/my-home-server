@@ -63,18 +63,6 @@ Press `Ctrl+D` to exit.
 ssh laptop 'whoami && hostname && hostname -A && hostname -I'
 ```
 
-### Repo Access
-
-To be able to clone the repo on service hosts, you need to add [Deploy Keys](https://github.com/sycdan/my-home-server/settings/keys).
-
-For each device, run:
-
-```bash
-# Create (but don't overwrite) a new RSA key and list all public keys
-ssh device 'ssh-keygen -t rsa -b 4096 -N "" -q <<< ""'
-ssh device 'cat .ssh/*.pub'
-```
-
 ## [Domains](./domains.json)
 
 | Domain                   | Role           | Registrar                                                                                     |

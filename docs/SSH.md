@@ -2,7 +2,9 @@
 
 Put your SSH pubkey in `~/ssh/authorized_keys`.
 
-## Ubuntu
+## Install SSH
+
+### Ubuntu
 
 ```bash
 # update system
@@ -21,4 +23,14 @@ sudo systemctl status ssh
 # allow ssh through firewall
 sudo ufw allow ssh
 sudo ufw enable
+```
+
+## Create Key (optional)
+
+If the device needs to be able to SSH into other devices, it needs its own key:
+
+```bash
+# Create (but don't overwrite) a new RSA key and list all public keys
+ssh device 'ssh-keygen -t rsa -b 4096 -N "" -q <<< ""'
+ssh device 'cat .ssh/*.pub'
 ```
