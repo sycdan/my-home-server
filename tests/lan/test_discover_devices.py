@@ -33,9 +33,7 @@ def test_e2e():
     try:
       cli.main(
         [
-          "--root",
-          str(root_dir),
-          "--create-root",
+          "--debug",
         ]
       )
       sys.exit(0)

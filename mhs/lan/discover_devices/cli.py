@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 Device discovery initializer.
 Generates RouterOS scripts for each device and deploys them to the router.
@@ -197,7 +196,7 @@ def main(argv=None) -> int:
     script_name = f"discover-{device.label}"
     script_file = DEVICE_SCRIPT_CACHE_DIR / f"{script_name}.rsc"
     script_comment = f"Discover {name} ({device.hostname})"
-    script_content = tools(
+    script_content = tools.generate_device_discovery_script(
       device.hostname,
       device.primary_mac,
       device.secondary_mac,
