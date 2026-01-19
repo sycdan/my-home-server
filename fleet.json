@@ -36,11 +36,6 @@
 				"00:23:5A:1A:A4:F6",
 				"00:1E:65:3B:C7:94"
 			],
-			"services": {
-				"immich": {
-					"port": 2283
-				}
-			},
 			"description": "Old Lenovo Laptop"
 		},
 		"htpc": {
@@ -77,6 +72,11 @@
 			"macs": [
 				"70:85:C2:4F:35:AB"
 			],
+			"services": {
+				"immich": {
+					"port": 2283
+				}
+			},
 			"description": "Server PC"
 		},
 		"nicole-laptop": {
