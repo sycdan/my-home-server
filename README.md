@@ -2,7 +2,7 @@
 
 A unified home infrastructure system: Docker orchestration, DNS-based service discovery, reverse proxy routing, and device-specific configuration scripts.
 
-## [Devices](./docs/devices/)
+## [Devices](docs/devices/)
 
 **Note:** follow first-time setup docs for each device before continuing.
 
@@ -63,20 +63,16 @@ Press `Ctrl+D` to exit.
 ssh laptop 'whoami && hostname && hostname -A && hostname -I'
 ```
 
-## [Domains](./domains.json)
-
-| Domain                   | Role           | Registrar                                                                                     |
-| ------------------------ | -------------- | --------------------------------------------------------------------------------------------- |
-| sycdan.com               | DDNS domain    | [DreamHost](https://panel.dreamhost.com/index.cgi?tree=domain.dashboard#/site/sycdan.com/dns) |
-| wildharvesthomestead.com | Ingress domain | [Porkbun](https://porkbun.com/account)                                                        |
-|                          |                |                                                                                               |
+## [Domains](<docs/domains/>)
 
 ### Adding a new domain
 
-From the `ingress.lan` machine, modify the [SERVICES array](./lib/services.sh) then run:
+Create a <domain_label>.md file in `docs/domains/`.
+
+TODO: what next? edit files in services/ingress probably
 
 ```bash
-./services/ingress/init
+./run services/ingress/init
 ```
 
 ## Development

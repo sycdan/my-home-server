@@ -1,3 +1,7 @@
 # Ingress Domain
 
-wild
+```yaml
+domain: wildharvesthomestead.com
+description: primary ingress domain
+registrar: porkbun
+```
