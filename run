@@ -2,11 +2,10 @@
 
 import sys
 
-from mhs.actions.run import main
+from mhs.device.ssh.run.handler import main
 
 if __name__ == "__main__":
-  try:
-    main.call()
-  except Exception as e:
-    print(f"Error during run: {e}")
-    sys.exit(1)
+  main()
+else:
+  print("This script is intended to be executed directly.")
+  sys.exit(1)
