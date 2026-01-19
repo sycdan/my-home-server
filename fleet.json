@@ -59,6 +59,37 @@
 				"9C:6B:00:3F:C3:CA"
 			],
 			"description": "Dan's PC"
+		},
+		"dan-laptop": {
+			"macs": [
+				"84:A9:38:0E:9C:2F",
+				"B4:B5:B6:7D:0D:D9"
+			],
+			"description": "Dan's Laptop"
+		},
+		"dan-phone": {
+			"macs": [
+				"82:D2:FB:C2:12:5C"
+			],
+			"description": "Dan's iPhone"
+		},
+		"nicole-pc": {
+			"macs": [
+				"70:85:C2:4F:35:AB"
+			],
+			"description": "Nicole's PC"
+		},
+		"nicole-laptop": {
+			"macs": [
+				"00:E0:4C:65:4D:53"
+			],
+			"description": "Nicole's Laptop"
+		},
+		"nicole-deck": {
+			"macs": [
+				"50:20:65:3F:12:7C"
+			],
+			"description": "Nicole's Steam Deck"
 		}
 	}
 }
