@@ -169,6 +169,9 @@ def main(argv=None) -> int:
     description="Deploy device discovery scripts to router"
   )
   parser.add_argument(
+    "device", nargs="?", default=None, help="Specific device to discover."
+  )
+  parser.add_argument(
     "--debug",
     action="store_true",
     help="Enable debug output",
@@ -190,6 +193,8 @@ def main(argv=None) -> int:
   failed_count = 0
 
   for device in devices:
+    if args.device and device.label != args.device:
+      continue
     name = device.description.strip() or device.label
     print_info(f"Discovering {name} ({device.hostname})")
 
