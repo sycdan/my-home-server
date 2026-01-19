@@ -18,7 +18,7 @@
 External Traffic (WAN)
   ↓
 MikroTik Router (ether1 = WAN, ether2-5 = LAN bridge)
-  ├─ DNS discovery script (discovery.rsc) - finds & registers .lan hostnames
+  ├─ DNS discovery scripts to find & register .lan hostnames
   ├─ NAT rules - forwards ingress.lan:80/443 to Pi
   └─ Split DNS - resolves public domains to internal IPs for LAN clients
   ↓
