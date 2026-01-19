@@ -24,7 +24,7 @@ def main():
 
   for subdir in args.root_dir.rglob("*"):
     if subdir.is_dir():
-      if subdir.name == "__pycache__":
+      if subdir.name == "__pycache__" or subdir.name.startswith("."):
         continue
       init_file = subdir / "__init__.py"
       if not init_file.exists():
