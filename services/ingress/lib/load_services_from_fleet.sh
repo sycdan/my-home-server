@@ -14,10 +14,10 @@ load_services_from_fleet() {
   declare -ga SERVICES
   SERVICES=()
   local temp_file=$(mktemp)
-  jq -r '.devices | to_entries[] | select(.value.services != null) | .key as $device | .value.services | to_entries[] | "\($device)|\(.key)|\(.value.port)"' "$fleet_file" > "$temp_file"
+  jq -r '.devices | to_entries[] | select(.value.services != null) | .key as $device | .value.services | to_entries[] | "\($device)|\(.key)|\(.value.port)|\(.value.subdomain)|\(.value.domain_key)"' "$fleet_file" > "$temp_file"
   
-  while IFS='|' read -r device_name service_name port; do
-    if [[ -n "$device_name" && -n "$service_name" && -n "$port" ]]; then
+  while IFS='|' read -r device_name service_name port subdomain domain_key; do
+    if [[ -n "$device_name" && -n "$service_name" && -n "$port" && -n "$subdomain" && -n "$domain_key" ]]; then
       # Map service names to external subdomains and domains
       case "$service_name" in
         "immich")

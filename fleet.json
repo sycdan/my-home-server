@@ -1,14 +1,16 @@
 {
 	"domains": {
-		"sycdan.com": {
+		"ddns": {
+			"domain": "sycdan.com",
 			"registrar": "dreamhost",
 			"managementUrl": "https://panel.dreamhost.com/index.cgi?tree=domain.dashboard#/site/sycdan.com/dns",
 			"comment": "Personal domain, configured for DDNS via freedns.afraid.org"
 		},
-		"wildharvesthomestead.com": {
+		"whh": {
+			"domain": "wildharvesthomestead.com",
 			"registrar": "porkbun",
 			"managementUrl": "https://porkbun.com/account/domainsSpeedy",
-			"comment": "Main ingress domain for family"
+			"comment": "Main ingress domain for public use"
 		}
 	},
 	"devices": {
@@ -44,7 +46,9 @@
 			],
 			"services": {
 				"jellyfin": {
-					"port": 8096
+					"port": 8096,
+					"subdomain": "stream",
+					"domain_key": "whh"
 				}
 			},
 			"description": "HTPC"
@@ -74,7 +78,9 @@
 			],
 			"services": {
 				"immich": {
-					"port": 2283
+					"port": 2283,
+					"subdomain": "photos",
+					"domain_key": "whh"
 				}
 			},
 			"description": "Server PC"
