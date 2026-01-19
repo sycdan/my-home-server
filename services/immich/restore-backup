@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Source common utilities
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT_DIR="$( cd "$SCRIPT_DIR/../../" && pwd )"
+source "$ROOT_DIR/lib/common.sh"
+source "$SCRIPT_DIR/.env"
+
+backup_path="$1"
+if [[ -z "$backup_path" ]]; then
+  print_error "Usage: $0 <path-to-backup-archive>"
+  exit 1
+fi
