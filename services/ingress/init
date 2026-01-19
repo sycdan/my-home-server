@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
+
+set -euo pipefail
+
 # Set up Immich. Safe to run multiple times.
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 SERVICE_DIR="$( cd "$SCRIPT_DIR/" && pwd )"
 ROOT_DIR="$( cd "$SERVICE_DIR/../../" && pwd )"
 LIB_DIR="$ROOT_DIR/lib"
-source "$ROOT_DIR/.env"
 source "$LIB_DIR/common.sh"
 source "$LIB_DIR/services.sh"
 source "$LIB_DIR/ensure_sbin_path.sh"
-source_env_file "$SERVICE_DIR"
+source "$LIB_DIR/env.sh"
+load_env "$ROOT_DIR"
+load_env "$SERVICE_DIR"
 
 if [[ -z "$MHS_FLEET_FILEPATH" ]]; then
   print_error "MHS_FLEET_FILEPATH not set"
@@ -50,11 +54,11 @@ for file in "${STEP_FILES[@]}"; do
   step_num="${filename%%-*}" # extract numeric prefix
 
   if skip_step "$step_num"; then
-    echo "🦘 Skipping $filename"
+    echo "🦘 $filename"
     continue
   fi
 
-  echo "🪜   Running $filename"
+  echo "🪜  $filename"
   source "$file"
 done
 

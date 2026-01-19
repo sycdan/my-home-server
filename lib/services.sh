@@ -187,26 +187,6 @@ require_command() {
   print_success "$package installed"
 }
 
-source_env_file() {
-  local service_dir="$1"
-  local env_file="$service_dir/.env"
-  local example_file="$service_dir/example.env"
-  
-  if [[ ! -f "$env_file" ]]; then
-    print_status "Creating .env file from example..."
-    if [[ ! -f "$example_file" ]]; then
-      print_error "Example environment file not found: $example_file"
-      exit 1
-    fi
-    cp "$example_file" "$env_file"
-    print_warning "Please edit $env_file and try your command again."
-    exit 0
-  fi
-  
-  print_status "Sourcing env vars from $env_file"
-  source "$env_file"
-}
-
 skip_step() {
   # SKIP_STEPS must be an array defined in the calling script
   local step="$1"

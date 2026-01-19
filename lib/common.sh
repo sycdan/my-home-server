@@ -20,3 +20,14 @@ print_warning() {
 print_error() {
   echo -e "${RED}❌ ${NC} $1" >&2
 }
+
+is_true() {
+  case "${1,,}" in
+    1|true|yes|y|on)  return 0 ;;  # true
+    0|false|no|n|off|"") return 1 ;; # false
+    *)
+      echo "Invalid boolean value: '$1'" >&2
+      return 1
+    ;;
+  esac
+}

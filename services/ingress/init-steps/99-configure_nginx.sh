@@ -2,22 +2,38 @@
 
 # Check if nginx is installed
 if ! command -v nginx &> /dev/null; then
-	print_warning "nginx not installed, are you running on the correct machine?"
+	print_error "nginx not installed, are you running on the correct machine?"
 	exit 1
 fi
 
 NGINX_SITES_AVAILABLE="/etc/nginx/sites-available"
-NGINX_SITES_ENABLED="/etc/nginx/sites-enabled"
+if [[ ! -d "$NGINX_SITES_AVAILABLE" ]]; then
+	print_error "nginx sites-available directory not found: $NGINX_SITES_AVAILABLE"
+	exit 1
+fi
 
-print_status "Cleaning up old nginx configurations..."
-sudo rm -f "$NGINX_SITES_ENABLED/default"
+NGINX_SITES_ENABLED="/etc/nginx/sites-enabled"
+if [[ ! -d "$NGINX_SITES_ENABLED" ]]; then
+	print_error "nginx sites-enabled directory not found: $NGINX_SITES_ENABLED"
+	exit 1
+fi
+
+if ! sudo test -w "$NGINX_SITES_AVAILABLE" || ! sudo test -w "$NGINX_SITES_ENABLED"; then
+	print_error "Insufficient permissions to write to nginx configuration directories. Please run as a user with sudo privileges."
+	exit 1
+fi
+
+if [[ -f "$NGINX_SITES_ENABLED/default" ]]; then
+	print_status "Removing default nginx site configuration..."
+	sudo rm -f "$NGINX_SITES_ENABLED/default"
+fi
 
 # Set up resolver and http-level directives at /etc/nginx/conf.d/
 # This avoids duplicate resolver errors across multiple server blocks
 # and keeps ingress-specific settings separate and idempotent
-INGRESS_CONF="/etc/nginx/conf.d/00-my-home-server-ingress.conf"
-if [[ ! -f "$INGRESS_CONF" ]]; then
-	sudo tee "$INGRESS_CONF" >/dev/null << 'EOF'
+if [[ ! -f "$NGINX_CONF" ]] || env_bool MHS_INGRESS_NUKE_NGINX_CONF; then
+	print_status "Creating nginx ingress global configuration..."
+	sudo tee "$NGINX_CONF" >/dev/null << 'EOF'
 # Ingress DNS resolver for static hostnames
 resolver 192.168.1.1 valid=10s;
 resolver_timeout 5s;
@@ -25,11 +41,18 @@ resolver_timeout 5s;
 # Allow long domain names
 server_names_hash_bucket_size 64;
 EOF
+	cat $NGINX_CONF
+fi
+
+if [[ ${#SERVICES[@]} -eq 0 ]]; then
+	print_warning "No services to configure in nginx"
+	return 0
 fi
 
 # Process each service
-config_count=0
+config_count=${config_count:-0}
 for service in "${SERVICES[@]}"; do
+	print_status "Processing service: $service"
 	IFS='|' read -r DOMAIN HOSTNAME PORT <<< "$service"
 	
 	# Sanitize domain for filename
@@ -68,7 +91,7 @@ EOF
 	fi
 	
 	print_success "nginx config created: $DOMAIN"
-	((config_count++))
+	((config_count += 1))
 done
 
 print_status "Testing nginx configuration..."
