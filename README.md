@@ -21,7 +21,7 @@ On your local machine, add the device to `./fleet.json`:
 }
 ```
 
-**Note**: `primary_mac` should be ethernet, if available; `secondary_mac` can be wireless.
+**Note**: primary mac should be ethernet, if available; secondary (optional) can be wireless.
 
 ### Discovering devices
 
