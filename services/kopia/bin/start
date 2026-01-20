@@ -4,9 +4,10 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SERVICE_DIR="$(cd "$SCRIPT_DIR/../" && pwd)"
 ROOT_DIR="$(cd "$SERVICE_DIR/../../" && pwd)"
-source "$ROOT_DIR/lib/common.sh"
+LIB_DIR="$ROOT_DIR/lib"
+source "$LIB_DIR/common.sh"
 
 cd "$SERVICE_DIR"
-print_status "Starting Immich..."
+print_status "Starting Kopia..."
 docker compose up -d "$@"
-print_success "Immich is running"
+print_success "Kopia is running"
