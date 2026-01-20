@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+SERVICE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SERVICE_DIR/../../" && pwd)"
+source "$ROOT_DIR/lib/common.sh"
+
+cd "$SERVICE_DIR"
+docker compose ps

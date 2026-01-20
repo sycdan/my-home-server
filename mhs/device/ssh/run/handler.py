@@ -4,7 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from mhs.config import FLEET_FILE, ROOT_DIR
+from mhs.config import ROOT_DIR
 from mhs.device.entity import Device
 from mhs.output import print_error, print_info, print_success, print_warning
 from mhs.sync import bidirectional_sync, ensure_remote_dir

@@ -1,113 +1,111 @@
 #!/usr/bin/env bash
 # This script sets up the Immich service configuration
 # Should be idempotent - safe to run multiple times
-
 set -euo pipefail
-SERVICE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-ROOT_DIR="$( cd "$SERVICE_DIR/../../" && pwd )"
+SERVICE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd )"
+ROOT_DIR="$(cd "$SERVICE_DIR/../../" && pwd )"
 source "$ROOT_DIR/lib/common.sh"
 source "$ROOT_DIR/lib/services.sh"
+source "$ROOT_DIR/lib/env.sh"
+load_env "$ROOT_DIR"
+load_env "$SERVICE_DIR"
 
 create_env_file() {
-	if [[ -f "$SERVICE_DIR/.env" ]]; then
-		print_status ".env file already exists, skipping creation"
-		return
-	fi
-	
-	if [[ ! -f "$SERVICE_DIR/example.env" ]]; then
-		print_error "example.env not found in $SERVICE_DIR"
-		exit 1
-	fi
-	
-	print_status "Creating .env file from example.env..."
-	cp "$SERVICE_DIR/example.env" "$SERVICE_DIR/.env"
-	print_success ".env file created"
-	print_warning "IMPORTANT: Edit $SERVICE_DIR/.env with your configuration values"
+  if [[ -f "$SERVICE_DIR/.env" ]]; then
+    print_status ".env file already exists, skipping creation"
+    return
+  fi
+  
+  if [[ ! -f "$SERVICE_DIR/example.env" ]]; then
+    print_error "example.env not found in $SERVICE_DIR"
+    exit 1
+  fi
+  
+  print_status "Creating .env file from example.env..."
+  cp "$SERVICE_DIR/example.env" "$SERVICE_DIR/.env"
+  print_success ".env file created"
+  print_warning "IMPORTANT: Edit $SERVICE_DIR/.env with your configuration values"
 }
 
 create_directories() {
-	print_status "Creating required directories..."
-	
-	# Read directories from .env or use defaults
-	UPLOAD_LOCATION="${UPLOAD_LOCATION:-.immich/data}"
-	DB_DATA_LOCATION="${DB_DATA_LOCATION:-.immich/db}"
-	
-	# Create directories if they don't exist
-	mkdir -p "$UPLOAD_LOCATION"
-	mkdir -p "$DB_DATA_LOCATION"
-	
-	print_success "Directories created/verified"
+  print_status "Creating required directories..."
+  
+  # Create directories if they don't exist (paths from .env)
+  mkdir -p "$UPLOAD_LOCATION"
+  mkdir -p "$DB_DATA_LOCATION"
+  
+  print_success "Directories created/verified"
 }
 
 validate_env() {
-	print_status "Validating .env configuration..."
-	
-	if [[ ! -f "$SERVICE_DIR/.env" ]]; then
-		print_error ".env file not found"
-		exit 1
-	fi
-	
-	# Source the .env file
-	set +e
-	source "$SERVICE_DIR/.env" 2>/dev/null
-	set -e
-	
-	# Check for required variables
-	local required_vars=(
-		"DB_PASSWORD"
-		"DB_USERNAME"
-		"DB_DATABASE_NAME"
-		"UPLOAD_LOCATION"
-		"DB_DATA_LOCATION"
-	)
-	
-	local missing_vars=()
-	for var in "${required_vars[@]}"; do
-		if [[ -z "${!var}" ]]; then
-			missing_vars+=("$var")
-		fi
-	done
-	
-	if [[ ${#missing_vars[@]} -gt 0 ]]; then
-		print_warning "Missing environment variables in .env:"
-		for var in "${missing_vars[@]}"; do
-			echo "  - $var"
-		done
-		print_error "Please edit $SERVICE_DIR/.env and set all required variables"
-		exit 1
-	fi
-	
-	print_success ".env validation passed"
+  print_status "Validating .env configuration..."
+  
+  if [[ ! -f "$SERVICE_DIR/.env" ]]; then
+    print_error ".env file not found"
+    exit 1
+  fi
+  
+  # Source the .env file
+  set +e
+  source "$SERVICE_DIR/.env" 2>/dev/null
+  set -e
+  
+  # Check for required variables
+  local required_vars=(
+    "DB_PASSWORD"
+    "DB_USERNAME"
+    "DB_DATABASE_NAME"
+    "UPLOAD_LOCATION"
+    "DB_DATA_LOCATION"
+  )
+  
+  local missing_vars=()
+  for var in "${required_vars[@]}"; do
+    if [[ -z "${!var}" ]]; then
+      missing_vars+=("$var")
+    fi
+  done
+  
+  if [[ ${#missing_vars[@]} -gt 0 ]]; then
+    print_warning "Missing environment variables in .env:"
+    for var in "${missing_vars[@]}"; do
+      echo "  - $var"
+    done
+    print_error "Please edit $SERVICE_DIR/.env and set all required variables"
+    exit 1
+  fi
+  
+  print_success ".env validation passed"
 }
 
 main() {
-	print_status "Initializing Immich"
-	echo ""
-
-	# Bootstrapping
-	check_root
-	check_os
-	update_system
-	install_utilities
-	install_docker
-	configure_firewall
-	configure_fail2ban
-
-	# Service setup
-	create_directories
-	create_env_file
-	validate_env
-	
-	echo ""
-	print_success "Immich service is ready!"
-	print_status "To start Immich, run:"
-	echo "  services/immich/ctl up"
-	echo ""
-	print_status "To stop Immich, run:"
-	echo "  services/immich/ctl down"
-	echo ""
-	print_status "View logs with:"
-	echo "  services/immich/ctl logs"
+  print_status "Initializing Immich"
+  echo ""
+  
+  # Bootstrapping
+  check_root
+  check_os
+  update_system
+  install_utilities
+  install_docker
+  configure_firewall
+  configure_fail2ban
+  
+  # Service setup
+  create_directories
+  create_env_file
+  validate_env
+  
+  echo ""
+  print_success "Immich service is ready!"
+  print_status "To start Immich, run:"
+  echo "  services/immich/ctl up"
+  echo ""
+  print_status "To stop Immich, run:"
+  echo "  services/immich/ctl down"
+  echo ""
+  print_status "View logs with:"
+  echo "  services/immich/ctl logs"
 }
 
 main "$@"
