@@ -1,3 +1,5 @@
+# Immich
+
 ## Troubleshooting
 
 ### Hostname does not resolve to service

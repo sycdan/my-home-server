@@ -1,4 +1,3 @@
 # Immich
 
 Photo management & sharing.
-
