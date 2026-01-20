@@ -4,17 +4,19 @@ import subprocess
 import sys
 from pathlib import Path
 
+from grpc import services
+
 from mhs.config import ROOT_DIR
 from mhs.device.entity import Device
 from mhs.output import print_error, print_info, print_success, print_warning
 from mhs.sync import bidirectional_sync, ensure_remote_dir
 
 
-def validate_executable(filepath: str, root_dir: Path):
-  """Validate that the given path is an executable script/binary.
+def validate_executable(filepath: str, services_dir: Path):
+  """Validate that the given path is an executable service script.
 
   Returns:
-    Relative path to the executable within the root directory.
+    Absolute path to the executable.
   """
   executable_path = Path(filepath).resolve()
 
@@ -26,21 +28,14 @@ def validate_executable(filepath: str, root_dir: Path):
     print_error(f"Path is not a file: {executable_path}")
     sys.exit(1)
 
-  try:
-    relative_path = executable_path.relative_to(root_dir)
-
-    if relative_path.parent.parent.name != "services":
-      print_error(f"Executable is not in a service directory: {executable_path}")
-      sys.exit(1)
-
-  except ValueError:
-    print_error(f"Executable is outside project directory: {executable_path}")
+  if not executable_path.is_relative_to(services_dir):
+    print_error(f"Executable is outside services directory: {executable_path}")
     sys.exit(1)
 
   if not os.access(executable_path, os.X_OK):
     print_warning(f"File is not marked as executable: {executable_path}")
 
-  return relative_path
+  return executable_path
 
 
 def gather_files_to_sync(src_dir: str, root_dir: Path):
@@ -58,7 +53,9 @@ def main(argv=None):
   parser = argparse.ArgumentParser(
     description="Execute service scripts on remote devices"
   )
-  parser.add_argument("executable_path", help="Relative path to executable script from `root`")
+  parser.add_argument(
+    "executable_path", help="Relative path to executable script from `root`"
+  )
   parser.add_argument(
     "--root", default=ROOT_DIR.as_posix(), help="Root directory of the project"
   )
@@ -71,11 +68,12 @@ def main(argv=None):
   args, remaining = parser.parse_known_args(argv)
 
   root_dir = Path(args.root).resolve()
-  relative_executable_path = validate_executable(args.executable_path, root_dir)
-  relative_service_dir = relative_executable_path.parent
-  service_label = relative_service_dir.name
-  fleet_file = root_dir / "fleet.json"
+  services_dir = root_dir / "services"
+  executable_path = validate_executable(args.executable_path, services_dir)
+  relative_executable_path = executable_path.relative_to(services_dir)
+  service_label = relative_executable_path.parts[0]
 
+  fleet_file = root_dir / "fleet.json"
   devices = Device.load_all(fleet_file)
   hosting_device = Device.find_by_service(service_label, devices)
   if hosting_device is None:
@@ -116,7 +114,9 @@ def main(argv=None):
 
   remote_executable = relative_executable_path.as_posix()
   print_info(f"Executing {remote_executable} on {hosting_device.label}...")
-  remote_cmd = f"cd {root_dir.name}/ && {remote_executable} {' '.join(remaining)}"
+  remote_cmd = (
+    f"cd {root_dir.name} && services/{remote_executable} {' '.join(remaining)}"
+  )
   ssh_exec_cmd = ["ssh", "-t", ssh_host, remote_cmd]
   try:
     # Use call instead of run to preserve interactive terminal behavior

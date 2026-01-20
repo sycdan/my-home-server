@@ -4,4 +4,4 @@ Photo management & sharing.
 
 ## TODO
 
-Move to /srv/immich
+Move to data to /srv/immich

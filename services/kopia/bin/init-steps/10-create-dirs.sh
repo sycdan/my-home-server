@@ -1,0 +1,5 @@
+mkdir -p "$CONFIG_LOCATION"
+mkdir -p "$CACHE_LOCATION"
+mkdir -p "$LOGS_LOCATION"
+mkdir -p "$REPOSITORY_LOCATION"
+mkdir -p "$TMP_LOCATION"
