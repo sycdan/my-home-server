@@ -7,6 +7,4 @@ LIB_DIR="$ROOT_DIR/lib"
 source "$LIB_DIR/common.sh"
 
 cd "$SERVICE_DIR"
-print_status "Starting Kopia..."
-docker compose up -d "$@"
-print_success "Kopia is running"
+docker compose logs "$@"
