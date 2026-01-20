@@ -34,4 +34,4 @@ parse_and_validate_domains() {
   done
 }
 
-parse_and_validate_domains "$1"
+parse_and_validate_domains "$MHS_FLEET_FILEPATH"
