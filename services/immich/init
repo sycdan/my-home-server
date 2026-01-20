@@ -1,7 +1,8 @@
+#!/usr/bin/env bash
 # This script sets up the Immich service configuration
 # Should be idempotent - safe to run multiple times
 
-set -e
+set -euo pipefail
 SERVICE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR="$( cd "$SERVICE_DIR/../../" && pwd )"
 source "$ROOT_DIR/lib/common.sh"
@@ -100,13 +101,13 @@ main() {
 	echo ""
 	print_success "Immich service is ready!"
 	print_status "To start Immich, run:"
-	echo "  ./services/immich/ctl up"
+	echo "  services/immich/ctl up"
 	echo ""
 	print_status "To stop Immich, run:"
-	echo "  ./services/immich/ctl down"
+	echo "  services/immich/ctl down"
 	echo ""
 	print_status "View logs with:"
-	echo "  ./services/immich/ctl logs"
+	echo "  services/immich/ctl logs"
 }
 
 main "$@"

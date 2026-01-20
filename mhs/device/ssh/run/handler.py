@@ -58,8 +58,10 @@ def main(argv=None):
   parser = argparse.ArgumentParser(
     description="Execute service scripts on remote devices"
   )
-  parser.add_argument("executable_path", help="Path to executable script to run")
-  parser.add_argument("--root", default="", help="Root directory of the project")
+  parser.add_argument("executable_path", help="Relative path to executable script from `root`")
+  parser.add_argument(
+    "--root", default=ROOT_DIR.as_posix(), help="Root directory of the project"
+  )
   parser.add_argument(
     "--create-root",
     action="store_true",
@@ -68,11 +70,7 @@ def main(argv=None):
   parser.add_argument("--debug", action="store_true", help="Enable debug output")
   args, remaining = parser.parse_known_args(argv)
 
-  if args.root:
-    root_dir = Path(args.root).resolve()
-  else:
-    root_dir = ROOT_DIR
-
+  root_dir = Path(args.root).resolve()
   relative_executable_path = validate_executable(args.executable_path, root_dir)
   relative_service_dir = relative_executable_path.parent
   service_label = relative_service_dir.name
@@ -118,7 +116,7 @@ def main(argv=None):
 
   remote_executable = relative_executable_path.as_posix()
   print_info(f"Executing {remote_executable} on {hosting_device.label}...")
-  remote_cmd = f"cd {root_dir.name} && {remote_executable} {' '.join(remaining)}"
+  remote_cmd = f"cd {root_dir.name}/ && {remote_executable} {' '.join(remaining)}"
   ssh_exec_cmd = ["ssh", "-t", ssh_host, remote_cmd]
   try:
     # Use call instead of run to preserve interactive terminal behavior

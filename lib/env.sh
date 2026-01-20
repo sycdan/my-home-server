@@ -56,7 +56,7 @@ load_env() {
     exit 0
   fi
   
-  print_status "Sourcing env vars from $env_file"
+  print_status "Loading env vars from $env_file"
   source "$env_file"
 }
 
