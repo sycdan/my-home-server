@@ -81,6 +81,11 @@
 					"port": 2283,
 					"subdomain": "photos",
 					"domain_key": "whh"
+				},
+				"kopia": {
+					"port": 51515,
+					"subdomain": "backup",
+					"domain_key": "whh"
 				}
 			},
 			"description": "Server PC"
