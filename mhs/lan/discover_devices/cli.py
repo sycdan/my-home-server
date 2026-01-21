@@ -13,16 +13,16 @@ import sys
 import tempfile
 from pathlib import Path
 
-from mhs import ROOT_DIR
+from mhs import LOCAL_ROOT
 from mhs.device.entity import Device
 from mhs.lan.discover_devices import tools
 from mhs.output import print_error, print_info, print_success, print_warning
 
 DEBUG = os.getenv("MHS_DEBUG", "0") == "1"
-DEVICE_SCRIPT_CACHE_DIR = ROOT_DIR / ".device-scripts"
-FLEET_FILE = ROOT_DIR / "fleet.json"
-EXAMPLE_ENV_FILE = ROOT_DIR / "example.env"
-ENV_FILE = ROOT_DIR / ".env"
+DEVICE_SCRIPT_CACHE_DIR = LOCAL_ROOT / ".device-scripts"
+FLEET_FILE = LOCAL_ROOT / "fleet.json"
+EXAMPLE_ENV_FILE = LOCAL_ROOT / "example.env"
+ENV_FILE = LOCAL_ROOT / ".env"
 
 
 def set_debug(value: bool) -> None:
@@ -70,7 +70,7 @@ def load_config(source_dir: Path) -> dict[str, str]:
 
 
 ensure_env_file()
-CONFIG = load_config(ROOT_DIR)
+CONFIG = load_config(LOCAL_ROOT)
 ROUTER_SSH_HOST = CONFIG["ROUTER_SSH_HOST"]
 SCHEDULE_INTERVAL = CONFIG["SCHEDULE_INTERVAL"]
 DOMAIN_SUFFIX = CONFIG["DOMAIN_SUFFIX"]
@@ -305,7 +305,7 @@ def main(argv=None) -> int:
     )
     try:
       script_file.write_text(script_content)
-      print_info(f"Generated {script_file.relative_to(ROOT_DIR)}")
+      print_info(f"Generated {script_file.relative_to(LOCAL_ROOT)}")
     except Exception as e:
       print_error(f"Failed to generate script for {name}: {e}")
       failed_count += 1

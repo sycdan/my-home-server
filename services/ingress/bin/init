@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SERVICE_DIR="$(cd "$SCRIPT_DIR/" && pwd)"
+SERVICE_DIR="$(cd "$SCRIPT_DIR/../" && pwd)"
 ROOT_DIR="$(cd "$SERVICE_DIR/../../" && pwd)"
 LIB_DIR="$ROOT_DIR/lib"
 source "$LIB_DIR/common.sh"
@@ -28,21 +28,31 @@ fi
 SKIP_STEPS=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --skip-steps)
-      # split comma-separated list into array
-      IFS=',' read -r -a parts <<< "$2"
+    --skip-steps|--skip-steps=*)
+      # Extract either "--opt value" or "--opt=value"
+      if [[ "$1" == *=* ]]; then
+        value="${1#*=}"
+        shift
+      else
+        value="$2"
+        shift 2
+      fi
+
+      # Split comma-separated list
+      IFS=',' read -r -a parts <<< "$value"
       SKIP_STEPS+=("${parts[@]}")
-      shift 2
       ;;
+
     *)
-			# drop unrecognized args
-      shift
+      echo "Unknown argument: $1"
+      exit 1
       ;;
   esac
 done
 
+
 # Iterate over step files, skipping any in SKIP_STEPS
-STEP_FILES=("$SCRIPT_DIR"/init-steps/*.sh)
+STEP_FILES=("$SERVICE_DIR"/init-steps/*.sh)
 IFS=$'\n' STEP_FILES=($(sort <<<"${STEP_FILES[*]}"))
 unset IFS
 

@@ -1,15 +1,16 @@
 import argparse
+import logging
 import os
 import subprocess
 import sys
 from pathlib import Path
 
-from grpc import services
-
-from mhs.config import ROOT_DIR
+from mhs.config import LOCAL_ROOT
 from mhs.device.entity import Device
 from mhs.output import print_error, print_info, print_success, print_warning
 from mhs.sync import bidirectional_sync, ensure_remote_dir
+
+logger = logging.getLogger(__name__)
 
 
 def validate_executable(filepath: str, services_dir: Path):
@@ -58,7 +59,7 @@ def main(argv=None):
     "executable_path", help="Relative path to executable script from `root`"
   )
   parser.add_argument(
-    "--root", default=ROOT_DIR.as_posix(), help="Root directory of the project"
+    "--root", default=LOCAL_ROOT.as_posix(), help="Root directory of the project"
   )
   parser.add_argument(
     "--create-root",
@@ -67,14 +68,15 @@ def main(argv=None):
   )
   parser.add_argument("--debug", action="store_true", help="Enable debug output")
   args, remaining = parser.parse_known_args(argv)
+  logger.debug(f"Parsed arguments: {args}, remaining: {remaining}")
 
   root_dir = Path(args.root).resolve()
   services_dir = root_dir / "services"
   executable_path = validate_executable(args.executable_path, services_dir)
   relative_executable_path = executable_path.relative_to(services_dir)
   service_label = relative_executable_path.parts[0]
-
   fleet_file = root_dir / "fleet.json"
+
   devices = Device.load_all(fleet_file)
   hosting_device = Device.find_by_service(service_label, devices)
   if hosting_device is None:

@@ -1,6 +1,6 @@
-from mhs import ROOT_DIR
+from mhs import LOCAL_ROOT
 
-FLEET_FILE = ROOT_DIR / "fleet.json"
-EXAMPLE_ENV_FILE = ROOT_DIR / "example.env"
-ENV_FILE = ROOT_DIR / ".env"
+FLEET_FILE = LOCAL_ROOT / "fleet.json"
+EXAMPLE_ENV_FILE = LOCAL_ROOT / "example.env"
+ENV_FILE = LOCAL_ROOT / ".env"
 DOMAIN_SUFFIX = "lan"
