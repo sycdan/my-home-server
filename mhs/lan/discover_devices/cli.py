@@ -197,6 +197,18 @@ def get_ingress_ip(hostname="ingress.lan") -> str:
   return ip
 
 
+def get_public_hostnames(device: Device, domains: dict[str, str]) -> list[str]:
+  """returns the public hostname for the device if configured with a domain"""
+  hostnames: list[str] = []
+  for service in device.services.values():
+    if domain_key := service.get("domain_key"):
+      if domain := domains.get(domain_key):
+        if subdomain := service.get("subdomain"):
+          hostname = f"{subdomain}.{domain}"
+          hostnames.append(hostname)
+  return hostnames
+
+
 def main(argv=None) -> int:
   parser = argparse.ArgumentParser(
     description="Deploy device discovery scripts to router"
@@ -224,14 +236,18 @@ def main(argv=None) -> int:
     print_error(f"No devices configured in {FLEET_FILE}")
     return 1
 
+  public_hostnames: set[str] = set()
+  domains = load_domains(FLEET_FILE)
+
   deployed_count = 0
   failed_count = 0
-
   for device in devices:
     if args.device and device.label != args.device:
       continue
     name = device.description.strip() or device.label
     print_info(f"Discovering {name} ({device.hostname})")
+
+    public_hostnames.update(get_public_hostnames(device, domains))
 
     script_name = f"discover-{device.label}"
     script_file = DEVICE_SCRIPT_CACHE_DIR / f"{script_name}.rsc"
