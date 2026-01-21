@@ -78,7 +78,7 @@ DOMAIN_SUFFIX = CONFIG["DOMAIN_SUFFIX"]
 
 def run_ssh_command(
   host: str, command: str, user="", identity_file=""
-) -> tuple[str, int]:
+) -> tuple[str, bool]:
   """Returns (output, returncode)"""
   hostname = f"{user}@{host}" if user else host
   args = ["ssh", hostname]
@@ -90,15 +90,17 @@ def run_ssh_command(
       args,
       capture_output=True,
       text=True,
-      check=True,
+      check=False,
     )
-    return result.stdout, result.returncode
+    if result.returncode:
+      return result.stdout or result.stderr, False
+    return result.stdout, True
   except Exception as e:
     print_error(f"SSH command failed: {e}")
-    return "", -1
+    return "Unhandled exception", False
 
 
-def run_on_router(command: str, as_script=False) -> tuple[str, int]:
+def run_on_router(command: str, as_script=False) -> tuple[str, bool]:
   """uploads the command as a script and runs it on the router"""
   if DEBUG:
     print_info(f"Running on router: {command}")
@@ -211,14 +213,14 @@ def load_domains(fleet_file: Path) -> dict[str, str]:
 
 def get_ingress_ip(hostname="ingress.lan") -> str:
   """returns the IP address of the device running the public ingress service"""
-  output, returncode = run_on_router(
+  ip = ""
+  output, success = run_on_router(
     f":put [/ip dns static get [find name={shlex.quote(hostname)}] address]"
   )
-  if returncode:
-    ip = ""
-    print_error("Failed to get ingress IP from router")
-  else:
+  if success:
     ip = output.strip()
+  else:
+    print_error("Failed to get ingress IP from router")
   return ip
 
 
@@ -232,6 +234,25 @@ def get_public_hostnames(device: Device, domains: dict[str, str]) -> list[str]:
           hostname = f"{subdomain}.{domain}"
           hostnames.append(hostname)
   return hostnames
+
+
+def clear_split_dns(hostname: str) -> None:
+  """removes existing split DNS entries for the given hostname"""
+  # find everything where the name ends with the hostname
+  # cmd = f'/ip dns static remove [find name~"\\.wildharvesthomestead\\.com\$"]'
+  cmd = f'/ip dns static remove [find name~"{hostname}"]'
+  output, success = run_on_router(cmd)
+  if not success:
+    print_warning(f"Failed to clear split DNS for {hostname}: {output}")
+
+
+def configure_split_dns(hostname: str, ingress_ip: str) -> None:
+  """avoids hairpinning by allowing LAN devices to resolve public hostnames via the router's DNS"""
+  cmd = f'/ip dns static add name="{hostname}" address="{ingress_ip}" ttl=30m comment="Split DNS for {hostname}"'
+  output, success = run_on_router(cmd)
+  if not success:
+    print_warning(f"Failed to configure split DNS for {hostname}: {output}")
+  print_success(f"Configured split DNS for {hostname} to {ingress_ip}")
 
 
 def main(argv=None) -> int:
@@ -300,6 +321,16 @@ def main(argv=None) -> int:
     else:
       print_error(f"Failed to deploy {script_name}")
       failed_count += 1
+
+  if ingress_ip := get_ingress_ip():
+    for domain in domains.values():
+      clear_split_dns(domain)
+    for hostname in public_hostnames:
+      configure_split_dns(hostname, ingress_ip)
+  else:
+    print_warning(
+      "Could not configure split DNS: Ingress IP not found (you may have ingress issues on LAN)"
+    )
 
   print()
   print_success(f"{deployed_count} deployed successfully")
