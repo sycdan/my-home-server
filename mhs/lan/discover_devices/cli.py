@@ -178,11 +178,12 @@ def get_ingress_ip(hostname="ingress.lan") -> str:
   output, returncode = run_on_router(
     f":put [/ip dns static get [find name={shlex.quote(hostname)}] address]"
   )
-  if returncode != 0:
+  if returncode:
+    ip = ""
     print_error("Failed to get ingress IP from router")
-    return ""
-  if ip := output.strip():
-    return ip
+  else:
+    ip = output.strip()
+  return ip
 
 
 def main(argv=None) -> int:
