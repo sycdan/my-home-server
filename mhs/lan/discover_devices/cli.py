@@ -10,6 +10,7 @@ import os
 import shlex
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 from mhs import ROOT_DIR
@@ -97,29 +98,53 @@ def run_ssh_command(
     return "", -1
 
 
-def run_on_router(command: str) -> tuple[str, int]:
+def run_on_router(command: str, as_script=False) -> tuple[str, int]:
+  """uploads the command as a script and runs it on the router"""
   if DEBUG:
     print_info(f"Running on router: {command}")
+  if as_script:
+    with tempfile.NamedTemporaryFile(
+      "w",
+      delete=False,
+    ) as temp_script:
+      temp_script.write(command)
+      temp_script_path = Path(temp_script.name)
+    if script_name := _upload_script_to_router(temp_script_path):
+      command = f"/import {shlex.quote(script_name)}; /file remove [find where name={shlex.quote(script_name)}]"
+    temp_script_path.unlink(missing_ok=True)
   return run_ssh_command(
     ROUTER_SSH_HOST,
     command,
   )
 
 
-def upload_script_to_router(script_file: Path, script_comment: str, run=False) -> bool:
-  """Upload script file to router and create system script referencing the file."""
+def _upload_script_to_router(script_file: Path, name: str = "") -> str:
+  """returns the script name if it was uploaded successfully"""
   print_info(f"Uploading '{script_file.name}' to {ROUTER_SSH_HOST}...")
-  if not script_file.exists():
+  real_path = script_file.resolve()
+  if not real_path.exists():
     print_error(f"Script file '{script_file}' does not exist")
-    return False
+    return ""
 
-  # Upload file to router
-  scp_cmd = ["scp", str(script_file), f"{ROUTER_SSH_HOST}:/{script_file.name}"]
+  if not name:
+    name = f"{script_file.name}.rsc"
+  scp_cmd = ["scp", real_path.as_posix(), f"{ROUTER_SSH_HOST}:/{name}"]
   try:
     subprocess.run(scp_cmd, capture_output=True, text=True, check=True)
     print_success(f"Uploaded '{script_file.name}' to router")
+    return name
   except Exception as e:
     print_error(f"SCP failed: {e}")
+    return ""
+
+
+def upload_script_to_router(
+  script_file: Path,
+  script_comment: str,
+  run=False,
+) -> bool:
+  """Upload script file to router and create system script referencing the file."""
+  if not _upload_script_to_router(script_file):
     return False
 
   # Create or update system script referencing the uploaded file
