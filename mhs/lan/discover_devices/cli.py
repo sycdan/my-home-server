@@ -6,6 +6,7 @@ Loads configuration from .env files.
 
 import argparse
 import os
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -170,6 +171,18 @@ def create_schedule(script_name: str, schedule_spec: str, user="admin") -> bool:
   )
 
   return True
+
+
+def get_ingress_ip(hostname="ingress.lan") -> str:
+  """returns the IP address of the device running the public ingress service"""
+  output, returncode = run_on_router(
+    f":put [/ip dns static get [find name={shlex.quote(hostname)}] address]"
+  )
+  if returncode != 0:
+    print_error("Failed to get ingress IP from router")
+    return ""
+  if ip := output.strip():
+    return ip
 
 
 def main(argv=None) -> int:
