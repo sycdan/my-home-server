@@ -20,3 +20,9 @@ lsblk -f
 
 # add to fstab
 ```
+
+## Troubleshooting
+
+### Memtest
+
+Get to GRUB bootloader by repeatedly pressing `esc` on startup.
