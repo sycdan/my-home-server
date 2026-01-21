@@ -1,2 +1,0 @@
-# devices/mikrotek-hex/README
-
