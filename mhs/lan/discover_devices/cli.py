@@ -15,6 +15,7 @@ from mhs.device.entity import Device
 from mhs.lan.discover_devices import tools
 from mhs.output import print_error, print_info, print_success, print_warning
 
+DEBUG = os.getenv("MHS_DEBUG", "0") == "1"
 DEVICE_SCRIPT_CACHE_DIR = ROOT_DIR / ".device-scripts"
 FLEET_FILE = ROOT_DIR / "fleet.json"
 EXAMPLE_ENV_FILE = ROOT_DIR / "example.env"
@@ -90,6 +91,8 @@ def run_ssh_command(
 
 
 def run_on_router(command: str) -> tuple[str, int]:
+  if DEBUG:
+    print_info(f"Running on router: {command}")
   return run_ssh_command(
     ROUTER_SSH_HOST,
     command,
@@ -178,7 +181,9 @@ def main(argv=None) -> int:
   )
   args = parser.parse_args(argv)
 
-  if args.debug:
+  set_debug(args.debug)
+
+  if DEBUG:
     print_info(f"Using config: {CONFIG}")
     print_info(f"Fleet file: {FLEET_FILE}")
 
