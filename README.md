@@ -63,6 +63,22 @@ Press `Ctrl+D` to exit.
 ssh laptop 'whoami && hostname && hostname -A && hostname -I'
 ```
 
+### Shims
+
+Add this to `.venv/Scripts/activate`:
+
+```bash
+if [ -f "$VIRTUAL_ENV/../.venvrc" ]; then
+  source "$VIRTUAL_ENV/../.venvrc"
+fi
+```
+
+Then add new services to your `$PATH` in `.venvrc` to allow direct execution in remote envs:
+
+```bash
+PATH="$PATH:./services/kopia/bin"
+```
+
 ## [Domains](<docs/domains/>)
 
 ### Adding a new domain

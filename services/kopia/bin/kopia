@@ -5,6 +5,10 @@ SERVICE_DIR="$(cd "$SCRIPT_DIR/../" && pwd)"
 ROOT_DIR="$(cd "$SERVICE_DIR/../../" && pwd)"
 LIB_DIR="$ROOT_DIR/lib"
 source "$LIB_DIR/common.sh"
+source "$LIB_DIR/env.sh"
+load_env "$SERVICE_DIR"
 
 cd "$SERVICE_DIR"
-docker exec -it kopia "$@"
+docker exec -it \
+-e KOPIA_PASSWORD="${KOPIA_PASSWORD}" \
+kopia "$@"
