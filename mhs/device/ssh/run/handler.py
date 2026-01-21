@@ -51,7 +51,8 @@ def gather_files_to_sync(src_dir: str, root_dir: Path):
 
 def main(argv=None):
   parser = argparse.ArgumentParser(
-    description="Execute service scripts on remote devices"
+    description="Execute service scripts on remote devices",
+    add_help=False,
   )
   parser.add_argument(
     "executable_path", help="Relative path to executable script from `root`"
