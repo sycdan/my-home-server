@@ -5,6 +5,7 @@ Loads configuration from .env files.
 """
 
 import argparse
+import json
 import os
 import shlex
 import subprocess
@@ -171,6 +172,16 @@ def create_schedule(script_name: str, schedule_spec: str, user="admin") -> bool:
   )
 
   return True
+
+
+def load_domains(fleet_file: Path) -> dict[str, str]:
+  """loads domain configurations from the fleet file"""
+  domains: dict[str, str] = {}
+  fleet = json.loads(fleet_file.read_text())
+  for key, props in fleet.get("domains", {}).items():
+    if domain := props.get("domain"):
+      domains[key] = domain
+  return domains
 
 
 def get_ingress_ip(hostname="ingress.lan") -> str:
