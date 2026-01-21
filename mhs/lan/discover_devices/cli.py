@@ -22,6 +22,11 @@ EXAMPLE_ENV_FILE = ROOT_DIR / "example.env"
 ENV_FILE = ROOT_DIR / ".env"
 
 
+def set_debug(value: bool) -> None:
+  global DEBUG
+  DEBUG = value
+
+
 def ensure_env_file() -> None:
   if not ENV_FILE.exists():
     ENV_FILE.write_text(EXAMPLE_ENV_FILE.read_text())
