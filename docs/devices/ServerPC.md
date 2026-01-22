@@ -12,20 +12,20 @@ Install [Ubuntu](<../Ubuntu.md>).
 
 ### Machine Crashes
 
-trying text only mode
+Try text only mode:
 
-```
+```bash
 sudo systemctl set-default multi-user.target
 sudo reboot
 ```
 
-restore with
+...restore with...
 
-
-```
+```bash
 sudo systemctl set-default graphical.target
 ```
 
+(didn't work)
 
 ### Learnings
 
