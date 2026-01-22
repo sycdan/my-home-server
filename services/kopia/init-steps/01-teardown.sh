@@ -1,2 +1,3 @@
-docker stop kopia || true
-docker rm kopia || true
+docker compose kill
+docker compose rm --force
+echo $MHS_NUKE_SERVICES

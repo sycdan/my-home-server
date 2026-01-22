@@ -10,21 +10,21 @@ source "$LIB_DIR/env.sh"
 load_env "$ROOT_DIR"
 load_env "$SERVICE_DIR"
 
+# Handle arguments
+echo "Parsing options..."
+parse_opt skip_steps "skip-steps" "" "$@"
+parse_opt nuke_dirs "nuke-dirs" "" "$@"
+
+# Initialize arrays
 SKIP_STEPS=()
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --skip-steps)
-      # split comma-separated list into array
-      IFS=',' read -r -a parts <<< "$2"
-      SKIP_STEPS+=("${parts[@]}")
-      shift 2
-      ;;
-    *)
-			# drop unrecognized args
-      shift
-      ;;
-  esac
-done
+if [[ -n "${skip_steps:-}" ]]; then
+  split_csv "$skip_steps" SKIP_STEPS
+fi
+
+NUKE_DIRS=()
+if [[ -n "${nuke_dirs:-}" ]]; then
+  split_csv "$nuke_dirs" NUKE_DIRS
+fi
 
 # Iterate over step files, skipping any in SKIP_STEPS
 STEP_FILES=("$SERVICE_DIR"/init-steps/*.sh)
