@@ -1,0 +1,1 @@
+alias kopia="docker exec -it -e KOPIA_PASSWORD=\"${KOPIA_PASSWORD}\" kopia kopia"
