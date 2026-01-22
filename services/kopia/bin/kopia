@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# If we are running on the local machine, proxy the command through the root run script
-# We know we are local ebacuse we set a flag in venvrc
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SERVICE_DIR="$(cd "$SCRIPT_DIR/../" && pwd)"
 ROOT_DIR="$(cd "$SERVICE_DIR/../../" && pwd)"
@@ -12,4 +9,4 @@ source "$LIB_DIR/env.sh"
 load_env "$SERVICE_DIR"
 
 cd "$SERVICE_DIR"
-$ROOT_DIR/run docker exec -it -e KOPIA_PASSWORD="${KOPIA_PASSWORD}" kopia "$@"
+docker exec -it -e KOPIA_PASSWORD="${KOPIA_PASSWORD}" kopia "$@"
