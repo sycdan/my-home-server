@@ -9,4 +9,4 @@ source "$LIB_DIR/env.sh"
 load_env "$SERVICE_DIR"
 
 cd "$SERVICE_DIR"
-docker exec -it -e KOPIA_PASSWORD="${KOPIA_PASSWORD}" kopia "$@"
+docker exec -it -e KOPIA_PASSWORD="${KOPIA_PASSWORD}" kopia kopia "$@"
