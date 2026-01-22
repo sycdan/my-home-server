@@ -27,7 +27,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Iterate over step files, skipping any in SKIP_STEPS
-STEP_FILES=("$SCRIPT_DIR"/init-steps/*.sh)
+STEP_FILES=("$SERVICE_DIR"/init-steps/*.sh)
 IFS=$'\n' STEP_FILES=($(sort <<<"${STEP_FILES[*]}"))
 unset IFS
 
