@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from mhs.device.ssh.run.handler import main
 
-TEST_SERVICE_LABEL = "testing"
+TEST_SERVICE_KEY = "testing"
 TEST_FLEET_JSON = """
 {
 	"devices": {
@@ -15,14 +15,14 @@ TEST_FLEET_JSON = """
 			"ssh_host": "ingress",
 			"macs": ["B8:27:EB:AB:C0:DC"],
 			"services": {
-				"<<service-label>>": {
+				"<<service-key>>": {
 					"port": 59999
 				}
 			}
 		}
 	}
 }
-""".strip().replace("<<service-label>>", TEST_SERVICE_LABEL)
+""".strip().replace("<<service-key>>", TEST_SERVICE_KEY)
 
 
 @pytest.mark.integration
@@ -34,7 +34,7 @@ def test_e2e():
     test_fleet_file = root_dir / "fleet.json"
     test_fleet_file.write_text(TEST_FLEET_JSON)
 
-    test_service_dir = root_dir / "services" / TEST_SERVICE_LABEL
+    test_service_dir = root_dir / "services" / TEST_SERVICE_KEY
     test_service_dir.mkdir(parents=True)
     test_lib_dir = root_dir / "lib"
     test_lib_dir.mkdir()
@@ -55,7 +55,7 @@ def test_e2e():
           'echo "Root: $(pwd)"',
           'source ".env"',
           'source "lib/test.sh"',
-          f'source "services/{TEST_SERVICE_LABEL}/.env"',
+          f'source "services/{TEST_SERVICE_KEY}/.env"',
           'echo "Global: $GLOBAL_VAR"',
           'echo "Lib: $LIB_VAR"',
           'echo "Service: $SERVICE_VAR"',

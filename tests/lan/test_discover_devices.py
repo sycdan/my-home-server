@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from mhs.lan.discover_devices import cli
 
-TEST_SERVICE_LABEL = "testing"
+TEST_SERVICE_KEY = "testing"
 TEST_FLEET_JSON = """
 {
 	"devices": {
@@ -14,14 +14,14 @@ TEST_FLEET_JSON = """
 			"ssh_host": "ingress",
 			"macs": ["B8:27:EB:AB:C0:DC"],
 			"services": {
-				"<<service-label>>": {
+				"<<service-key>>": {
 					"port": 59999
 				}
 			}
 		}
 	}
 }
-""".strip().replace("<<service-label>>", TEST_SERVICE_LABEL)
+""".strip().replace("<<service-key>>", TEST_SERVICE_KEY)
 
 
 @pytest.mark.integration

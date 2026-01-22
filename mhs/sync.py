@@ -80,7 +80,7 @@ def bidirectional_sync(
   ssh_host: str,
   from_remote_files: list[str],
   to_remote_files: list[str],
-  service_label: str,
+  service_key: str,
   root_dir: str | Path = ".",
   temp_dir_name: str = ".temp",
   debug=False,
@@ -96,7 +96,7 @@ def bidirectional_sync(
     if debug:
       print_info(f"Pulling updated files from {ssh_host}...")
 
-    down_includes = temp_dir / f"rsync_from-{service_label}.txt"
+    down_includes = temp_dir / f"rsync_from-{service_key}.txt"
     down_includes.write_text("\n".join(from_remote_files))
 
     pullback_cmd = [
@@ -119,7 +119,7 @@ def bidirectional_sync(
       print_info(f"Pushing files to {ssh_host}...")
 
     # Create files list for rsync
-    up_includes = temp_dir / f"rsync_to-{service_label}.txt"
+    up_includes = temp_dir / f"rsync_to-{service_key}.txt"
     up_includes.write_text("\n".join(to_remote_files))
 
     push_cmd = [

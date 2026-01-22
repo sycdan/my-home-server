@@ -288,14 +288,14 @@ def main(argv=None) -> int:
   deployed_count = 0
   failed_count = 0
   for device in devices:
-    if args.device and device.label != args.device:
+    if args.device and device.key != args.device:
       continue
-    name = device.description.strip() or device.label
+    name = device.description.strip() or device.key
     print_info(f"Discovering {name} ({device.hostname})")
 
     public_hostnames.update(get_public_hostnames(device, domains))
 
-    script_name = f"discover-{device.label}"
+    script_name = f"discover-{device.key}"
     script_file = DEVICE_SCRIPT_CACHE_DIR / f"{script_name}.rsc"
     script_comment = f"Discover {name} ({device.hostname})"
     script_content = tools.generate_device_discovery_script(

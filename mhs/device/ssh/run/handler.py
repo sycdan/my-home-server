@@ -74,16 +74,16 @@ def main(argv=None):
   services_dir = root_dir / "services"
   executable_path = validate_executable(args.executable_path, services_dir)
   relative_executable_path = executable_path.relative_to(services_dir)
-  service_label = relative_executable_path.parts[0]
+  service_key = relative_executable_path.parts[0]
   fleet_file = root_dir / "fleet.json"
 
   devices = Device.load_all(fleet_file)
-  hosting_device = Device.find_by_service(service_label, devices)
+  hosting_device = Device.find_by_service(service_key, devices)
   if hosting_device is None:
-    print_error(f"Service '{service_label}' is not hosted on any device")
+    print_error(f"Service '{service_key}' is not hosted on any device")
     sys.exit(1)
   if args.debug:
-    print_info(f"Found {service_label} service on {hosting_device.label}")
+    print_info(f"Found {service_key} service on {hosting_device.key}")
 
   ssh_host = hosting_device.ssh_host
   if args.create_root:
@@ -92,19 +92,19 @@ def main(argv=None):
 
   # Paths are relative to root dir
   from_remote_files = [
-    f"services/{service_label}/.env",
+    f"services/{service_key}/.env",
   ]
   to_remote_files = [
     ".env",
     fleet_file.relative_to(root_dir).as_posix(),
   ]
   to_remote_files.extend(gather_files_to_sync("lib", root_dir))
-  to_remote_files.extend(gather_files_to_sync(f"services/{service_label}", root_dir))
+  to_remote_files.extend(gather_files_to_sync(f"services/{service_key}", root_dir))
 
   print_info(msg=f"Syncing files with {ssh_host}...")
   if not bidirectional_sync(
     ssh_host=ssh_host,
-    service_label=service_label,
+    service_key=service_key,
     to_remote_files=to_remote_files,
     from_remote_files=from_remote_files,
     root_dir=root_dir,
@@ -116,7 +116,7 @@ def main(argv=None):
   print_success("File synchronization completed")
 
   remote_executable = relative_executable_path.as_posix()
-  print_info(f"Executing {remote_executable} on {hosting_device.label}...")
+  print_info(f"Executing {remote_executable} on {hosting_device.key}...")
   remote_cmd = (
     f"cd {root_dir.name} && services/{remote_executable} {' '.join(remaining)}"
   )

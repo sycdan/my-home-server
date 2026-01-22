@@ -83,7 +83,7 @@ PATH="$PATH:./services/kopia/bin"
 
 ### Adding a new domain
 
-Create a <domain_label>.md file in `docs/domains/`.
+Create a <domain_key>.md file in `docs/domains/`.
 
 Add to [fleet](<fleet.json>)
 
