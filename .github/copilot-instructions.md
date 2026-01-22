@@ -1,5 +1,7 @@
 # AI Coding Instructions for my-home-server
 
+**MOST IMPORTANT RULE:** Keep your responses concise and relevant to the context of the my-home-server project. Avoid unnecessary elaboration. Minimize verbosity, just the relevant/actionable details.
+
 ## Project Overview
 
 **my-home-server** is a unified home infrastructure system combining:
