@@ -27,13 +27,34 @@ sudo systemctl set-default graphical.target
 
 (didn't work)
 
-### Learnings
+### IOMMU
 
 Disabling IOMMU didn't stop crashes:
 
 ```bash
 sudo nano /etc/default/grub
 # GRUB_CMDLINE_LINUX_DEFAULT="quiet splash iommu=off" <-- add iommu part
+sudo update-grub
+sudo reboot
+```
+
+### Try a conservative GPU kernel parameter
+
+While we’re probing the graphics angle, add a conservative amdgpu flag.
+
+Edit /etc/default/grub:
+
+```bash
+sudo nano /etc/default/grub
+```
+
+Change the line to:
+
+bash
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash iommu=off amdgpu.dc=0"
+Then:
+
+```bash
 sudo update-grub
 sudo reboot
 ```
