@@ -73,6 +73,7 @@
 			"description": "Dan's iPhone"
 		},
 		"server-pc": {
+			"ssh_host": "mhs",
 			"macs": [
 				"70:85:C2:4F:35:AB"
 			],
