@@ -11,20 +11,38 @@ load_env "$ROOT_DIR"
 load_env "$SERVICE_DIR"
 
 # Handle arguments
-echo "Parsing options..."
-parse_opt skip_steps "skip-steps" "" "$@"
-parse_opt nuke_dirs "nuke-dirs" "" "$@"
-
-# Initialize arrays
-SKIP_STEPS=()
-if [[ -n "${skip_steps:-}" ]]; then
-  split_csv "$skip_steps" SKIP_STEPS
-fi
-
 NUKE_DIRS=()
-if [[ -n "${nuke_dirs:-}" ]]; then
-  split_csv "$nuke_dirs" NUKE_DIRS
-fi
+SKIP_STEPS=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --skip-steps|--skip-steps=*)
+      if [[ "$1" == *=* ]]; then
+        value="${1#*=}"
+        shift
+      else
+        value="$2"
+        shift 2
+      fi
+      split_csv "$value" SKIP_STEPS
+    ;;
+    
+    --nuke-dirs|--nuke-dirs=*)
+      if [[ "$1" == *=* ]]; then
+        value="${1#*=}"
+        shift
+      else
+        value="$2"
+        shift 2
+      fi
+      split_csv "$value" NUKE_DIRS
+    ;;
+    
+    *)
+      echo "Unknown argument: $1"
+      exit 1
+    ;;
+  esac
+done
 
 # Iterate over step files, skipping any in SKIP_STEPS
 STEP_FILES=("$SERVICE_DIR"/init-steps/*.sh)
