@@ -1,3 +1,5 @@
+cd "$SERVICE_DIR"
+
 mkdir -p "$CONFIG_LOCATION"
 mkdir -p "$CACHE_LOCATION"
 mkdir -p "$LOGS_LOCATION"
