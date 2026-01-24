@@ -25,11 +25,10 @@ parse_args() {
 main() {
   parse_args "$@"
 
-  # Iterate over step files, skipping any in SKIP_STEPS
+  # Source non-skipped steps in name order, ensuring CWD is the service dir each time
   STEP_FILES=("$SERVICE_DIR"/init-steps/*.sh)
   IFS=$'\n' STEP_FILES=($(sort <<<"${STEP_FILES[*]}"))
   unset IFS
-
   for file in "${STEP_FILES[@]}"; do
     filename="$(basename "$file" .sh)"
     step_num="${filename%%-*}" # extract numeric prefix
@@ -40,6 +39,7 @@ main() {
     fi
 
     echo "🪜  $filename"
+    cd "$SERVICE_DIR"
     source "$file"
   done
 
