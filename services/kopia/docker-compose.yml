@@ -16,7 +16,7 @@ services:
       - --server-control-username=${KOPIA_CONTROL_USERNAME}
       - --server-control-password=${KOPIA_CONTROL_PASSWORD}
     environment:
-      KOPIA_PASSWORD: "${KOPIA_PASSWORD}"
+      KOPIA_PASSWORD: "${KOPIA_REPOSITORY_PASSWORD}"
       TZ: "${TIMEZONE}"
     volumes:
       # Mount local folders needed by kopia
