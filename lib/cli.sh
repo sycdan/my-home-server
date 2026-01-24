@@ -1,5 +1,11 @@
 # Usage: define a main() function in the service script then source this file.
 
+# Make this script idempotent
+if [[ -n "${MHS_LIB_CLI_RUNNING:-}" ]]; then
+  return
+fi
+export MHS_LIB_CLI_RUNNING=1
+
 # Enable strict error handling
 set -euo pipefail
 
@@ -32,6 +38,8 @@ if [[ "${BASH_SOURCE[0]}" != "${BASH_SOURCE[1]}" ]]; then
     echo "Error: main() function not defined in script" >&2
     exit 1
   fi
+  
+  
   
   # Call main with all script arguments
   main "$@"
