@@ -15,10 +15,17 @@ Configure [SSH](<SSH.md>).
 ## Mounting Drives
 
 ```bash
-# list device uuids
+# list device uuids and names
 lsblk -f 
 
-# add to fstab
+# make a mount point
+sudo mkdir /mnt/mydrive
+
+# or mount temporarily (get /dev/name from lsblk)
+sudo mount /dev/sdb2 /mnt/mydrive
+
+# add to fstab for permanent mounting (get uuid from lsblk)
+sudo nano /etc/fstab
 ```
 
 ## Troubleshooting
