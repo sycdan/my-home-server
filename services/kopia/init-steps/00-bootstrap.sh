@@ -1,1 +1,2 @@
 install_docker
+require_command jq
