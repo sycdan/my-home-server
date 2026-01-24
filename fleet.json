@@ -13,20 +13,22 @@
 			"comment": "Main ingress domain for public use"
 		}
 	},
-	"storages": {
+	"media": {
 		"toshiba14tb": {
 			"uuid": "E290ACFA90ACD677",
 			"description": "Toshiba 14TB External Drive"
 		}
 	},
 	"devices": {
-		"ap": {
+		"access-point": {
+			"ssh_host": "ap",
 			"macs": [
 				"6C:CD:D6:2A:9E:DD"
 			],
 			"description": "Netgear R7000P"
 		},
-		"r-pi": {
+		"raspberry-pi-3": {
+			"ssh_host": "ingress",
 			"macs": [
 				"B8:27:EB:AB:C0:DC",
 				"B8:27:EB:FE:95:89"
@@ -36,10 +38,10 @@
 					"port": 80
 				}
 			},
-			"ssh_host": "ingress",
 			"description": "Raspberry Pi 3"
 		},
-		"lenovo": {
+		"old-lenovo-laptop": {
+			"ssh_host": "lenovo",
 			"mounts": [
 				"toshiba14tb"
 			],

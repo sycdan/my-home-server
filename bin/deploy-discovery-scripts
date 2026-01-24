@@ -3,12 +3,15 @@
 import sys
 from pathlib import Path
 
+from mhs.output import print_error
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from mhs.lan.discover_devices.cli import main
+from mhs.control.discover_devices.cli import main
 
 if __name__ == "__main__":
-  main()
-else:
-  print("This script is intended to be executed directly.")
-  sys.exit(1)
+  try:
+    main()
+  except RuntimeError as e:
+    print_error(str(e))
+    sys.exit(1)

@@ -1,5 +1,10 @@
 #!/usr/bin/env python
-from mhs.device.mount_media.handler import handle
+from mhs.control.mount.cli import main
+from mhs.output import print_error
 
 if __name__ == "__main__":
-  handle()
+  try:
+    main()
+  except RuntimeError as e:
+    print_error(str(e))
+    exit(1)
