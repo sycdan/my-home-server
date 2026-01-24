@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 parse_args() {
-  NUKE_DIRS=()
+  NUKE_PATHS=()
   while [[ $# -gt 0 ]]; do
     case "$1" in
       *)
-        NUKE_DIRS+=("$1")
+        NUKE_PATHS+=("$1")
         shift
       ;;
     esac
@@ -16,8 +16,11 @@ main() {
   print_status "Nuking $SERVICE_KEY..."
   parse_args "$@"
   cd "$SERVICE_DIR"
-  for dir in "${NUKE_DIRS[@]}"; do
-    echo "Nuking directory: $dir"
+
+  ./bin/down
+
+  for dir in "${NUKE_PATHS[@]}"; do
+    echo "Nuking $dir"
     sudo rm -rf "./$dir"
   done
   print_success "Done."
