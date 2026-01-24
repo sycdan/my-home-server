@@ -1,17 +1,13 @@
 #!/usr/bin/env bash
-set -euo pipefail
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SERVICE_DIR="$(cd "$SCRIPT_DIR/../" && pwd)"
-SERVICE_KEY="$(basename "$SERVICE_DIR")"
-ROOT_DIR="$(cd "$SERVICE_DIR/../../" && pwd)"
-LIB_DIR="$ROOT_DIR/lib"
-source "$LIB_DIR/common.sh"
+main() {
+  cd "$SERVICE_DIR"
+  print_status "Nuking $SERVICE_KEY..."
+  
+  for dir in "${NUKE_DIRS[@]}"; do
+    echo "Nuking directory: $dir"
+    sudo rm -rf "./$dir"
+  done
+  print_success "Done."
+}
 
-cd "$SERVICE_DIR"
-print_status "Nuking $SERVICE_KEY..."
-
-for dir in "${NUKE_DIRS[@]}"; do
-  echo "Nuking directory: $dir"
-  sudo rm -rf "./$dir"
-done
-print_success "Done."
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)/lib/cli.sh"

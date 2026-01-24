@@ -52,8 +52,8 @@ load_env() {
       exit 1
     fi
     cp "$example_file" "$env_file"
-    print_warning "Please edit $env_file on the remote and try your command again."
-    exit 0
+    print_warning "Please edit $env_file and try your command again."
+    exit 101
   fi
   
   print_status "Loading env vars from $env_file"
