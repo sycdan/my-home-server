@@ -120,7 +120,7 @@ def main(argv=None):
   remote_cmd = (
     f"cd {root_dir.name} && services/{remote_executable} {' '.join(remaining)}"
   )
-  ssh_exec_cmd = ["ssh", "-t", ssh_host, remote_cmd]
+  ssh_exec_cmd = ["ssh", ssh_host, "-t", remote_cmd]
   try:
     # Use call instead of run to preserve interactive terminal behavior
     subprocess.call(ssh_exec_cmd)
