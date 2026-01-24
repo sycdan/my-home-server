@@ -18,6 +18,7 @@ main() {
   cd "$SERVICE_DIR"
 
   ./bin/down
+  docker compose rm -f
 
   for dir in "${NUKE_PATHS[@]}"; do
     echo "Nuking $dir"
