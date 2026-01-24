@@ -6,3 +6,4 @@ from pathlib import Path
 class LoadMediaQuery:
   fleet_file: Path
   data_key: str = "storages"
+  index: bool = False

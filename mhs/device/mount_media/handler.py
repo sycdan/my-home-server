@@ -4,5 +4,5 @@ from mhs.storage.load_media.query import LoadMediaQuery
 
 
 def handle():
-  media = handler.handle(LoadMediaQuery(FLEET_FILE))
+  media = handler.handle(LoadMediaQuery(FLEET_FILE, index=True))
   print(media)
