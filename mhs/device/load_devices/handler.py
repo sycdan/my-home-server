@@ -8,7 +8,7 @@ from mhs.output import print_error
 from mhs.tools import validate_mac_address
 
 
-def handle(query: LoadDevicesQuery) -> list[Device] | dict[str, Device]:
+def handle(query: LoadDevicesQuery) -> list[Device]:
   devices: list[Device] = []
 
   if not query.fleet_file.exists():
@@ -46,6 +46,4 @@ def handle(query: LoadDevicesQuery) -> list[Device] | dict[str, Device]:
     print_error(f"No devices loaded from {devices_file.name}")
     sys.exit(1)
 
-  if query.index:
-    return {device.key: device for device in devices}
   return devices

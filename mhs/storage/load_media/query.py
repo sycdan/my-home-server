@@ -8,4 +8,3 @@ from mhs.config import FLEET_FILE
 class LoadMediaQuery:
   fleet_file: Path = FLEET_FILE
   data_key: str = "storages"
-  index: bool = False
