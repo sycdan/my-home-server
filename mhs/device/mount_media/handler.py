@@ -12,3 +12,5 @@ def handle():
       storage = media.get(storage_key)
       if storage:
         server.mount_storage(storage)
+      else:
+        print(f"Warning: Storage '{storage_key}' not found for device '{server.key}'")
