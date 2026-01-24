@@ -13,7 +13,7 @@
 			"comment": "Main ingress domain for public use"
 		}
 	},
-	"media": {
+	"storages": {
 		"toshiba14tb": {
 			"uuid": "E290ACFA90ACD677",
 			"description": "Toshiba 14TB External Drive"
@@ -40,6 +40,9 @@
 			"description": "Raspberry Pi 3"
 		},
 		"lenovo": {
+			"mounts": [
+				"toshiba14tb"
+			],
 			"macs": [
 				"00:23:5A:1A:A4:F6",
 				"00:1E:65:3B:C7:94"
