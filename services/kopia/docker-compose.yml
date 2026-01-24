@@ -13,10 +13,12 @@ services:
       - --disable-csrf-token-checks
       - --insecure
       - --address=0.0.0.0:51515
-      - --server-control-username=${KOPIA_CONTROL_USERNAME}
-      - --server-control-password=${KOPIA_CONTROL_PASSWORD}
+      - --server-control-username=a
+      - --server-control-password=b
     environment:
       KOPIA_PASSWORD: "${KOPIA_REPOSITORY_PASSWORD}"
+      # KOPIA_SERVER_USERNAME: a
+      # KOPIA_SERVER_PASSWORD: b
       TZ: "${TIMEZONE}"
     volumes:
       # Mount local folders needed by kopia

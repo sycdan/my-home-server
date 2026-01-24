@@ -1,13 +1,7 @@
+echo "KOPIA_SERVER_USERNAME=${KOPIA_CONTROL_USERNAME}"
+echo "KOPIA_SERVER_PASSWORD=${KOPIA_CONTROL_PASSWORD}"
+./bin/kopia server status --server-control-username="${KOPIA_CONTROL_USERNAME}" --server-control-password="${KOPIA_CONTROL_PASSWORD}" || echo "failed"
 
-# #!/usr/bin/env bash
-
-# # Check if repository exists, create it if not
-# if ! ./bin/kopia repository status >/dev/null 2>&1; then
-#   print_status "Creating new repository..."
-#   ./bin/kopia repository create filesystem --path=/repository
-# else
-#   print_success "Repository already exists"
-# fi
 
 # # Create admin user (using control credentials)
 # print_status "Creating admin user: dan@${KOPIA_HOSTNAME}..."
