@@ -18,9 +18,9 @@ def handle(query: LoadDevicesQuery) -> list[Device]:
   try:
     data = json.loads(query.fleet_file.read_text())
 
-    for key, definition in data.get("devices", {}).items():
+    for key, definition in data.get(query.data_key, {}).items():
       macs = definition.get("macs", [])
-      device = cls(
+      device = Device(
         key=key,
         hostname=f"{key}.{DOMAIN_SUFFIX}",
         ssh_host=definition.get("ssh_host", key),
@@ -28,6 +28,7 @@ def handle(query: LoadDevicesQuery) -> list[Device]:
         secondary_mac=macs[1] if len(macs) > 1 else "",
         description=definition.get("description", key),
         services=definition.get("services", {}),
+        mounts=definition.get("mounts", []),
       )
       if not validate_mac_address(device.primary_mac):
         print_error(
@@ -40,10 +41,6 @@ def handle(query: LoadDevicesQuery) -> list[Device]:
         continue
       devices.append(device)
   except json.JSONDecodeError as e:
-    print_error(f"Failed to parse devices.json: {e}")
-
-  if not devices and not empty_ok:
-    print_error(f"No devices loaded from {devices_file.name}")
-    sys.exit(1)
+    print_error(f"Failed to load {query.data_key} from {query.fleet_file}: {e}")
 
   return devices

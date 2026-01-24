@@ -7,3 +7,4 @@ from mhs.config import FLEET_FILE
 @dataclass
 class LoadDevicesQuery:
   fleet_file: Path = FLEET_FILE
+  data_key: str = "devices"
