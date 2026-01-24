@@ -13,6 +13,12 @@
 			"comment": "Main ingress domain for public use"
 		}
 	},
+	"media": {
+		"toshiba14tb": {
+			"uuid": "E290ACFA90ACD677",
+			"description": "Toshiba 14TB External Drive"
+		}
+	},
 	"devices": {
 		"ap": {
 			"macs": [
