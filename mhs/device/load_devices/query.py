@@ -5,7 +5,6 @@ from mhs.config import FLEET_FILE
 
 
 @dataclass
-class LoadMediaQuery:
+class LoadDevicesQuery:
   fleet_file: Path = FLEET_FILE
-  data_key: str = "storages"
   index: bool = False
