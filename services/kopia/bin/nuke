@@ -13,18 +13,19 @@ parse_args() {
 }
 
 main() {
-  print_status "Nuking $SERVICE_KEY..."
-  parse_args "$@"
   cd "$SERVICE_DIR"
+  parse_args "$@"
 
-  ./bin/down
-  docker compose rm -f
+  ./bin/ctl stop
+  ./bin/ctl down
+  ./bin/ctl kill
+  ./bin/ctl rm --force
 
   for dir in "${NUKE_PATHS[@]}"; do
     echo "Nuking $dir"
     sudo rm -rf "./$dir"
   done
-  print_success "Done."
+  print_success "Done!"
 }
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)/lib/cli.sh"

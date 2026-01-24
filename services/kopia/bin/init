@@ -1,65 +1,49 @@
 #!/usr/bin/env bash
-set -euo pipefail
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SERVICE_DIR="$(cd "$SCRIPT_DIR/../" && pwd)"
-ROOT_DIR="$(cd "$SERVICE_DIR/../../" && pwd)"
-LIB_DIR="$ROOT_DIR/lib"
-source "$LIB_DIR/common.sh"
-source "$LIB_DIR/services.sh"
-source "$LIB_DIR/env.sh"
-load_env "$ROOT_DIR"
-load_env "$SERVICE_DIR"
+parse_args() {
+  SKIP_STEPS=()
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --skip-steps|--skip-steps=*)
+        if [[ "$1" == *=* ]]; then
+          value="${1#*=}"
+          shift
+        else
+          value="$2"
+          shift 2
+        fi
+        split_csv "$value" SKIP_STEPS
+      ;;
+      
+      *)
+        echo "Unknown argument: $1"
+        exit 1
+      ;;
+    esac
+  done
+}
 
-# Handle arguments
-NUKE_DIRS=()
-SKIP_STEPS=()
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --skip-steps|--skip-steps=*)
-      if [[ "$1" == *=* ]]; then
-        value="${1#*=}"
-        shift
-      else
-        value="$2"
-        shift 2
-      fi
-      split_csv "$value" SKIP_STEPS
-    ;;
-    
-    --nuke-dirs|--nuke-dirs=*)
-      if [[ "$1" == *=* ]]; then
-        value="${1#*=}"
-        shift
-      else
-        value="$2"
-        shift 2
-      fi
-      split_csv "$value" NUKE_DIRS
-    ;;
-    
-    *)
-      echo "Unknown argument: $1"
-      exit 1
-    ;;
-  esac
-done
+main() {
+  parse_args "$@"
 
-# Iterate over step files, skipping any in SKIP_STEPS
-STEP_FILES=("$SERVICE_DIR"/init-steps/*.sh)
-IFS=$'\n' STEP_FILES=($(sort <<<"${STEP_FILES[*]}"))
-unset IFS
+  # Iterate over step files, skipping any in SKIP_STEPS
+  STEP_FILES=("$SERVICE_DIR"/init-steps/*.sh)
+  IFS=$'\n' STEP_FILES=($(sort <<<"${STEP_FILES[*]}"))
+  unset IFS
 
-for file in "${STEP_FILES[@]}"; do
-  filename="$(basename "$file" .sh)"
-  step_num="${filename%%-*}" # extract numeric prefix
+  for file in "${STEP_FILES[@]}"; do
+    filename="$(basename "$file" .sh)"
+    step_num="${filename%%-*}" # extract numeric prefix
 
-  if skip_step "$step_num"; then
-    echo "🦘 $filename"
-    continue
-  fi
+    if skip_step "$step_num"; then
+      echo "🦘 $filename"
+      continue
+    fi
 
-  echo "🪜  $filename"
-  source "$file"
-done
+    echo "🪜  $filename"
+    source "$file"
+  done
 
-print_success "Done!"
+  print_success "Done!"
+}
+
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)/lib/cli.sh"
