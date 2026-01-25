@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+main() {
+  cd "$SERVICE_DIR"
+  docker compose up -d "$@"
+  docker compose ps
+}
+
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)/lib/cli.sh"

@@ -112,3 +112,17 @@ If you've moved a device (e.g., from WiFi to ethernet) and changed its IP, the r
 - **Linux:** `sudo systemctl restart systemd-resolved` or flush your resolver cache
 
 After clearing the cache, DNS queries will hit the router again and resolve to the new IP.
+
+### Docker Errors
+
+error getting credentials - err: exec: "docker-credential-desktop.exe": executable file not found in $PATH, out: ``
+
+Probably happens due to `~/.docker/config.json` containing:
+
+```json
+{
+  "credsStore": "desktop.exe"
+}
+```
+
+**Solution:** Clear out the credsStore.

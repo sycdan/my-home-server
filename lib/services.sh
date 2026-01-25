@@ -41,43 +41,6 @@ update_system() {
   print_success "System updated"
 }
 
-
-install_utilities() {
-  print_status "Checking for required utilities..."
-  
-  # List of utilities to install
-  local utilities=(
-    "curl"
-    "wget"
-    "git"
-    "nano"
-    "htop"
-    "ufw"
-    "fail2ban"
-    "unzip"
-    "tree"
-  )
-  
-  # Check which utilities are already installed
-  local missing=()
-  for util in "${utilities[@]}"; do
-    # Try command first (for tools with CLI), then fall back to dpkg (for services)
-    if ! command -v "$util" &> /dev/null && ! dpkg -l | grep -q "^ii  $util"; then
-      missing+=("$util")
-    fi
-  done
-  
-  # If all are installed, skip
-  if [[ ${#missing[@]} -eq 0 ]]; then
-    print_success "All required utilities are already installed"
-    return
-  fi
-  
-  print_status "Installing missing utilities: ${missing[*]}"
-  sudo apt-get install -y "${missing[@]}"
-  print_success "Utilities installed"
-}
-
 configure_firewall() {
   if grep -qi microsoft /proc/version; then
     print_warning "Running in WSL - skipping UFW firewall (use Windows Firewall instead)"

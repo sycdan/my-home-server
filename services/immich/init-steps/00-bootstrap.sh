@@ -1,0 +1,3 @@
+check_os
+update_system
+install_docker
