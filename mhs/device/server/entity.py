@@ -13,6 +13,7 @@ class Server:
   description: str
   services: ServiceCollection
   mounts: list[str] = field(default_factory=list)  # storage keys to mount
+  host_os: str = "linux"
 
 
 @dataclass

@@ -72,7 +72,19 @@
 					"domain_key": "whh"
 				}
 			},
-			"description": "HTPC"
+			"description": "HTPC (WSL)"
+		},
+		"htpc-win": {
+			"macs": [
+				"A8:A1:59:F1:3E:B5"
+			],
+			"services": {
+				"wingress": {
+					"port": 0
+				}
+			},
+			"host_os": "windows",
+			"description": "HTPC (Windows)"
 		},
 		"dan-pc": {
 			"macs": [

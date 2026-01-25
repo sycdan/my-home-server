@@ -33,6 +33,7 @@ def parse_servers(fleet: dict, data_key: str = "servers") -> ServerCollection:
       description=definition.get("description", key),
       services=services,
       mounts=definition.get("mounts", []),
+      host_os=definition.get("host_os", "linux"),
     )
     if not validate_mac_address(server.primary_mac):
       print_error(
