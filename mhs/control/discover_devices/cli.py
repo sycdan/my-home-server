@@ -206,9 +206,9 @@ def get_public_hostnames(device: Server, domains: dict[str, str]) -> list[str]:
   """returns the public hostname for the device if configured with a domain"""
   hostnames: list[str] = []
   for service in device.services.values():
-    if domain_key := service.get("domain_key"):
+    if domain_key := service.domain_key:
       if domain := domains.get(domain_key):
-        if subdomain := service.get("subdomain"):
+        if subdomain := service.subdomain:
           hostname = f"{subdomain}.{domain}"
           hostnames.append(hostname)
   return hostnames
@@ -216,8 +216,6 @@ def get_public_hostnames(device: Server, domains: dict[str, str]) -> list[str]:
 
 def clear_split_dns(hostname: str) -> None:
   """removes existing split DNS entries for the given hostname"""
-  # find everything where the name ends with the hostname
-  # cmd = f'/ip dns static remove [find name~"\\.wildharvesthomestead\\.com\$"]'
   cmd = f'/ip dns static remove [find name~"{hostname}"]'
   output, success = run_on_router(cmd)
   if not success:
@@ -264,21 +262,21 @@ def main(argv=None):
 
   deployed_count = 0
   failed_count = 0
-  for device in devices:
-    if args.device and device.key != args.device:
+  for server in fleet.servers.index.values():
+    if args.device and server.key != args.device:
       continue
-    name = device.description.strip() or device.key
-    print_info(f"Discovering {name} ({device.hostname})")
+    name = server.description.strip() or server.key
+    print_info(f"Discovering {name} ({server.hostname})")
 
-    public_hostnames.update(get_public_hostnames(device, domains))
+    public_hostnames.update(get_public_hostnames(server, domains))
 
-    script_name = f"discover-{device.key}"
+    script_name = f"discover-{server.key}"
     script_file = DEVICE_SCRIPT_CACHE_DIR / f"{script_name}.rsc"
-    script_comment = f"Discover {name} ({device.hostname})"
+    script_comment = f"Discover {name} ({server.hostname})"
     script_content = tools.generate_device_discovery_script(
-      device.hostname,
-      device.primary_mac,
-      device.secondary_mac,
+      server.hostname,
+      server.primary_mac,
+      server.secondary_mac,
     )
     try:
       script_file.write_text(script_content)
@@ -310,6 +308,6 @@ def main(argv=None):
     )
 
   print()
-  print_success(f"{deployed_count} deployed successfully")
+  print_success(f"{deployed_count} discovered successfully")
   if failed_count > 0:
     print_warning(f"{failed_count} failed")

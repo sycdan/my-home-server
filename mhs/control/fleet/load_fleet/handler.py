@@ -22,11 +22,7 @@ def parse_servers(fleet: dict, data_key: str = "servers") -> ServerCollection:
   servers = ServerCollection()
 
   for key, definition in fleet.get(data_key, {}).items():
-    # We'll only load devices that have services defined
     services = parse_services(definition)
-    if not services.index:
-      continue
-
     macs = definition.get("macs", [])
     server = Server(
       key=key,
