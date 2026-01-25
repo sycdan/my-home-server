@@ -56,9 +56,19 @@
 				"A8:A1:59:F1:3E:B5"
 			],
 			"services": {
+				"immich": {
+					"port": 2283,
+					"subdomain": "photos",
+					"domain_key": "whh"
+				},
 				"jellyfin": {
 					"port": 8096,
 					"subdomain": "stream",
+					"domain_key": "whh"
+				},
+				"kopia": {
+					"port": 51515,
+					"subdomain": "backup",
 					"domain_key": "whh"
 				}
 			},
@@ -88,18 +98,7 @@
 			"macs": [
 				"70:85:C2:4F:35:AB"
 			],
-			"services": {
-				"immich": {
-					"port": 2283,
-					"subdomain": "photos",
-					"domain_key": "whh"
-				},
-				"kopia": {
-					"port": 51515,
-					"subdomain": "backup",
-					"domain_key": "whh"
-				}
-			},
+			"services": {},
 			"description": "Nicole's old PC (Thermaltake case)"
 		},
 		"nicole-laptop": {
