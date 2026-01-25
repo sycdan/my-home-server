@@ -1,24 +1,8 @@
 # HTPC
 
-Running Windows 11.
-
-SSH sessions should go to WSL, by one of the SSH config methods below.
-
-WSL2 must be configured first.
+Running Windows 11 and WSL2 configured with the Ubuntu distribution.
 
 **Note:** WSL runs per-user in Windows, so use the same (admin) user for everything.
-
-WSL normally shuts down when idle. To keep it alive:
-
-Run a PowerShell terminal as admin:
-
-```pwsh
-Set-Content -Path "$env:USERPROFILE\.wslconfig" -Value @"
-[wsl2]
-vmIdleTimeout=0
-"@
-Get-Content "$env:USERPROFILE\.wslconfig"
-```
 
 ## Add your SSH key to WSL
 
@@ -27,7 +11,7 @@ wsl.exe -d Ubuntu -- nano ~/.ssh/authorized_keys
 # paste in pubkey
 ```
 
-## 1. SSH Config (WSL OpenSSH) -- preferred but more complex
+## SSH Config (WSL OpenSSH)
 
 - SSH server runs inside WSL, not Windows
 - You connect directly to your Linux environment
@@ -161,44 +145,6 @@ netsh interface portproxy reset
 ```pwsh
 Stop-Service sshd
 Set-Service sshd -StartupType Disabled
-```
-
-## 2. SSH Config (Windows OpenSSH) -- simpler but untested
-
-- OpenSSH Server runs in Windows
-- Logins are pushed through to WSL
-- No access to CMD / PWSH over SSH
-
-**Note:** Open a PowerShell terminal as admin to run these commands.
-
-### Install OpenSSH Server
-
-```pwsh
-Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
-Start-Service sshd
-Set-Service sshd -StartupType Automatic
-```
-
-### Make SSH Sessions Automatically Enter WSL
-
-```pwsh
-notepad C:\ProgramData\ssh\sshd_config
-```
-
-Add the following lines at the bottom:
-
-```text
-# Force all SSH sessions into WSL
-ForceCommand "C:\Windows\System32\wsl.exe ~"
-# Disable Windows shell access
-DenyUsers *\*
-```
-
-Comment out these lines if present:
-
-```text
-Subsystem powershell ...
-Subsystem cmd ...
 ```
 
 ## Unblock Window SSH port
