@@ -84,9 +84,7 @@ Write-Output "Giving WSL a moment to fully initialize networking..."
 Start-Sleep -Seconds 2
 
 Write-Output "Getting the current WSL IP address..."
-$ip = wsl.exe -d Ubuntu -- hostname -I |
-  ForEach-Object { $_.Trim() } |
-  Select-Object -First 1
+$ip = (wsl.exe -d Ubuntu -- hostname -I).Trim().Split()[0]
 
 if (-not $ip) {
   Write-Output "ERROR: Could not determine WSL IP address."
@@ -151,4 +149,18 @@ Set-Service sshd -StartupType Disabled
 
 ```pwsh
 New-NetFirewallRule -DisplayName "WSL SSH" -Direction Inbound -LocalPort 22 -Protocol TCP -Action Allow
+```
+
+## Troubleshooting
+
+### WSL hangs
+
+```cmd
+taskkill /f /im /wsl.exe
+powershell
+```
+
+```pwsh
+Get-Service | Where-Object {$_.Name -like "*wsl*" -or $_.DisplayName -like "*wsl*"}
+Restart-service WSLService
 ```
