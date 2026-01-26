@@ -72,7 +72,7 @@
 					"domain_key": "whh"
 				}
 			},
-			"description": "HTPC (WSL)"
+			"description": "HTPC (WSL) -- see docs/htpc.md"
 		},
 		"htpc-win": {
 			"macs": [

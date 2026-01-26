@@ -96,10 +96,11 @@ Write-Output "WSL IP detected: $ip"
 Write-Output "Resetting existing portproxy rules..."
 netsh interface portproxy reset
 
-Write-Output "Adding new portproxy rule for SSH..."
-netsh interface portproxy add v4tov4 `
-  listenport=22 listenaddress=0.0.0.0 `
-  connectport=22 connectaddress=$ip
+Write-Output "Adding new portproxy rules..."
+netsh interface portproxy add v4tov4 listenport=22 listenaddress=0.0.0.0 connectport=22 connectaddress=$ip
+netsh interface portproxy add v4tov4 listenport=2283 listenaddress=0.0.0.0 connectport=2283 connectaddress=$ip
+netsh interface portproxy add v4tov4 listenport=8096 listenaddress=0.0.0.0 connectport=8096 connectaddress=$ip
+netsh interface portproxy add v4tov4 listenport=51515 listenaddress=0.0.0.0 connectport=51515 connectaddress=$ip
 
 Write-Output "Portproxy rule updated to forward port 22 to $ip"
 
