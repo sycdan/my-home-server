@@ -3,7 +3,6 @@ import subprocess
 from pathlib import Path
 
 from mhs.config import LOCAL_ROOT
-from mhs.output import print_info
 from mhs.ssh.run_on.command import RunOn
 from mhs.ssh.upload.command import UploadDirectory, UploadFile
 
@@ -69,8 +68,13 @@ def handle_upload_file(command: UploadFile):
   if command.remote_file.is_absolute():
     raise ValueError("Remote file path must be relative to SSH home")
 
-  scp_cmd = ["scp", command.local_file, f"{command.ssh_host}:{command.remote_file}"]
+  scp_cmd = [
+    "scp",
+    command.local_file.as_posix(),
+    f"{command.ssh_host}:./{command.remote_file.as_posix()}",
+  ]
 
+  print("Uploading file:", " ".join(scp_cmd))
   result = subprocess.run(scp_cmd, capture_output=True, text=True)
   if result.returncode != 0:
     raise RuntimeError(f"Failed to upload file: {result.stderr}")
