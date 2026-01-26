@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -x
+set -euo pipefail
 source ".env"
 
 backup_path="$(realpath "$1")"
@@ -10,17 +10,32 @@ else
   exit 1
 fi
 
-docker compose down -v          # Stop Immich apps and remove volumes
-rm -rf $DB_DATA_LOCATION        # CAUTION! Deletes all Immich data (except uploads) to start from scratch
-docker compose pull             # Update to latest version of Immich (optional)
-docker compose create           # Create Docker containers for Immich apps without running them
-docker start immich_postgres    # Start Postgres server
-sleep 10                        # Wait for Postgres server to start up
+echo "Stopping Immich apps and removing volumes..."
+docker compose down -v
+
+echo "Deleting existing Immich database data from $DB_DATA_LOCATION..."
+rm -rf $DB_DATA_LOCATION
+
+echo "Update to latest version of Immich"
+docker compose pull
+
+echo "Creating Docker containers for Immich apps without running them"
+docker compose create
+
+echo "Starting ing Postgres container..."
+docker start immich_postgres
+
+echo "Waiting for Postgres to start..."
+sleep 10
+
 # Check the database user if you deviated from the default
+echo "Restoring database from backup..."
 gunzip --stdout $backup_path \
 | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
 | docker exec -i immich_postgres psql --dbname=postgres --username="$DB_USERNAME"  # Restore Backup
-docker compose up -d            # Start remainder of Immich apps
+
+echo "Restarting containers..."
+docker compose up -d
 
 echo "Immich DB restoration complete!"
 echo "You need to manually move your files into the UPLOAD_LOCATION: $UPLOAD_LOCATION"

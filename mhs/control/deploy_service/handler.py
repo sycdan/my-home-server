@@ -15,8 +15,6 @@ def _upload_service_files(service: Service, server: Server, remote_path: Path):
   if not local_service_dir.exists():
     raise RuntimeError(f"Service directory {local_service_dir} does not exist")
 
-  print_info(f"Uploading {service.key} files to {server.key}...")
-
   UploadDirectory(
     ssh_host=server.ssh_host,
     local_dir=local_service_dir,
@@ -27,11 +25,12 @@ def _upload_service_files(service: Service, server: Server, remote_path: Path):
 
 
 def deploy_service(service: Service, server: Server, dc_args: list[str]):
+  print_info(f"Deploying {service} to {server.key}...")
+  
   remote_path = Path("my-home-server") / "etc" / service.key
 
   _upload_service_files(service, server, remote_path)
 
-  print_info(f"Starting {service} on {server.key}...")
   if dc_args:
     print_info("Calling docker compose " + " ".join(dc_args))
     RunDockerCompose(
