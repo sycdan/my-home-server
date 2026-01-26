@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -x
+source ".env"
+
+backup_path="$(realpath "$1")"
+if [[ -f "$backup_path" ]]; then
+  echo "Restoring Immich DB from: $backup_path"
+else
+  echo "Backup file not found: $1"
+  exit 1
+fi
+
+docker compose down -v          # Stop Immich apps and remove volumes
+rm -rf $DB_DATA_LOCATION        # CAUTION! Deletes all Immich data (except uploads) to start from scratch
+docker compose pull             # Update to latest version of Immich (optional)
+docker compose create           # Create Docker containers for Immich apps without running them
+docker start immich_postgres    # Start Postgres server
+sleep 10                        # Wait for Postgres server to start up
+# Check the database user if you deviated from the default
+gunzip --stdout $backup_path \
+| sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
+| docker exec -i immich_postgres psql --dbname=postgres --username="$DB_USERNAME"  # Restore Backup
+docker compose up -d            # Start remainder of Immich apps
+
+echo "Immich DB restoration complete!"
+echo "You need to manually move your files into the UPLOAD_LOCATION: $UPLOAD_LOCATION"

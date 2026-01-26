@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 from mhs.device.server.entity import Server
@@ -8,7 +8,7 @@ from mhs.device.server.entity import Server
 class RunDockerCompose:
   server: Server
   remote_dir: Path
-  args: list[str] = field(default_factory=list)
+  args: list[str]
 
   def execute(self) -> None:
     from mhs.control.run_docker_compose.handler import handle

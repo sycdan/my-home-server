@@ -56,6 +56,11 @@
 				"A8:A1:59:F1:3E:B5"
 			],
 			"services": {
+				"immich": {
+					"port": 2283,
+					"subdomain": "photos",
+					"domain_key": "whh"
+				},
 				"jellyfin": {
 					"port": 8096,
 					"subdomain": "stream",
@@ -74,11 +79,7 @@
 				"A8:A1:59:F1:3E:B5"
 			],
 			"services": {
-				"immich": {
-					"port": 2283,
-					"subdomain": "photos",
-					"domain_key": "whh"
-				}
+
 			},
 			"host_os": "windows",
 			"description": "HTPC (Windows)"

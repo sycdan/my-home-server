@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from mhs.control.deploy.cli import main
+from mhs.control.deploy_service.cli import main
 from mhs.output import print_error
 
 if __name__ == "__main__":
