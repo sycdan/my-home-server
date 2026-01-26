@@ -1,5 +1,6 @@
 from _collections_abc import dict_values
 from dataclasses import dataclass, field
+from pathlib import Path
 
 
 @dataclass
@@ -9,6 +10,10 @@ class Service:
   subdomain: str = field(default="")
   domain_key: str = field(default="")
   description: str = field(default="")
+  mount_points: dict[str, Path] = field(default_factory=dict)
+
+  def __str__(self) -> str:
+    return self.key
 
 
 @dataclass

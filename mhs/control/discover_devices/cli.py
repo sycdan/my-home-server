@@ -15,10 +15,10 @@ from pathlib import Path
 
 from mhs import LOCAL_ROOT
 from mhs.control.discover_devices import tools
-from mhs.control.fleet.load_fleet.query import LoadFleetQuery
+from mhs.control.fleet.load_fleet.query import LoadFleet
 from mhs.device.server.entity import Server
 from mhs.output import print_error, print_info, print_success, print_warning
-from mhs.ssh.run.command import RunCommand
+from mhs.ssh.run_on.command import RunOn
 
 DEBUG = os.getenv("MHS_DEBUG", "0") == "1"
 DEVICE_SCRIPT_CACHE_DIR = LOCAL_ROOT / ".device-scripts"
@@ -92,7 +92,7 @@ def run_on_router(command: str, as_script=False) -> tuple[str, bool]:
     if script_name := _upload_script_to_router(temp_script_path):
       command = f"/import {shlex.quote(script_name)}; /file remove [find where name={shlex.quote(script_name)}]"
     temp_script_path.unlink(missing_ok=True)
-  return RunCommand(
+  return RunOn(
     ROUTER_SSH_HOST,
     command,
   ).execute()
@@ -253,7 +253,7 @@ def main(argv=None):
 
   DEVICE_SCRIPT_CACHE_DIR.mkdir(exist_ok=True)
 
-  fleet = LoadFleetQuery(FLEET_FILE).execute()
+  fleet = LoadFleet(FLEET_FILE).execute()
   if not fleet.servers.index:
     raise RuntimeError(f"No devices configured in {FLEET_FILE}")
 

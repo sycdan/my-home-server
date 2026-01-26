@@ -1,11 +1,11 @@
 """Mount all configured storage media on all devices."""
 
-from mhs.control.fleet.load_fleet.query import LoadFleetQuery
+from mhs.control.fleet.load_fleet.query import LoadFleet
 from mhs.device.server.mount_storage.command import MountStorageCommand
 
 
 def main():
-  fleet = LoadFleetQuery().execute()
+  fleet = LoadFleet().execute()
   media = fleet.storages
   servers = fleet.servers.index
   for server in servers.values():

@@ -1,7 +1,7 @@
 import subprocess
 
 from mhs.output import print_error
-from mhs.ssh.run.command import RunCommand
+from mhs.ssh.run_on.command import RunOn
 
 
 def _run_ssh_command(
@@ -10,7 +10,7 @@ def _run_ssh_command(
   user="",
   identity_file="",
 ) -> tuple[str, bool]:
-  """Returns (output, returncode)"""
+  """Returns (output, success)"""
   hostname = f"{user}@{host}" if user else host
   args = ["ssh", hostname]
   if identity_file:
@@ -31,5 +31,5 @@ def _run_ssh_command(
     return "Unhandled exception", False
 
 
-def handle(command: RunCommand):
-  return _run_ssh_command(host=command.host, command=command.command)
+def handle(command: RunOn):
+  return _run_ssh_command(host=command.ssh_host, command=command.command)

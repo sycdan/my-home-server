@@ -3,7 +3,7 @@ import sys
 
 from mhs.config import DOMAIN_SUFFIX
 from mhs.control.fleet.entity import Fleet
-from mhs.control.fleet.load_fleet.query import LoadFleetQuery
+from mhs.control.fleet.load_fleet.query import LoadFleet
 from mhs.device.server.entity import Server, ServerCollection
 from mhs.device.storage.entity import Storage, StorageCollection
 from mhs.output import print_error, print_warning
@@ -57,7 +57,7 @@ def parse_storages(fleet: dict, data_key: str = "storages") -> StorageCollection
   return storages
 
 
-def handle(query: LoadFleetQuery) -> Fleet:
+def handle(query: LoadFleet) -> Fleet:
   fleet_file = query.fleet_file.resolve()
 
   if not fleet_file.exists():
@@ -71,7 +71,14 @@ def handle(query: LoadFleetQuery) -> Fleet:
   storages = parse_storages(fleet, query.storages_key)
   servers = parse_servers(fleet, query.servers_key)
 
+  services = ServiceCollection()
+  for server in servers.index.values():
+    for service_key, service in server.services.index.items():
+      if service_key not in services.index:
+        services.index[service_key] = service
+
   return Fleet(
     servers=servers,
     storages=storages,
+    services=services,
   )

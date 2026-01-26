@@ -5,10 +5,10 @@ import subprocess
 from pathlib import Path
 
 from mhs.config import LOCAL_ROOT
-from mhs.control.fleet.load_fleet.query import LoadFleetQuery
+from mhs.control.fleet.load_fleet.query import LoadFleet
 from mhs.device.server.entity import Server
 from mhs.output import print_error, print_info, print_success, print_warning
-from mhs.ssh.run.command import RunCommand
+from mhs.ssh.run_on.command import RunOn
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ def ensure_remote_dir(server: Server, remote_dir: str):
   else:
     mkdir_cmd = f"mkdir -p {remote_dir}"
 
-  RunCommand(
+  RunOn(
     server.ssh_host,
     mkdir_cmd,
   ).execute()
@@ -235,7 +235,7 @@ def main(argv=None):
   service_key = remote_executable_path.parts[0]
   fleet_file = root_dir / "fleet.json"
 
-  fleet = LoadFleetQuery(fleet_file).execute()
+  fleet = LoadFleet(fleet_file).execute()
   server = fleet.servers.get_host(service_key)
   if server is None:
     raise RuntimeError(

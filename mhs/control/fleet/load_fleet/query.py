@@ -5,7 +5,7 @@ from mhs.config import FLEET_FILE
 
 
 @dataclass
-class LoadFleetQuery:
+class LoadFleet:
   fleet_file: Path = FLEET_FILE
   servers_key: str = "devices"
   storages_key: str = "media"
