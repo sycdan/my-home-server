@@ -1,3 +1,0 @@
-# data dirs (should not be mounted in this dir, but just in case)
-library/*
-postgres/*
