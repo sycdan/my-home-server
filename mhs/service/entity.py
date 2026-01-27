@@ -49,3 +49,8 @@ class ServiceRepo:
     if not isinstance(ref, ServiceRef):
       ref = ServiceRef(ref)
     self._index[ref] = value
+
+  def get(self, ref: ServiceRef) -> Service | None:
+    if not isinstance(ref, ServiceRef):
+      ref = ServiceRef(ref)
+    return self._index.get(ref)

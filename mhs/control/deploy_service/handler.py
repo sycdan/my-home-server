@@ -8,9 +8,17 @@ from mhs.service.entity import Service
 from mhs.ssh.upload.command import UploadDirectory
 
 
+def determine_host(service: Service) -> Server:
+  from mhs.data.fleet.load.query import LoadFleet
+
+  fleet = LoadFleet().execute()
+  host = fleet.get_service_host(service)
+  return host
+
+
 def _upload_service_files(service: Service, server: Server, remote_path: Path):
   """Upload all service files to remote directory via rsync"""
-  local_service_dir = Path(f"mhs/service/{service.key}/etc")
+  local_service_dir = Path(f"etc/{service.key}")
 
   if not local_service_dir.exists():
     raise RuntimeError(f"Service directory {local_service_dir} does not exist")
@@ -43,7 +51,11 @@ def deploy_service(service: Service, server: Server, dc_args: list[str]):
 
 def handle(command: DeployService):
   service = command.service.hydrate()
-  host = command.host.hydrate()
+
+  if command.host:
+    host = command.host.hydrate()
+  else:
+    host = determine_host(service)
 
   dc_args = []
 

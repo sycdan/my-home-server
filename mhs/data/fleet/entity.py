@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from mhs.device.server.entity import Server, ServerRepo
 from mhs.device.storage.entity import StorageRepo
-from mhs.service.entity import Service, ServiceRepo
+from mhs.service.entity import Service, ServiceRef, ServiceRepo
 
 
 @dataclass
@@ -11,15 +11,13 @@ class Fleet:
   storages: StorageRepo
   services: ServiceRepo
 
-  def get_service_host_or_fail(self, service: Service | str) -> Server:
-    if isinstance(service, str):
-      try:
-        service = self.services[service]
-      except KeyError:
-        raise RuntimeError(f"Unknown service {service}")
-
+  def get_service_host(self, service: Service, default: Server | None = None) -> Server:
+    service_ref = ServiceRef(service)
     for server in self.servers._index.values():
-      if service.key in server.services._index:
+      if server.services.get(service_ref):
         return server
+
+    if default is not None:
+      return default
 
     raise RuntimeError(f"No host found for service {service}")
