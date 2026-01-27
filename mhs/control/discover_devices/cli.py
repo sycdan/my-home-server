@@ -15,7 +15,7 @@ from pathlib import Path
 
 from mhs import LOCAL_ROOT
 from mhs.control.discover_devices import tools
-from mhs.control.fleet.load_fleet.query import LoadFleet
+from mhs.data.fleet.load.query import LoadFleet
 from mhs.device.server.entity import Server
 from mhs.output import print_error, print_info, print_success, print_warning
 from mhs.ssh.run_on.command import RunOn
@@ -35,9 +35,7 @@ def set_debug(value: bool) -> None:
 def ensure_env_file() -> None:
   if not ENV_FILE.exists():
     ENV_FILE.write_text(EXAMPLE_ENV_FILE.read_text())
-    print(
-      f"Created default .env file at {ENV_FILE}. Customize it as necessary, then rerun."
-    )
+    print(f"Created default .env file at {ENV_FILE}. Customize it as necessary, then rerun.")
     sys.exit(0)
 
 
@@ -232,12 +230,8 @@ def configure_split_dns(hostname: str, ingress_ip: str) -> None:
 
 
 def main(argv=None):
-  parser = argparse.ArgumentParser(
-    description="Deploy device discovery scripts to router."
-  )
-  parser.add_argument(
-    "device", nargs="?", default=None, help="Specific device to discover."
-  )
+  parser = argparse.ArgumentParser(description="Deploy device discovery scripts to router.")
+  parser.add_argument("device", nargs="?", default=None, help="Specific device to discover.")
   parser.add_argument(
     "--debug",
     action="store_true",
@@ -254,7 +248,7 @@ def main(argv=None):
   DEVICE_SCRIPT_CACHE_DIR.mkdir(exist_ok=True)
 
   fleet = LoadFleet(FLEET_FILE).execute()
-  if not fleet.servers.index:
+  if not fleet.servers._index:
     raise RuntimeError(f"No devices configured in {FLEET_FILE}")
 
   public_hostnames: set[str] = set()
@@ -262,7 +256,7 @@ def main(argv=None):
 
   deployed_count = 0
   failed_count = 0
-  for server in fleet.servers.index.values():
+  for server in fleet.servers._index.values():
     if args.device and server.key != args.device:
       continue
     name = server.description.strip() or server.key

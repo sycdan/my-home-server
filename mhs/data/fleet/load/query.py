@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from mhs.config import FLEET_FILE
-from mhs.control.fleet.entity import Fleet
+from mhs.data.fleet.entity import Fleet
 
 
 @dataclass
@@ -17,6 +17,6 @@ class LoadFleet:
       raise ValueError("fleet_file must be named 'fleet.json'")
 
   def execute(self) -> Fleet:
-    from mhs.control.fleet.load_fleet.handler import handle
+    from mhs.data.fleet.load.handler import handle
 
     return handle(self)

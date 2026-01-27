@@ -1,4 +1,3 @@
-from _collections_abc import dict_values
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -11,20 +10,42 @@ class Service:
   domain_key: str = field(default="")
   description: str = field(default="")
   mount_points: dict[str, Path] = field(default_factory=dict)
+  """TODO: implement mount points"""
 
   def __str__(self) -> str:
     return self.key
 
 
 @dataclass
-class ServiceCollection:
-  index: dict[str, Service] = field(default_factory=dict)
+class ServiceRef:
+  key: Service | str
 
-  def __getitem__(self, key: str) -> Service:
-    return self.index[key]
+  def __post_init__(self):
+    if not isinstance(self.key, str):
+      self.key = self.key.key
 
-  def __setitem__(self, key: str, value: Service) -> None:
-    self.index[key] = value
+    if not self.key:
+      raise ValueError("key cannot be empty")
 
-  def values(self) -> dict_values[str, Service]:
-    return self.index.values()
+  def __hash__(self) -> int:
+    return hash(self.key)
+
+  def hydrate(self) -> Service:
+    from mhs.data.fleet.load_service.query import LoadService
+
+    return LoadService(self).execute()
+
+
+@dataclass
+class ServiceRepo:
+  _index: dict[ServiceRef, Service] = field(default_factory=dict)
+
+  def __getitem__(self, ref: ServiceRef) -> Service:
+    if not isinstance(ref, ServiceRef):
+      ref = ServiceRef(ref)
+    return self._index[ref]
+
+  def __setitem__(self, ref: ServiceRef, value: Service) -> None:
+    if not isinstance(ref, ServiceRef):
+      ref = ServiceRef(ref)
+    self._index[ref] = value

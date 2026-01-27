@@ -2,24 +2,24 @@ import json
 import sys
 
 from mhs.config import DOMAIN_SUFFIX
-from mhs.control.fleet.entity import Fleet
-from mhs.control.fleet.load_fleet.query import LoadFleet
-from mhs.device.server.entity import Server, ServerCollection
-from mhs.device.storage.entity import Storage, StorageCollection
+from mhs.data.fleet.entity import Fleet
+from mhs.data.fleet.load.query import LoadFleet
+from mhs.device.server.entity import Server, ServerRepo
+from mhs.device.storage.entity import Storage, StorageRepo
 from mhs.output import print_error, print_warning
-from mhs.service.entity import Service, ServiceCollection
+from mhs.service.entity import Service, ServiceRepo
 from mhs.tools import validate_mac_address
 
 
-def parse_services(data: dict, data_key: str = "services") -> ServiceCollection:
-  services = ServiceCollection()
+def parse_services(data: dict, data_key: str = "services") -> ServiceRepo:
+  services = ServiceRepo()
   for key, vars in data.get(data_key, {}).items():
-    services.index[key] = Service(key, **vars)
+    services[key] = Service(key, **vars)
   return services
 
 
-def parse_servers(fleet: dict, data_key: str = "servers") -> ServerCollection:
-  servers = ServerCollection()
+def parse_servers(fleet: dict, data_key: str = "servers") -> ServerRepo:
+  servers = ServerRepo()
 
   for key, definition in fleet.get(data_key, {}).items():
     services = parse_services(definition)
@@ -36,24 +36,20 @@ def parse_servers(fleet: dict, data_key: str = "servers") -> ServerCollection:
       host_os=definition.get("host_os", "linux"),
     )
     if not validate_mac_address(server.primary_mac):
-      print_error(
-        f"Invalid primary MAC address for device '{key}': {server.primary_mac}"
-      )
+      print_error(f"Invalid primary MAC address for device '{key}': {server.primary_mac}")
       sys.exit(1)
     if server.secondary_mac and not validate_mac_address(server.secondary_mac):
-      print_warning(
-        f"Invalid secondary MAC address for device '{key}': {server.secondary_mac}"
-      )
+      print_warning(f"Invalid secondary MAC address for device '{key}': {server.secondary_mac}")
       continue
-    servers.index[key] = server
+    servers[key] = server
 
   return servers
 
 
-def parse_storages(fleet: dict, data_key: str = "storages") -> StorageCollection:
-  storages = StorageCollection()
+def parse_storages(fleet: dict, data_key: str = "storages") -> StorageRepo:
+  storages = StorageRepo()
   for key, vars in fleet.get(data_key, {}).items():
-    storages.index[key] = Storage(key, **vars)
+    storages[key] = Storage(key, **vars)
   return storages
 
 
@@ -71,11 +67,11 @@ def handle(query: LoadFleet) -> Fleet:
   storages = parse_storages(fleet, query.storages_key)
   servers = parse_servers(fleet, query.servers_key)
 
-  services = ServiceCollection()
-  for server in servers.index.values():
-    for service_key, service in server.services.index.items():
-      if service_key not in services.index:
-        services.index[service_key] = service
+  services = ServiceRepo()
+  for server in servers._index.values():
+    for service_key, service in server.services._index.items():
+      if service_key not in services._index:
+        services[service_key] = service
 
   return Fleet(
     servers=servers,

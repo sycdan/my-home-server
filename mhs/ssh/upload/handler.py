@@ -18,9 +18,7 @@ def _delete_remote_directory(ssh_host: str, remote_path: Path):
     raise RuntimeError(f"Failed to delete remote directory: {output}")
 
 
-def _create_remote_directory(
-  ssh_host: str, remote_path: Path, host_is_windows: bool = False
-):
+def _create_remote_directory(ssh_host: str, remote_path: Path, host_is_windows: bool = False):
   # TODO quote per os
   if host_is_windows:
     command = f"mkdir {remote_path.as_posix().replace('/', '\\')}"
@@ -38,9 +36,7 @@ def handle_upload_directory(command: UploadDirectory):
   if command.clear:
     _delete_remote_directory(command.ssh_host, command.remote_dir)
 
-  _create_remote_directory(
-    command.ssh_host, command.remote_dir, command.host_is_windows
-  )
+  _create_remote_directory(command.ssh_host, command.remote_dir, command.host_is_windows)
 
   local_dir = command.local_dir
   if not local_dir.is_absolute():

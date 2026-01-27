@@ -26,7 +26,7 @@ def _upload_service_files(service: Service, server: Server, remote_path: Path):
 
 def deploy_service(service: Service, server: Server, dc_args: list[str]):
   print_info(f"Deploying {service} to {server.key}...")
-  
+
   remote_path = Path("my-home-server") / "etc" / service.key
 
   _upload_service_files(service, server, remote_path)
@@ -42,10 +42,8 @@ def deploy_service(service: Service, server: Server, dc_args: list[str]):
 
 
 def handle(command: DeployService):
-  if not command.service:
-    raise ValueError("Service must be provided to deploy")
-  if not command.host:
-    raise ValueError("Host must be provided to deploy")
+  service = command.service.hydrate()
+  host = command.host.hydrate()
 
   dc_args = []
 
@@ -55,4 +53,4 @@ def handle(command: DeployService):
   if command.force_recreate:
     dc_args.append("--force-recreate")
 
-  deploy_service(command.service, command.host, dc_args)
+  deploy_service(service, host, dc_args)

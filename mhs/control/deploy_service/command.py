@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 
-from mhs.device.server.entity import Server
-from mhs.service.entity import Service
+from mhs.device.server.entity import ServerRef
+from mhs.service.entity import ServiceRef
 
 
 @dataclass
 class DeployService:
-  service: Service
-  host: Server
+  service: ServiceRef
+  host: ServerRef | None = None
   start_service: bool = True
   force_recreate: bool = False
 

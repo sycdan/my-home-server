@@ -1,15 +1,15 @@
 from dataclasses import dataclass
 
-from mhs.device.server.entity import Server, ServerCollection
-from mhs.device.storage.entity import StorageCollection
-from mhs.service.entity import Service, ServiceCollection
+from mhs.device.server.entity import Server, ServerRepo
+from mhs.device.storage.entity import StorageRepo
+from mhs.service.entity import Service, ServiceRepo
 
 
 @dataclass
 class Fleet:
-  servers: ServerCollection
-  storages: StorageCollection
-  services: ServiceCollection
+  servers: ServerRepo
+  storages: StorageRepo
+  services: ServiceRepo
 
   def get_service_host_or_fail(self, service: Service | str) -> Server:
     if isinstance(service, str):
@@ -18,8 +18,8 @@ class Fleet:
       except KeyError:
         raise RuntimeError(f"Unknown service {service}")
 
-    for server in self.servers.index.values():
-      if service.key in server.services.index:
+    for server in self.servers._index.values():
+      if service.key in server.services._index:
         return server
 
     raise RuntimeError(f"No host found for service {service}")

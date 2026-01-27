@@ -1,4 +1,5 @@
 # To Do
 
-- logging refactor (include trace level?)
-- finish immich backup restore
+**Note:** skip any <!-- commented --> lines.
+
+<!-- - logging refactor (include trace level?) -->

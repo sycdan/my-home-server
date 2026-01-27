@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 
 from mhs.config import LOCAL_ROOT
-from mhs.control.fleet.load_fleet.query import LoadFleet
+from mhs.data.fleet.load.query import LoadFleet
 from mhs.device.server.entity import Server
 from mhs.output import print_error, print_info, print_success, print_warning
 from mhs.ssh.run_on.command import RunOn
@@ -16,9 +16,7 @@ logger = logging.getLogger(__name__)
 def ensure_remote_dir(server: Server, remote_dir: str):
   print_info(f"Ensuring {remote_dir} exists on {server.description}...")
   if server.host_os == "windows":
-    mkdir_cmd = (
-      f'powershell -Command "New-Item -ItemType Directory -Path {remote_dir} -Force"'
-    )
+    mkdir_cmd = f'powershell -Command "New-Item -ItemType Directory -Path {remote_dir} -Force"'
   else:
     mkdir_cmd = f"mkdir -p {remote_dir}"
 
@@ -214,9 +212,7 @@ def main(argv=None):
     description="Execute a service script on a remote device.",
     add_help=False,
   )
-  parser.add_argument(
-    "executable", help="Relative path to executable script from `root`"
-  )
+  parser.add_argument("executable", help="Relative path to executable script from `root`")
   parser.add_argument(
     "--root", default=LOCAL_ROOT.as_posix(), help="Root directory of the project"
   )
@@ -238,9 +234,7 @@ def main(argv=None):
   fleet = LoadFleet(fleet_file).execute()
   server = fleet.servers.get_host(service_key)
   if server is None:
-    raise RuntimeError(
-      f"Service '{service_key}' is not hosted on any server in the fleet"
-    )
+    raise RuntimeError(f"Service '{service_key}' is not hosted on any server in the fleet")
 
   ssh_host = server.ssh_host
   if args.create_root:
@@ -272,9 +266,7 @@ def main(argv=None):
 
   remote_executable = remote_executable_path.as_posix()
   print_info(f"Executing {remote_executable} on {server.key}...")
-  remote_cmd = (
-    f"cd {root_dir.name} && services/{remote_executable} {' '.join(remaining)}"
-  )
+  remote_cmd = f"cd {root_dir.name} && services/{remote_executable} {' '.join(remaining)}"
   ssh_exec_cmd = ["ssh", ssh_host, "-t", remote_cmd]
   try:
     # Use call instead of run to preserve interactive terminal behavior
