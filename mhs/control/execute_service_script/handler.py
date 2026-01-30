@@ -5,6 +5,7 @@ import subprocess
 from pathlib import Path
 
 from mhs.config import LOCAL_ROOT
+from mhs.control.execute_service_script.command import ExecuteServiceScript
 from mhs.data.fleet.load.query import LoadFleet
 from mhs.device.server.entity import Server
 from mhs.output import print_error, print_info, print_success, print_warning
@@ -208,26 +209,10 @@ def gather_files_to_sync(src_dir: str, root_dir: Path):
   return filepaths
 
 
-def main(argv=None):
-  parser = argparse.ArgumentParser(
-    description="Execute a service script on a remote device.",
-    add_help=False,
-  )
-  parser.add_argument("executable", help="Relative path to executable script from `root`")
-  parser.add_argument(
-    "--root", default=LOCAL_ROOT.as_posix(), help="Root directory of the project"
-  )
-  parser.add_argument(
-    "--create-root",
-    action="store_true",
-    help="Create remote root directory if it does not exist",
-  )
-  args, remaining = parser.parse_known_args(argv)
-  logger.debug(f"Parsed arguments: {args}, remaining: {remaining}")
-
-  root_dir = Path(args.root).resolve()
+def handle(command: ExecuteServiceScript):
+  root_dir = Path(LOCAL_ROOT).resolve()
   local_etc = root_dir / "etc"
-  executable_path = validate_executable(args.executable, local_etc)
+  executable_path = validate_executable(command.executable, local_etc)
   remote_executable_path = executable_path.relative_to(local_etc)
   service_key = remote_executable_path.parts[0]
   fleet_file = root_dir / "fleet.json"
@@ -238,7 +223,7 @@ def main(argv=None):
     raise RuntimeError(f"Service '{service_key}' is not hosted on any server in the fleet")
 
   ssh_host = server.ssh_host
-  if args.create_root:
+  if command.create_root:
     ensure_remote_dir(server, f"{root_dir.name}/")
 
   # Paths are relative to root dir
@@ -267,7 +252,7 @@ def main(argv=None):
 
   remote_executable = remote_executable_path.as_posix()
   print_info(f"Executing {remote_executable} on {server.key}...")
-  remote_cmd = f"cd {root_dir.name} && etc/{remote_executable} {' '.join(remaining)}"
+  remote_cmd = f"cd {root_dir.name} && etc/{remote_executable} {' '.join(command.script_args)}"
   ssh_exec_cmd = ["ssh", ssh_host, "-t", remote_cmd]
   try:
     # Use call instead of run to preserve interactive terminal behavior
