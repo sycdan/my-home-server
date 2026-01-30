@@ -226,9 +226,9 @@ def main(argv=None):
   logger.debug(f"Parsed arguments: {args}, remaining: {remaining}")
 
   root_dir = Path(args.root).resolve()
-  services_dir = root_dir / "services"
-  executable_path = validate_executable(args.executable, services_dir)
-  remote_executable_path = executable_path.relative_to(services_dir)
+  local_etc = root_dir / "etc"
+  executable_path = validate_executable(args.executable, local_etc)
+  remote_executable_path = executable_path.relative_to(local_etc)
   service_key = remote_executable_path.parts[0]
   fleet_file = root_dir / "fleet.json"
 
@@ -243,14 +243,14 @@ def main(argv=None):
 
   # Paths are relative to root dir
   from_remote_files = [
-    f"services/{service_key}/.env",
+    f"etc/{service_key}/.env",
   ]
   to_remote_files = [
     ".env",
     fleet_file.relative_to(root_dir).as_posix(),
   ]
   to_remote_files.extend(gather_files_to_sync("lib", root_dir))
-  to_remote_files.extend(gather_files_to_sync(f"services/{service_key}", root_dir))
+  to_remote_files.extend(gather_files_to_sync(f"etc/{service_key}", root_dir))
 
   print_info(msg=f"Syncing files with {ssh_host}...")
   if not bidirectional_sync(
@@ -267,7 +267,7 @@ def main(argv=None):
 
   remote_executable = remote_executable_path.as_posix()
   print_info(f"Executing {remote_executable} on {server.key}...")
-  remote_cmd = f"cd {root_dir.name} && services/{remote_executable} {' '.join(remaining)}"
+  remote_cmd = f"cd {root_dir.name} && etc/{remote_executable} {' '.join(remaining)}"
   ssh_exec_cmd = ["ssh", ssh_host, "-t", remote_cmd]
   try:
     # Use call instead of run to preserve interactive terminal behavior

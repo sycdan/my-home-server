@@ -1,81 +1,21 @@
 import os
-import subprocess
 import sys
-import tempfile
-import uuid
-from pathlib import Path
 
 import pytest
 
 pytestmark = pytest.mark.integration
 
-TEST_SERVICE_KEY = f"svc_{uuid.uuid4().hex[:8]}"
-TEST_FLEET_JSON = """
-{
-  "media": {
-    "mmcblk0p2": {
-      "uuid": "1232a209-2596-48f0-a078-731d10b918ad",
-      "description": "Already mounted to /"
-    }
-  },
-	"devices": {
-		"r-pi": {
-			"description": "Raspberry Pi 3",
-			"ssh_host": "ingress",
-			"macs": ["B8:27:EB:AB:C0:DC"],
-			"services": {
-				"{{service-key}}": {
-					"port": 59999
-				}
-			}
-		}
-	}
-}
-""".strip().replace("{{service-key}}", TEST_SERVICE_KEY)
 
-
-@pytest.fixture()
-def fake_tree():
-  """Fixture to set LOCAL_ROOT to a temporary directory for tests."""
-  with tempfile.TemporaryDirectory() as temp_dir:
-    original_local_root = os.environ.get("MHS_LOCAL_ROOT")
-    os.environ["MHS_LOCAL_ROOT"] = temp_dir
-    root_dir = Path(temp_dir)
-
-    fleet_file = root_dir / "fleet.json"
-    fleet_file.write_text(TEST_FLEET_JSON)
-
-    service_dir = root_dir / "services" / TEST_SERVICE_KEY
-    service_dir.mkdir(parents=True)
-
-    lib_dir = root_dir / "lib"
-    lib_dir.mkdir()
-
-    try:
-      yield root_dir, lib_dir, service_dir
-    finally:
-      if original_local_root is not None:
-        os.environ["MHS_LOCAL_ROOT"] = original_local_root
-      else:
-        del os.environ["MHS_LOCAL_ROOT"]
-
-
-def test_remote_service_can_be_initialized(fake_tree):
+def test_remote_service_can_be_initialized(sandbox):
   """Happy-path test for remote service command execution on a real host."""
   from mhs.control.execute_service_script.cli import main
 
-  root_dir, lib_dir, service_dir = fake_tree
-
-  global_env_file = root_dir / ".env"
-  global_env_file.write_text("GLOBAL_VAR=1111")
-
-  test_lib_file = lib_dir / "test.sh"
-  test_lib_file.write_text("LIB_VAR=2222")
-
-  test_service_env_file = service_dir / ".env"
-  test_service_env_file.write_text("SERVICE_VAR=3333")
-  test_service_command_file = service_dir / "init"
-  test_service_command_file.write_text(
+  sandbox.write(".env", "GLOBAL_VAR=1111")
+  sandbox.write("lib/test.sh", "LIB_VAR=2222")
+  sandbox.write(sandbox.service_etc / ".env", "SERVICE_VAR=3333")
+  init_script = sandbox.service_etc / "init"
+  sandbox.write(
+    init_script,
     "\n".join(
       [
         "#!/usr/bin/env bash",
@@ -84,7 +24,7 @@ def test_remote_service_can_be_initialized(fake_tree):
         'echo "Root: $(pwd)"',
         'source ".env"',
         'source "lib/test.sh"',
-        f'source "services/{TEST_SERVICE_KEY}/.env"',
+        f'source "etc/{sandbox.service_key}/.env"',
         'echo "Global: $GLOBAL_VAR"',
         'echo "Lib: $LIB_VAR"',
         'echo "Service: $SERVICE_VAR"',
@@ -92,14 +32,14 @@ def test_remote_service_can_be_initialized(fake_tree):
     ),
     newline="\n",
   )
-  os.chmod(test_service_command_file, 0o755)
+  os.chmod(init_script, 0o755)
 
   try:
     main(
       [
-        str(test_service_command_file),
+        str(init_script),
         "--root",
-        str(root_dir),
+        str(sandbox.root),
         "--create-root",
       ]
     )
