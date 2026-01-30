@@ -3,6 +3,7 @@ eval "$(scaf)"
 alias | grep -P 'scaf(?=\.)'
 eval "$(scaf .)"
 alias | grep -P 'mhs(?=\.)'
+alias | grep -P 'dev(?=\.)'
 
 # Add aliases for each executable in each service's bin directory
 MHS_LOCAL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
