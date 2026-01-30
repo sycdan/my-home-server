@@ -8,6 +8,7 @@ from mhs.config import LOCAL_ROOT
 from mhs.data.fleet.load.query import LoadFleet
 from mhs.device.server.entity import Server
 from mhs.output import print_error, print_info, print_success, print_warning
+from mhs.service.entity import ServiceRef
 from mhs.ssh.run_on.command import RunOn
 
 logger = logging.getLogger(__name__)
@@ -232,7 +233,7 @@ def main(argv=None):
   fleet_file = root_dir / "fleet.json"
 
   fleet = LoadFleet(fleet_file).execute()
-  server = fleet.servers.get_host(service_key)
+  server = fleet.servers.get_host(ServiceRef(service_key))
   if server is None:
     raise RuntimeError(f"Service '{service_key}' is not hosted on any server in the fleet")
 
