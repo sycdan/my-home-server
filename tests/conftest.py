@@ -1,10 +1,13 @@
 import os
+import shlex
 import subprocess
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import pytest
+
+from mhs.config import LOCAL_ROOT
 
 TEST_SERVICE_KEY = f"sandbox_{uuid.uuid4().hex[:8]}"
 TEST_FLEET_JSON = """
@@ -73,8 +76,10 @@ class Sandbox:
       **kwargs,
     )
 
-  def run_scaf(self, *scaf_args: list[str]) -> subprocess.CompletedProcess:
-    return self.run("scaf", *scaf_args)
+  def scaf_call(self, action, *args):
+    return self.run(
+      "scaf", shlex.quote(LOCAL_ROOT.as_posix()), "--call", shlex.quote(action), "--", *args
+    )
 
 
 @pytest.fixture
