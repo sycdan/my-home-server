@@ -1,4 +1,3 @@
-import argparse
 import logging
 import os
 import subprocess
@@ -209,7 +208,7 @@ def gather_files_to_sync(src_dir: str, root_dir: Path):
   return filepaths
 
 
-def handle(command: ExecuteServiceScript):
+def handle(command: ExecuteServiceScript, *args):
   root_dir = Path(LOCAL_ROOT).resolve()
   local_etc = root_dir / "etc"
   executable_path = validate_executable(command.executable, local_etc)
@@ -250,7 +249,7 @@ def handle(command: ExecuteServiceScript):
 
   remote_executable = remote_executable_path.as_posix()
   print_info(f"Executing {remote_executable} on {server.key}...")
-  remote_cmd = f"cd {root_dir.name} && etc/{remote_executable} {' '.join(command.script_args)}"
+  remote_cmd = f"cd {root_dir.name} && etc/{remote_executable} {' '.join(args)}"
   ssh_exec_cmd = ["ssh", ssh_host, "-t", remote_cmd]
   try:
     # Use call instead of run to preserve interactive terminal behavior

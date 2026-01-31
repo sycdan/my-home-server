@@ -7,12 +7,13 @@ if [[ -z "${MHS_CLI_BOOTSTRAPPED:-}" ]]; then
   
   # Set up standard paths based on directory structure from the calling service
   script_dir="$(cd "$(dirname "${BASH_SOURCE[1]}")" && pwd)"
-  if [[ "$script_dir" == */services/*/bin ]]; then
+  echo $script_dir
+  if [[ "$script_dir" == */etc/*/bin ]]; then
     export SERVICE_DIR="$(cd "$script_dir/../" && pwd)"
-    elif [[ "$script_dir" == */services/* ]] && [[ "$script_dir" != */services/*/bin ]]; then
+    elif [[ "$script_dir" == */etc/* ]] && [[ "$script_dir" != */etc/*/bin ]]; then
     export SERVICE_DIR="$script_dir"
   else
-    echo "Error: Script must be in services/<service>/ or services/<service>/bin/ directory" >&2
+    echo "Error: Script must be in etc/<service>/ or etc/<service>/bin/ directory" >&2
     exit 1
   fi
   export SERVICE_KEY="$(basename "$SERVICE_DIR")"
