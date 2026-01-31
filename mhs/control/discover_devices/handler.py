@@ -75,12 +75,13 @@ def handle(command: DiscoverDevices):
     public_hostnames.update(get_public_hostnames(device, domains))
     DiscoverDevice(ServerRef(device.key)).execute()
 
-  if ingress_ip := get_ingress_ip():
-    for domain in domains.values():
-      clear_split_dns(domain)
-    for hostname in public_hostnames:
-      configure_split_dns(hostname, ingress_ip)
-  else:
-    print_warning(
-      "Could not configure split DNS: Ingress IP not found (you may have ingress issues on LAN)"
-    )
+  if not command.skip_dns_refresh:
+    if ingress_ip := get_ingress_ip():
+      for domain in domains.values():
+        clear_split_dns(domain)
+      for hostname in public_hostnames:
+        configure_split_dns(hostname, ingress_ip)
+    else:
+      print_warning(
+        "Could not configure split DNS: Ingress IP not found (you may have ingress issues on LAN)"
+      )

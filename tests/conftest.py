@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from mhs import config
 from mhs.config import LOCAL_ROOT
 
 TEST_SERVICE_KEY = f"sandbox_{uuid.uuid4().hex[:8]}"
@@ -14,8 +15,7 @@ TEST_FLEET_JSON = """
 {
   "media": {
     "mmcblk0p2": {
-      "uuid": "1232a209-2596-48f0-a078-731d10b918ad",
-      "description": "Already mounted to /"
+      "uuid": "1232a209-2596-48f0-a078-731d10b918ad"
     }
   },
 	"devices": {
@@ -44,6 +44,7 @@ class Sandbox:
   def __post_init__(self):
     os.environ["MHS_LOCAL_ROOT"] = str(self.root)
     self.write("fleet.json", TEST_FLEET_JSON)
+    config.FLEET_FILE = self.root / "fleet.json"
     self.service_etc = self.root / "etc" / self.service_key
     self.service_etc.mkdir(parents=True)
     self.lib = self.root / "lib"
