@@ -1,15 +1,14 @@
+"""Happy-path test for remote service command execution on a real host."""
+
 import os
-import sys
 
 import pytest
 
 from tests.conftest import Sandbox
 
-pytestmark = pytest.mark.integration
 
-
+@pytest.mark.integration
 def test(sandbox: Sandbox):
-  """Happy-path test for remote service command execution on a real host."""
   sandbox.write(".env", "GLOBAL_VAR=1111")
   sandbox.write("lib/test.sh", "LIB_VAR=2222")
   sandbox.write(sandbox.service_etc / ".env", "SERVICE_VAR=3333")
@@ -39,3 +38,6 @@ def test(sandbox: Sandbox):
     init_script.relative_to(sandbox.root).as_posix(),
   )
   assert result.returncode == 0, f"Command failed: {result.stderr}"
+  assert "Global: 1111" in result.stdout
+  assert "Lib: 2222" in result.stdout
+  assert "Service: 3333" in result.stdout
