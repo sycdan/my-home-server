@@ -1,10 +1,8 @@
-from pathlib import Path
-
-ACTION_DIR = Path(__file__).parent
+from mhs.device.discover import TEMPLATES_DIR
 
 
 def generate_device_discovery_script(hostname: str, primary_mac: str, secondary_mac: str) -> str:
-  template = ACTION_DIR / "templates" / "discovery-script.rsc"
+  template = TEMPLATES_DIR / "discovery-script.rsc"
   script = template.read_text()
   script = script.replace("{{hostname}}", hostname)
   script = script.replace("{{primary_mac}}", primary_mac)
