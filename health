@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+curl http://photos.wildharvesthomestead.com/ | grep -i "immich"
