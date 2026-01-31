@@ -16,6 +16,9 @@ class LoadFleet:
     if not self.fleet_file.name == "fleet.json":
       raise ValueError("fleet_file must be named 'fleet.json'")
 
+  def __str__(self) -> str:
+    return self.fleet_file.as_posix()
+
   def execute(self) -> Fleet:
     from mhs.data.fleet.load.handler import handle
 

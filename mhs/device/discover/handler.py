@@ -167,70 +167,13 @@ def create_schedule(script_name: str, schedule_spec: str, user="admin") -> bool:
   return True
 
 
-def load_domains(fleet_file: Path) -> dict[str, str]:
-  """loads domain configurations from the fleet file"""
-  domains: dict[str, str] = {}
-  fleet = json.loads(fleet_file.read_text())
-  for key, props in fleet.get("domains", {}).items():
-    if domain := props.get("domain"):
-      domains[key] = domain
-  return domains
-
-
-def get_ingress_ip(hostname="ingress.lan") -> str:
-  """returns the IP address of the device running the public ingress service"""
-  ip = ""
-  output, success = run_on_router(
-    f":put [/ip dns static get [find name={shlex.quote(hostname)}] address]"
-  )
-  if success:
-    ip = output.strip()
-  else:
-    print_error("Failed to get ingress IP from router")
-  return ip
-
-
-def get_public_hostnames(device: Server, domains: dict[str, str]) -> list[str]:
-  """returns the public hostname for the device if configured with a domain"""
-  hostnames: list[str] = []
-  for service in device.services._index.values():
-    if domain_key := service.domain_key:
-      if domain := domains.get(domain_key):
-        if subdomain := service.subdomain:
-          hostname = f"{subdomain}.{domain}"
-          hostnames.append(hostname)
-  return hostnames
-
-
-def clear_split_dns(hostname: str) -> None:
-  """removes existing split DNS entries for the given hostname"""
-  cmd = f'/ip dns static remove [find name~"{hostname}"]'
-  output, success = run_on_router(cmd)
-  if not success:
-    print_warning(f"Failed to clear split DNS for {hostname}: {output}")
-
-
-def configure_split_dns(hostname: str, ingress_ip: str) -> None:
-  """avoids hairpinning by allowing LAN devices to resolve public hostnames via the router's DNS"""
-  cmd = f'/ip dns static add name="{hostname}" address="{ingress_ip}" ttl=30m comment="Split DNS for {hostname}"'
-  output, success = run_on_router(cmd)
-  if not success:
-    print_warning(f"Failed to configure split DNS for {hostname}: {output}")
-  print_success(f"Configured split DNS for {hostname} to {ingress_ip}")
-
-
 def handle(command: DiscoverDevice):
   device = LoadServer(command.ref).execute()
   print(f"Discovering {device}...")
 
   DEVICE_SCRIPT_CACHE_DIR.mkdir(exist_ok=True)
 
-  public_hostnames: set[str] = set()
-  domains = load_domains(FLEET_FILE)
-
   name = device.description.strip() or device.key
-
-  public_hostnames.update(get_public_hostnames(device, domains))
 
   script_name = f"discover-{device.key}"
   script_file = DEVICE_SCRIPT_CACHE_DIR / f"{script_name}.rsc"
@@ -253,15 +196,5 @@ def handle(command: DiscoverDevice):
       print_error(f"Failed to schedule {script_file.stem}")
   else:
     print_error(f"Failed to deploy {script_name}")
-
-  if ingress_ip := get_ingress_ip():
-    for domain in domains.values():
-      clear_split_dns(domain)
-    for hostname in public_hostnames:
-      configure_split_dns(hostname, ingress_ip)
-  else:
-    print_warning(
-      "Could not configure split DNS: Ingress IP not found (you may have ingress issues on LAN)"
-    )
 
   print("Done.")

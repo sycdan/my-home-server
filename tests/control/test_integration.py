@@ -58,9 +58,9 @@ def test_storage_mount_is_idempotent():
 
 
 def test_can_discover_device():
-  from mhs.control.discover_devices.cli import main
+  from mhs.control.discover_devices.handler import handle
 
-  main(
+  handle(
     [
       "r-pi",
     ]
