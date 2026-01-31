@@ -113,7 +113,8 @@
 		},
 		"nicole-laptop": {
 			"macs": [
-				"00:E0:4C:65:4D:53"
+				"00:E0:4C:65:4D:53",
+				"C2:1E:72:39:04:32"
 			],
 			"description": "Nicole's Laptop"
 		},

@@ -21,6 +21,8 @@ On your local machine, add the device to `./fleet.json`:
 }
 ```
 
+The key should be sued as the ssh host, unless an explicit `ssh_host` is set for a given device.
+
 **Note**: primary mac should be ethernet, if available; secondary (optional) can be wireless.
 
 ### Discovering devices
