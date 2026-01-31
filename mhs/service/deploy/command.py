@@ -12,6 +12,6 @@ class DeployService:
   force_recreate: bool = False
 
   def execute(self):
-    from mhs.control.deploy_service.handler import handle
+    from mhs.service.deploy.handler import handle
 
     handle(self)

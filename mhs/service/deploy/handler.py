@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from mhs.control.deploy_service.command import DeployService
 from mhs.control.run_docker_compose.command import RunDockerCompose
 from mhs.device.server.entity import Server
 from mhs.output import print_info, print_success
+from mhs.service.deploy.command import DeployService
 from mhs.service.entity import Service
 from mhs.ssh.upload.command import UploadDirectory
 

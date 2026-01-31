@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from mhs.control.deploy_service.command import DeployService
+from mhs.service.deploy.command import DeployService
+from mhs.control.service.immich.restore_backup.command import RestoreBackup
 from mhs.data.fleet.load.query import LoadFleet
 from mhs.output import print_info, print_success
-from mhs.service.immich.restore_backup.command import RestoreBackup
 from mhs.ssh.run_on.command import RunOn
 
 

@@ -8,6 +8,6 @@ class RestoreBackup:
   """rel path from ssh home; must exist on the remote"""
 
   def execute(self):
-    from mhs.service.hosted.immich.restore_backup.handler import handle
+    from mhs.control.service.immich.restore_backup.handler import handle
 
     return handle(self)
