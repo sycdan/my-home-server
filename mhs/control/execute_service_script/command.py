@@ -12,10 +12,6 @@ class ExecuteServiceScript:
     default_factory=list,
     metadata={"help": "Arguments to pass to the script"},
   )
-  create_root: bool = field(
-    default=False,
-    metadata={"help": "Create remote root directory if it does not exist"},
-  )
 
   def execute(self):
     from mhs.control.execute_service_script.handler import handle

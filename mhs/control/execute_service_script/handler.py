@@ -223,8 +223,6 @@ def handle(command: ExecuteServiceScript):
     raise RuntimeError(f"Service '{service_key}' is not hosted on any server in the fleet")
 
   ssh_host = server.ssh_host
-  if command.create_root:
-    ensure_remote_dir(server, f"{root_dir.name}/")
 
   # Paths are relative to root dir
   from_remote_files = [
